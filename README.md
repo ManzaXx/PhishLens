@@ -60,7 +60,7 @@ proyectoCiber/
 │   ├── engine.js            # Ejecuta detectores, puntúa y genera el informe
 │   └── ui/                  # Render del informe (solo textContent) y controlador de la página
 ├── samples/                 # Emails .eml de ejemplo
-└── tests/                   # 79 tests con node:test
+└── tests/                   # 84 tests con node:test
 ```
 
 **Decisiones técnicas**
