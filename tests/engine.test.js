@@ -58,3 +58,8 @@ test('el informe incluye resumen y datos del email', () => {
   assert.equal(r.email.links.length, 1);
   assert.equal(typeof r.summary, 'string');
 });
+
+test('el resumen prioriza remitente y enlaces sobre autenticación', () => {
+  const r = analyzeInput({ kind: 'eml', value: 'From: "PayPal" <a@pp-help.test>\nAuthentication-Results: x; spf=fail; dkim=fail; dmarc=fail\nSubject: x\n\nhola' });
+  assert.match(r.summary, /^\d+ señales de phishing, entre ellas «Se hace pasar por PayPal»/);
+});

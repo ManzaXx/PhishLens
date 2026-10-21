@@ -22,17 +22,25 @@ export function levelFor(score) {
   return { level, label };
 }
 
+// Para el resumen se priorizan las señales más fáciles de entender.
+const SUMMARY_PRIORITY = ['sender', 'links', 'attachments', 'lookalike', 'language', 'auth', 'input'];
+
 function summarize(level, findings) {
-  const top = findings.filter((f) => f.severity === 'high' || f.severity === 'medium').slice(0, 2);
   if (level === 'safe') {
     return findings.some((f) => f.points > 0)
       ? 'No hay señales fuertes de phishing, aunque conviene revisar los avisos de abajo.'
       : 'No se han encontrado señales de phishing.';
   }
-  const reasons = top.map((f) => f.title.toLowerCase()).join(' y ');
+  const strong = findings.filter((f) => f.severity === 'high' || f.severity === 'medium');
+  const top = [...strong]
+    .sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'high' ? -1 : 1)
+      || SUMMARY_PRIORITY.indexOf(a.detector) - SUMMARY_PRIORITY.indexOf(b.detector))
+    .slice(0, 2)
+    .map((f) => `«${f.title}»`)
+    .join(' y ');
   return level === 'phishing'
-    ? `Hay varias señales claras de phishing: ${reasons}. No pulses enlaces ni abras adjuntos.`
-    : `Hay señales sospechosas: ${reasons}. Compruébalo por otra vía antes de actuar.`;
+    ? `${strong.length} señales de phishing, entre ellas ${top}. No pulses enlaces ni abras adjuntos.`
+    : `${strong.length === 1 ? 'Una señal sospechosa' : `${strong.length} señales sospechosas`}: ${top}. Compruébalo por otra vía antes de actuar.`;
 }
 
 /** Analiza un email ya parseado. */

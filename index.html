@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="PhishLens: analizador de phishing que funciona 100 % en tu navegador. Arrastra un .eml o pega una URL y descubre por qué es (o no) phishing.">
+  <title>PhishLens · Analizador de phishing</title>
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script type="module" src="src/ui/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#analizar">Saltar al analizador</a>
+
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <a class="brand" href="./" aria-label="PhishLens, inicio">
+        <img src="assets/img/favicon.svg" alt="" width="28" height="28">
+        <span>Phish<strong>Lens</strong></span>
+      </a>
+      <nav class="topbar__nav" aria-label="Principal">
+        <a href="#como-funciona">Cómo funciona</a>
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Cambiar tema claro u oscuro">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Tu email nunca sale de tu navegador</p>
+      <h1>¿Es phishing? <span class="accent">Compruébalo</span> antes de hacer clic.</h1>
+      <p class="lead">Arrastra un email <code>.eml</code>, pega su contenido o una URL. PhishLens revisa la autenticación, el remitente, los enlaces, los dominios, los adjuntos y el lenguaje, y te explica cada señal.</p>
+    </section>
+
+    <section class="wrap analyzer" id="analizar" aria-labelledby="analizar-titulo">
+      <h2 id="analizar-titulo" class="visually-hidden">Analizar</h2>
+      <div class="card">
+        <div class="tabs" role="tablist" aria-label="Tipo de entrada">
+          <button role="tab" id="tab-eml" aria-controls="panel-eml" aria-selected="true">Archivo .eml</button>
+          <button role="tab" id="tab-text" aria-controls="panel-text" aria-selected="false" tabindex="-1">Pegar email</button>
+          <button role="tab" id="tab-url" aria-controls="panel-url" aria-selected="false" tabindex="-1">URL</button>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-eml" aria-labelledby="tab-eml">
+          <label class="dropzone" id="dropzone" for="file-input">
+            <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>
+            <span class="dropzone__title">Arrastra aquí tu archivo <code>.eml</code></span>
+            <span class="dropzone__hint">o pulsa para elegirlo · máx. 5 MB</span>
+            <input type="file" id="file-input" accept=".eml,message/rfc822,.txt" class="visually-hidden">
+          </label>
+          <p class="hint">¿Cómo consigo el .eml? En Gmail: <kbd>⋮</kbd> → <em>Descargar mensaje</em>. En Outlook: <em>Guardar como</em>.</p>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-text" aria-labelledby="tab-text" hidden>
+          <label for="raw-input" class="field-label">Email original con cabeceras (o solo el texto)</label>
+          <textarea id="raw-input" rows="10" spellcheck="false" placeholder="From: ...&#10;Subject: ...&#10;&#10;Cuerpo del mensaje"></textarea>
+          <p class="hint">En Gmail: <kbd>⋮</kbd> → <em>Mostrar original</em> → copia todo.</p>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-url" aria-labelledby="tab-url" hidden>
+          <label for="url-input" class="field-label">Enlace sospechoso</label>
+          <input id="url-input" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://ejemplo-sospechoso.xyz/login">
+          <p class="hint">No se abre ni se visita el enlace: solo se analiza el texto.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn--primary" id="analyze-btn" type="button">Analizar</button>
+          <p class="error" id="input-error" role="alert" hidden></p>
+        </div>
+
+        <div class="samples">
+          <span class="samples__label">Prueba un ejemplo:</span>
+          <div class="samples__list" id="samples"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap report" id="report" aria-live="polite" hidden></section>
+
+    <section class="wrap how" id="como-funciona" aria-labelledby="como-titulo">
+      <h2 id="como-titulo">Cómo funciona</h2>
+      <p class="lead">Seis detectores independientes buscan señales. Cada señal suma puntos según su gravedad (leve 5, media 15, grave 30) hasta un máximo de 100.</p>
+      <div class="how__grid">
+        <article><h3>Autenticación</h3><p>Lee SPF, DKIM y DMARC en la cabecera <code>Authentication-Results</code> para saber si el remitente está falsificado.</p></article>
+        <article><h3>Remitente</h3><p>Compara <code>From</code>, <code>Reply-To</code> y <code>Return-Path</code>, y detecta nombres de marca enviados desde dominios ajenos.</p></article>
+        <article><h3>Enlaces</h3><p>Texto que no coincide con el destino, IPs, acortadores, <code>@</code> ocultos, punycode y extensiones baratas.</p></article>
+        <article><h3>Dominios parecidos</h3><p>Distancia de Levenshtein y homoglifos (<code>0→o</code>, <code>rn→m</code>) frente a marcas como PayPal, Correos o BBVA.</p></article>
+        <article><h3>Adjuntos</h3><p>Ejecutables, dobles extensiones como <code>factura.pdf.exe</code> y documentos con macros.</p></article>
+        <article><h3>Lenguaje</h3><p>Urgencia, amenazas, premios y peticiones de contraseña, en español e inglés.</p></article>
+      </div>
+      <div class="legend" aria-label="Escala de riesgo">
+        <span class="legend__item legend__item--safe">0–24 Probablemente legítimo</span>
+        <span class="legend__item legend__item--suspicious">25–59 Sospechoso</span>
+        <span class="legend__item legend__item--phishing">60–100 Probable phishing</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>PhishLens · Proyecto de ciberseguridad de Pablo Manzanedo. Sin servidores, sin cookies, sin analítica.</p>
+      <p class="footer__note">Es una herramienta educativa basada en heurísticas: una nota baja no garantiza que un email sea seguro. Ante la duda, contacta con la empresa por un canal oficial.</p>
+    </div>
+  </footer>
+</body>
+</html>
