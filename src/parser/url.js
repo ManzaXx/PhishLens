@@ -48,15 +48,32 @@ export function parseUrl(raw) {
 
 const URL_IN_TEXT = /\b(?:https?:\/\/|www\.)[^\s<>"'`]+/gi;
 
+const TRAILING = new Set(['.', ',', ';', ':', '!', '?']);
+
+// Recorte manual: /[.,;:!?]+$/ es cuadrático con miles de puntos seguidos.
+function trimTrailing(s) {
+  let end = s.length;
+  while (end > 0 && TRAILING.has(s[end - 1])) end--;
+  return s.slice(0, end);
+}
+
 /** Extrae URLs de un texto plano, quitando la puntuación final. */
 export function extractUrls(text) {
   const found = String(text ?? '').match(URL_IN_TEXT) ?? [];
   return found.map((u) => {
-    let clean = u.replace(/[.,;:!?]+$/, '');
-    // Paréntesis de cierre sin su pareja de apertura
-    while (clean.endsWith(')') && (clean.match(/\(/g) ?? []).length < (clean.match(/\)/g) ?? []).length) {
-      clean = clean.slice(0, -1).replace(/[.,;:!?]+$/, '');
+    const clean = trimTrailing(u);
+    // Quita paréntesis de cierre sin pareja de apertura (contando una sola vez: lineal)
+    let open = 0;
+    let close = 0;
+    for (const ch of clean) {
+      if (ch === '(') open++;
+      else if (ch === ')') close++;
     }
-    return clean;
+    let end = clean.length;
+    while (close > open && clean[end - 1] === ')') {
+      end--;
+      close--;
+    }
+    return trimTrailing(clean.slice(0, end));
   });
 }

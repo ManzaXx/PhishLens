@@ -53,3 +53,9 @@ test('marca en la ruta de un dominio ajeno', () => {
   assert.deepEqual(ids(detect(withLinks('https://files.example.net/paypal/verify'))), ['links.brand-in-path:medium']);
   assert.deepEqual(detect(withLinks('https://www.paypal.com/paypal/verify')), []);
 });
+
+test('texto de enlace enorme no bloquea el detector', () => {
+  const t = performance.now();
+  detect(withLinks({ text: 'a-'.repeat(200000), href: 'https://x.test/' }));
+  assert.ok(performance.now() - t < 500, `tardó ${Math.round(performance.now() - t)} ms`);
+});

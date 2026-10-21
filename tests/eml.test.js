@@ -120,3 +120,18 @@ test('emailFromUrl crea un email mínimo con un enlace', () => {
   assert.equal(e.hasHeaders, false);
   assert.equal(e.from, null);
 });
+
+test('HTML malicioso no bloquea el parser (tiempo lineal)', () => {
+  const inputs = [
+    '<a href="x">'.repeat(100000),
+    '<'.repeat(500000),
+    '<script>'.repeat(100000),
+    '<a href="x">y'.repeat(50000) + '</a>',
+  ];
+  for (const html of inputs) {
+    const t = performance.now();
+    parseEml(`From: a@b.com\nContent-Type: text/html\n\n${html}`);
+    htmlToText(html);
+    assert.ok(performance.now() - t < 1500, `tardó ${Math.round(performance.now() - t)} ms`);
+  }
+});

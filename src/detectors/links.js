@@ -7,12 +7,14 @@ import { isOfficialDomain } from './sender.js';
 
 export const name = 'links';
 
-const DOMAIN_IN_TEXT = /\b((?:[a-z0-9-]+\.)+[a-z]{2,})\b/i;
+// Cuantificadores acotados para que un texto enorme no dispare el retroceso del regex.
+const DOMAIN_IN_TEXT = /\b((?:[a-z0-9-]{1,63}\.){1,10}[a-z]{2,24})\b/i;
+const MAX_TEXT = 300;
 const LOGIN_PATH = /(log[-_]?in|sign[-_]?in|acceso|cuenta|account|verif|password|contrase|banca|secure)/i;
 
 function checksFor(link, url) {
   const out = [];
-  const shown = link.text !== link.href ? DOMAIN_IN_TEXT.exec(link.text)?.[1] : null;
+  const shown = link.text !== link.href ? DOMAIN_IN_TEXT.exec(link.text.slice(0, MAX_TEXT))?.[1] : null;
   if (shown && registrableDomain(shown) !== url.registrableDomain) {
     out.push(['mismatch', 'high', 'El enlace no lleva a donde dice',
       `El texto muestra ${shown.toLowerCase()}, pero al pulsar irías a ${url.hostname}.`]);

@@ -44,3 +44,19 @@ test('extractUrls encuentra URLs y limpia la puntuación final', () => {
   assert.deepEqual(extractUrls('ve a https://a.com/x, y http://b.es.'), ['https://a.com/x', 'http://b.es']);
   assert.deepEqual(extractUrls('(www.c.com)'), ['www.c.com']);
 });
+
+test('extractUrls no se bloquea con miles de paréntesis', () => {
+  const t = performance.now();
+  assert.deepEqual(extractUrls(`http://a.b${')'.repeat(100000)}`), ['http://a.b']);
+  assert.ok(performance.now() - t < 500);
+});
+
+test('extractUrls conserva paréntesis equilibrados', () => {
+  assert.deepEqual(extractUrls('(ver https://es.wikipedia.org/wiki/Phishing_(fraude))'), ['https://es.wikipedia.org/wiki/Phishing_(fraude)']);
+});
+
+test('extractUrls no se bloquea con miles de puntos', () => {
+  const t = performance.now();
+  assert.equal(extractUrls(`http://a${'.'.repeat(200000)}x`).length, 1);
+  assert.ok(performance.now() - t < 500);
+});

@@ -81,20 +81,98 @@ export function decodeEntities(text) {
   });
 }
 
-/** Convierte HTML en texto legible sin usar el DOM. */
-export function htmlToText(html) {
-  return decodeEntities(
-    String(html)
-      .replace(/<(script|style|head)\b[\s\S]*?<\/\1>/gi, ' ')
-      .replace(/<!--[\s\S]*?-->/g, ' ')
-      .replace(/<(br|\/p|\/div|\/tr|\/li|\/h\d)\b[^>]*>/gi, '\n')
-      .replace(/<[^>]+>/g, ' '),
-  )
-    .replace(/ /g, ' ')
+const RAW_TEXT_TAGS = new Set(['script', 'style', 'head']);
+const BLOCK_END = /^(br|p|div|tr|li|h\d)$/;
+
+/**
+ * Recorre el HTML en tiempo lineal y emite trozos de texto y etiquetas.
+ * Se evita usar regex con retroceso sobre todo el documento: un email malicioso
+ * con miles de "<" sin cerrar podría bloquear la pestaña.
+ */
+function* scanHtml(html) {
+  let i = 0;
+  while (i < html.length) {
+    const lt = html.indexOf('<', i);
+    if (lt < 0) {
+      yield { text: html.slice(i) };
+      return;
+    }
+    if (lt > i) yield { text: html.slice(i, lt) };
+    if (html.startsWith('<!--', lt)) {
+      const end = html.indexOf('-->', lt + 4);
+      if (end < 0) return;
+      i = end + 3;
+      continue;
+    }
+    const gt = html.indexOf('>', lt + 1);
+    if (gt < 0) {
+      yield { text: html.slice(lt) };
+      return;
+    }
+    const raw = html.slice(lt, gt + 1);
+    const m = /^<(\/?)([a-z][a-z0-9]*)/i.exec(raw);
+    i = gt + 1;
+    if (!m) {
+      yield { text: raw };
+      continue;
+    }
+    const tag = m[2].toLowerCase();
+    const closing = m[1] === '/';
+    if (!closing && RAW_TEXT_TAGS.has(tag)) {
+      const close = new RegExp(`</${tag}`, 'ig');
+      close.lastIndex = i;
+      const found = close.exec(html);
+      if (!found) return;
+      const endGt = html.indexOf('>', found.index);
+      i = endGt < 0 ? html.length : endGt + 1;
+      continue;
+    }
+    yield { tag, closing, raw };
+  }
+}
+
+function normalizeText(text) {
+  return decodeEntities(text)
+    .replace(/\u00a0/g, ' ')
     .replace(/[ \t]+/g, ' ')
     .replace(/ *\n */g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+/** Convierte HTML en texto legible sin usar el DOM. */
+export function htmlToText(html) {
+  const out = [];
+  for (const token of scanHtml(String(html))) {
+    if (token.text != null) out.push(token.text);
+    else out.push((token.closing || token.tag === 'br') && BLOCK_END.test(token.tag) ? '\n' : ' ');
+  }
+  return normalizeText(out.join(''));
+}
+
+/** Extrae los enlaces <a href> del HTML con su texto visible. */
+function extractAnchors(html) {
+  const links = [];
+  let current = null;
+  const finish = () => {
+    if (current) links.push({ text: normalizeText(current.parts.join('')), href: current.href });
+    current = null;
+  };
+  for (const token of scanHtml(html)) {
+    if (token.text != null) {
+      current?.parts.push(token.text);
+    } else if (token.tag === 'a') {
+      finish();
+      if (token.closing) continue;
+      const m = /\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(token.raw);
+      const href = decodeEntities((m?.[1] ?? m?.[2] ?? m?.[3] ?? '').trim());
+      if (href && !/^(mailto|tel|#)/i.test(href)) current = { href, parts: [] };
+    } else if (current) {
+      current.parts.push(' ');
+    }
+  }
+  finish();
+  return links;
 }
 
 // ---------- Cabeceras ----------
@@ -206,17 +284,17 @@ function walkPart(headers, body, acc) {
 
 function extractLinks(html, text) {
   const links = [];
-  const anchor = /<a\b[^>]*?\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>([\s\S]*?)<\/a>/gi;
-  for (const m of html.matchAll(anchor)) {
-    const href = decodeEntities((m[1] ?? m[2] ?? m[3] ?? '').trim());
-    if (!href || /^(mailto|tel|#)/i.test(href)) continue;
-    links.push({ text: htmlToText(m[4]), href });
-  }
-  const seen = new Set(links.map((l) => l.href));
+  const seen = new Set();
+  const add = (link) => {
+    const key = `${link.text}\u0000${link.href}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    links.push(link);
+  };
+  for (const link of extractAnchors(html)) add(link);
+  const hrefs = new Set(links.map((l) => l.href));
   for (const url of extractUrls(text)) {
-    if (seen.has(url)) continue;
-    seen.add(url);
-    links.push({ text: url, href: url });
+    if (!hrefs.has(url)) add({ text: url, href: url });
   }
   return links;
 }
