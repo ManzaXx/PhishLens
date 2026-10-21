@@ -2,6 +2,8 @@
 import { parseEml, emailFromUrl } from './parser/eml.js';
 import { parseUrl } from './parser/url.js';
 import { finding, SEVERITY_ORDER } from './detectors/finding.js';
+import { extractIocs } from './ioc.js';
+import { parseReceived } from './detectors/headers.js';
 import * as auth from './detectors/auth.js';
 import * as sender from './detectors/sender.js';
 import * as links from './detectors/links.js';
@@ -59,6 +61,7 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
   found.sort((a, b) => SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity));
 
   const score = Math.min(100, found.reduce((sum, f) => sum + f.points, 0));
+  const techniques = [...new Map(found.filter((f) => f.mitre && f.points > 0).map((f) => [f.mitre.id, f.mitre])).values()];
   const { level, label } = levelFor(score);
   return {
     score,
@@ -66,6 +69,7 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
     label,
     summary: summarize(level, found),
     findings: found,
+    techniques,
     errors,
     email: {
       from: email.from,
@@ -75,7 +79,12 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
       links: email.links,
       attachments: email.attachments,
       authResults: email.headers?.get?.('authentication-results')?.[0] ?? null,
+      date: email.headers?.get?.('date')?.[0] ?? null,
+      route: email.hasHeaders ? parseReceived(email) : [],
+      text: email.text,
+      html: email.html,
     },
+    iocs: extractIocs(email),
   };
 }
 
