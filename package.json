@@ -1,6 +1,6 @@
 {
   "name": "phishlens",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Analizador de phishing 100 % en el navegador",
   "type": "module",
   "private": true,
