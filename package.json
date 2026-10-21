@@ -1,0 +1,11 @@
+{
+  "name": "phishlens",
+  "version": "1.0.0",
+  "description": "Analizador de phishing 100 % en el navegador",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
