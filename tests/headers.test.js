@@ -41,3 +41,8 @@ test('parseReceived extrae los saltos en orden de llegada', () => {
     ['mx2.example.com', 'mx.google.com', '203.0.113.9'],
   ]);
 });
+
+test('parseReceived prefiere la IP real de conexión entre paréntesis', () => {
+  const e = parseEml('Received: from [10.8.0.3] (unknown [198.51.100.23]) by vps.test; Wed, 21 Oct 2026 07:03:01 +0200\nFrom: a@b.test\n\nx');
+  assert.equal(parseReceived(e)[0].ip, '198.51.100.23');
+});

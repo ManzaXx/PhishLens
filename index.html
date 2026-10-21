@@ -7,6 +7,12 @@
   <meta name="referrer" content="no-referrer">
   <meta name="description" content="PhishLens: analizador de phishing que funciona 100 % en tu navegador. Arrastra un .eml o pega una URL y descubre por qué es (o no) phishing.">
   <title>PhishLens · Analizador de phishing</title>
+  <meta property="og:title" content="PhishLens · Analizador de phishing">
+  <meta property="og:description" content="Descubre si un email es phishing y por qué. 8 detectores, mapeo MITRE ATT&amp;CK e IOCs, 100 % en tu navegador.">
+  <meta property="og:image" content="assets/img/og.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0b0f14">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/styles.css">
   <script type="module" src="src/ui/app.js"></script>
@@ -22,6 +28,10 @@
       </a>
       <nav class="topbar__nav" aria-label="Principal">
         <a href="#como-funciona">Cómo funciona</a>
+        <a href="#privacidad">Privacidad</a>
+        <a class="icon-btn" href="https://github.com/ManzaXx/ProyectosPersonales/tree/main/proyectoCiber" target="_blank" rel="noopener noreferrer" aria-label="Código en GitHub">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.26-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.38.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+        </a>
         <button class="icon-btn" id="theme-toggle" type="button" aria-label="Cambiar tema claro u oscuro">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
         </button>
@@ -33,7 +43,13 @@
     <section class="hero wrap">
       <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Tu email nunca sale de tu navegador</p>
       <h1>¿Es phishing? <span class="accent">Compruébalo</span> antes de hacer clic.</h1>
-      <p class="lead">Arrastra un email <code>.eml</code>, pega su contenido o una URL. PhishLens revisa la autenticación, el remitente, los enlaces, los dominios, los adjuntos y el lenguaje, y te explica cada señal.</p>
+      <p class="lead">Arrastra un email <code>.eml</code>, pega su contenido o una URL. PhishLens revisa la autenticación, el remitente, las cabeceras, los enlaces, los dominios, los adjuntos, el HTML y el lenguaje, y te explica cada señal.</p>
+      <ul class="stats" aria-label="En cifras">
+        <li><strong>8</strong> detectores</li>
+        <li><strong>40+</strong> señales</li>
+        <li><strong>MITRE</strong> ATT&amp;CK</li>
+        <li><strong>0</strong> datos enviados</li>
+      </ul>
     </section>
 
     <section class="wrap analyzer" id="analizar" aria-labelledby="analizar-titulo">
@@ -83,13 +99,15 @@
 
     <section class="wrap how" id="como-funciona" aria-labelledby="como-titulo">
       <h2 id="como-titulo">Cómo funciona</h2>
-      <p class="lead">Seis detectores independientes buscan señales. Cada señal suma puntos según su gravedad (leve 5, media 15, grave 30) hasta un máximo de 100.</p>
+      <p class="lead">Ocho detectores independientes buscan señales. Cada señal suma puntos según su gravedad (leve 5, media 15, grave 30) hasta un máximo de 100.</p>
       <div class="how__grid">
-        <article><h3>Autenticación</h3><p>Lee SPF, DKIM y DMARC en la cabecera <code>Authentication-Results</code> para saber si el remitente está falsificado.</p></article>
-        <article><h3>Remitente</h3><p>Compara <code>From</code>, <code>Reply-To</code> y <code>Return-Path</code>, y detecta nombres de marca enviados desde dominios ajenos.</p></article>
-        <article><h3>Enlaces</h3><p>Texto que no coincide con el destino, IPs, acortadores, <code>@</code> ocultos, punycode y extensiones baratas.</p></article>
+        <article><h3>Autenticación</h3><p>Lee SPF, DKIM y DMARC en <code>Authentication-Results</code> para saber si el remitente está falsificado.</p></article>
+        <article><h3>Remitente</h3><p>Compara <code>From</code>, <code>Reply-To</code> y <code>Return-Path</code>, y detecta marcas suplantadas, letras cirílicas camufladas y caracteres invisibles.</p></article>
+        <article><h3>Cabeceras técnicas</h3><p>Reconstruye la ruta <code>Received</code> y revisa <code>Message-ID</code>, la fecha y el programa de envío.</p></article>
+        <article><h3>Enlaces</h3><p>Texto que no coincide con el destino, IPs, acortadores, <code>@</code> ocultos, punycode, descargas directas. Desenvuelve Safe Links.</p></article>
         <article><h3>Dominios parecidos</h3><p>Distancia de Levenshtein y homoglifos (<code>0→o</code>, <code>rn→m</code>) frente a marcas como PayPal, Correos o BBVA.</p></article>
-        <article><h3>Adjuntos</h3><p>Ejecutables, dobles extensiones como <code>factura.pdf.exe</code> y documentos con macros.</p></article>
+        <article><h3>Adjuntos</h3><p>Ejecutables, dobles extensiones como <code>factura.pdf.exe</code>, nombres invertidos con RLO y documentos con macros.</p></article>
+        <article><h3>Contenido HTML</h3><p>Formularios dentro del email, JavaScript, enlaces <code>data:</code>, texto oculto para burlar filtros y emails que son solo una imagen.</p></article>
         <article><h3>Lenguaje</h3><p>Urgencia, amenazas, premios y peticiones de contraseña, en español e inglés.</p></article>
       </div>
       <div class="legend" aria-label="Escala de riesgo">
@@ -98,7 +116,19 @@
         <span class="legend__item legend__item--phishing">60–100 Probable phishing</span>
       </div>
     </section>
+    <section class="wrap privacy" id="privacidad" aria-labelledby="privacidad-titulo">
+      <h2 id="privacidad-titulo">Privacidad por diseño</h2>
+      <div class="privacy__grid">
+        <article><h3>Sin servidor</h3><p>El análisis se ejecuta en JavaScript dentro de tu navegador. El email no se sube a ningún sitio.</p></article>
+        <article><h3>CSP estricta</h3><p>La página prohíbe cualquier conexión a terceros (<code>connect-src 'self'</code>), así que aunque hubiera un fallo no podría enviar tus datos.</p></article>
+        <article><h3>Código abierto</h3><p>Sin dependencias ni compilación: el código que se lee en GitHub es exactamente el que se ejecuta.</p></article>
+      </div>
+    </section>
   </main>
+
+  <div class="drop-overlay" id="drop-overlay" hidden>
+    <div class="drop-overlay__box">Suelta el archivo <code>.eml</code> para analizarlo</div>
+  </div>
 
   <footer class="footer">
     <div class="wrap">

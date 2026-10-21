@@ -1,7 +1,7 @@
 // Controlador de la página: entradas, ejemplos, tema y acciones del informe.
 import { analyzeInput } from '../engine.js';
 import { SAMPLES } from '../../samples/index.js';
-import { renderReport, reportToJson } from './render.js';
+import { renderReport, reportToJson, iocsToText } from './render.js';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const $ = (sel) => document.querySelector(sel);
@@ -37,27 +37,36 @@ $('#theme-toggle').addEventListener('click', () => {
 });
 
 // ---------- Pestañas (patrón ARIA tabs) ----------
-function selectTab(tab, focus = false) {
-  for (const t of tabs) {
+function activateTab(group, tab, focus = false) {
+  for (const t of group) {
     const selected = t === tab;
     t.setAttribute('aria-selected', String(selected));
     t.tabIndex = selected ? 0 : -1;
     document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
   }
-  state.tab = tab.id.replace('tab-', '');
   if (focus) tab.focus();
+}
+
+/** Navegación con flechas, Inicio y Fin dentro de un tablist. */
+function tabKeydown(e, group, onSelect) {
+  const i = group.indexOf(e.target);
+  if (i < 0) return;
+  const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: group.length - 1 }[e.key];
+  if (next === undefined) return;
+  e.preventDefault();
+  onSelect(group[(next + group.length) % group.length], true);
+}
+
+function selectTab(tab, focus = false) {
+  activateTab(tabs, tab, focus);
+  state.tab = tab.id.replace('tab-', '');
   showError('');
 }
 
-tabs.forEach((tab, i) => {
+for (const tab of tabs) {
   tab.addEventListener('click', () => selectTab(tab));
-  tab.addEventListener('keydown', (e) => {
-    const delta = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-    if (delta) selectTab(tabs[(i + delta + tabs.length) % tabs.length], true);
-    if (e.key === 'Home') selectTab(tabs[0], true);
-    if (e.key === 'End') selectTab(tabs.at(-1), true);
-  });
-});
+  tab.addEventListener('keydown', (e) => tabKeydown(e, tabs, selectTab));
+}
 
 // ---------- Errores ----------
 function showError(message) {
@@ -86,17 +95,34 @@ async function loadFile(file) {
 }
 
 fileInput.addEventListener('change', () => loadFile(fileInput.files[0]));
-for (const type of ['dragenter', 'dragover']) {
-  dropzone.addEventListener(type, (e) => {
-    e.preventDefault();
-    dropzone.classList.add('is-over');
-  });
-}
-for (const type of ['dragleave', 'drop']) {
-  dropzone.addEventListener(type, () => dropzone.classList.remove('is-over'));
-}
-dropzone.addEventListener('drop', (e) => {
+
+// Se puede soltar el archivo en cualquier parte de la página.
+const overlay = $('#drop-overlay');
+let dragDepth = 0;
+const hasFiles = (e) => [...(e.dataTransfer?.types ?? [])].includes('Files');
+window.addEventListener('dragenter', (e) => {
+  if (!hasFiles(e)) return;
   e.preventDefault();
+  dragDepth++;
+  overlay.hidden = false;
+  dropzone.classList.add('is-over');
+});
+window.addEventListener('dragover', (e) => hasFiles(e) && e.preventDefault());
+window.addEventListener('dragleave', (e) => {
+  if (!hasFiles(e)) return;
+  dragDepth = Math.max(0, dragDepth - 1);
+  if (dragDepth === 0) {
+    overlay.hidden = true;
+    dropzone.classList.remove('is-over');
+  }
+});
+window.addEventListener('drop', (e) => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  dragDepth = 0;
+  overlay.hidden = true;
+  dropzone.classList.remove('is-over');
+  selectTab($('#tab-eml'));
   loadFile(e.dataTransfer.files[0]);
 });
 
@@ -119,8 +145,7 @@ function run() {
   }
   showError('');
   state.lastReport = analyzeInput(input);
-  const actions = renderReport(reportBox, state.lastReport);
-  actions.addEventListener('click', onReportAction);
+  renderReport(reportBox, state.lastReport);
   reportBox.scrollIntoView({ block: 'start' });
 }
 
@@ -128,8 +153,38 @@ $('#analyze-btn').addEventListener('click', run);
 urlInput.addEventListener('keydown', (e) => e.key === 'Enter' && run());
 rawInput.addEventListener('keydown', (e) => (e.ctrlKey || e.metaKey) && e.key === 'Enter' && run());
 
+// ---------- Acciones y pestañas del informe (delegación de eventos) ----------
+function toast(message) {
+  const box = document.createElement('div');
+  box.className = 'toast';
+  box.setAttribute('role', 'status');
+  box.textContent = message;
+  document.body.append(box);
+  setTimeout(() => box.remove(), 2400);
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('IOCs copiados al portapapeles');
+  } catch {
+    toast('No se pudo copiar: tu navegador lo ha bloqueado');
+  }
+}
+
+const reportTabsOf = () => [...reportBox.querySelectorAll('[role="tab"]')];
+reportBox.addEventListener('keydown', (e) => {
+  if (e.target.getAttribute('role') === 'tab') tabKeydown(e, reportTabsOf(), (t, f) => activateTab(reportTabsOf(), t, f));
+});
+reportBox.addEventListener('click', (e) => {
+  const tab = e.target.closest('[role="tab"]');
+  if (tab) activateTab(reportTabsOf(), tab);
+  onReportAction(e);
+});
+
 function onReportAction(e) {
   const action = e.target.closest('[data-action]')?.dataset.action;
+  if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || 'Sin IOCs');
   if (action === 'print') window.print();
   if (action === 'export') {
     const blob = new Blob([reportToJson(state.lastReport)], { type: 'application/json' });

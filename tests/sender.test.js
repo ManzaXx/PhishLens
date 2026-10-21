@@ -37,3 +37,8 @@ test('caracteres invisibles en el nombre o el asunto', () => {
   const e = mail('From: "Pay​Pal Soporte" <x@pay.test>');
   assert.ok(detect(e).some((f) => f.id === 'sender.invisible-chars' && f.severity === 'medium'));
 });
+
+test('la evidencia marca los caracteres no latinos', () => {
+  const [f] = detect(mail('From: "Pаypal" <x@pay.test>'));
+  assert.equal(f.evidence, 'Pаypal → P[U+0430]ypal');
+});

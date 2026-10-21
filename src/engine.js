@@ -43,7 +43,7 @@ function summarize(level, findings) {
     .map((f) => `«${f.title}»`)
     .join(' y ');
   return level === 'phishing'
-    ? `${strong.length} señales de phishing, entre ellas ${top}. No pulses enlaces ni abras adjuntos.`
+    ? `${strong.length} señales graves o medias, entre ellas ${top}. No pulses enlaces ni abras adjuntos.`
     : `${strong.length === 1 ? 'Una señal sospechosa' : `${strong.length} señales sospechosas`}: ${top}. Compruébalo por otra vía antes de actuar.`;
 }
 

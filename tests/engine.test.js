@@ -61,5 +61,5 @@ test('el informe incluye resumen y datos del email', () => {
 
 test('el resumen prioriza remitente y enlaces sobre autenticación', () => {
   const r = analyzeInput({ kind: 'eml', value: 'From: "PayPal" <a@pp-help.test>\nAuthentication-Results: x; spf=fail; dkim=fail; dmarc=fail\nSubject: x\n\nhola' });
-  assert.match(r.summary, /^\d+ señales de phishing, entre ellas «Se hace pasar por PayPal»/);
+  assert.match(r.summary, /^\d+ señales graves o medias, entre ellas «Se hace pasar por PayPal»/);
 });

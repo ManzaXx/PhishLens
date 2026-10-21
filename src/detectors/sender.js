@@ -36,7 +36,7 @@ function unicodeChecks(email) {
         id: 'sender.mixed-script', detector: name, severity: 'high',
         title: 'Letras de otro alfabeto camufladas',
         detail: `El ${label} mezcla letras latinas con cirílicas o griegas que se ven idénticas. Es un truco para imitar una marca sin escribirla igual.`,
-        evidence: `${word} → ${[...word].map((c) => (c.charCodeAt(0) > 127 ? `U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}` : c)).join('')}`,
+        evidence: `${word} → ${[...word].map((c) => (c.codePointAt(0) > 127 ? `[U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}]` : c)).join('')}`,
       }));
       break;
     }
