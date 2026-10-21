@@ -6,9 +6,15 @@ import { FREE_MAIL_DOMAINS } from '../data/lists.js';
 
 export const name = 'sender';
 
+const COUNTRY_SUFFIX = /^(?:[a-z]{2}|(?:co|com|org|net)\.[a-z]{2})$/;
+
 export function isOfficialDomain(brand, domain) {
   const reg = registrableDomain(domain);
-  return brand.domains.some((d) => d === domain || d === reg || domain.endsWith(`.${d}`));
+  if (brand.domains.some((d) => d === domain || d === reg || domain.endsWith(`.${d}`))) return true;
+  if (!brand.ccTLD) return false;
+  // amazon.fr, google.co.uk, outlook.es: misma etiqueta que un dominio oficial con sufijo de país.
+  const [label, ...suffix] = reg.split('.');
+  return COUNTRY_SUFFIX.test(suffix.join('.')) && brand.domains.some((d) => d.split('.')[0] === label);
 }
 
 export function brandInText(text) {

@@ -77,3 +77,27 @@ export function extractUrls(text) {
     return trimTrailing(clean.slice(0, end));
   });
 }
+
+// Servicios que envuelven el enlace real en un parámetro de la URL.
+const WRAPPERS = [
+  { host: /(^|\.)safelinks\.protection\.outlook\.com$/, param: 'url' },
+  { host: /^(www\.)?google\.[a-z.]+$/, path: /^\/url$/, param: 'q' },
+  { host: /^l\.facebook\.com$/, param: 'u' },
+  { host: /^(www\.)?linkedin\.com$/, path: /^\/redir\//, param: 'url' },
+];
+
+/** Devuelve la URL real si `href` es un envoltorio conocido (Safe Links, Google...), o null. */
+export function unwrapUrl(href) {
+  let url;
+  try {
+    url = new URL(String(href ?? ''));
+  } catch {
+    return null;
+  }
+  for (const w of WRAPPERS) {
+    if (!w.host.test(url.hostname) || (w.path && !w.path.test(url.pathname))) continue;
+    const inner = url.searchParams.get(w.param);
+    if (inner && /^https?:\/\//i.test(inner)) return inner;
+  }
+  return null;
+}

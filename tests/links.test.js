@@ -59,3 +59,14 @@ test('texto de enlace enorme no bloquea el detector', () => {
   detect(withLinks({ text: 'a-'.repeat(200000), href: 'https://x.test/' }));
   assert.ok(performance.now() - t < 500, `tardó ${Math.round(performance.now() - t)} ms`);
 });
+
+test('enlace de seguimiento de una plataforma de email es leve, no engaño', () => {
+  assert.deepEqual(ids(detect(withLinks({ text: 'www.aerovelo.example', href: 'https://u1234.ct.sendgrid.net/ls/click?upn=abc' }))), ['links.tracking:low']);
+  assert.deepEqual(ids(detect(withLinks({ text: 'tienda.example', href: 'https://tienda.us5.list-manage.com/track/click?u=1' }))), ['links.tracking:low']);
+});
+
+test('analiza el destino real de un enlace envuelto', () => {
+  const out = detect(withLinks('https://eur01.safelinks.protection.outlook.com/?url=http%3A%2F%2F10.0.0.5%2Flogin&data=x'));
+  assert.deepEqual(out.map((f) => f.id).sort(), ['links.insecure-login', 'links.ip']);
+  assert.match(out[0].evidence, /10\.0\.0\.5/);
+});

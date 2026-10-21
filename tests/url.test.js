@@ -60,3 +60,11 @@ test('extractUrls no se bloquea con miles de puntos', () => {
   assert.equal(extractUrls(`http://a${'.'.repeat(200000)}x`).length, 1);
   assert.ok(performance.now() - t < 500);
 });
+
+test('unwrapUrl desenvuelve Safe Links y redirecciones de Google', async () => {
+  const { unwrapUrl } = await import('../src/parser/url.js');
+  assert.equal(unwrapUrl('https://eur01.safelinks.protection.outlook.com/?url=http%3A%2F%2Fevil.xyz%2Flogin&data=05'), 'http://evil.xyz/login');
+  assert.equal(unwrapUrl('https://www.google.com/url?q=https://evil.xyz/a&sa=D'), 'https://evil.xyz/a');
+  assert.equal(unwrapUrl('https://example.com/?url=http://x.test'), null);
+  assert.equal(unwrapUrl('no url'), null);
+});

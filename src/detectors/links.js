@@ -1,7 +1,7 @@
 // Detector de enlaces engañosos o sospechosos.
 import { finding } from './finding.js';
-import { parseUrl, registrableDomain } from '../parser/url.js';
-import { URL_SHORTENERS, SUSPICIOUS_TLDS } from '../data/lists.js';
+import { parseUrl, registrableDomain, unwrapUrl } from '../parser/url.js';
+import { URL_SHORTENERS, SUSPICIOUS_TLDS, TRACKING_DOMAINS } from '../data/lists.js';
 import { BRANDS } from '../data/brands.js';
 import { isOfficialDomain } from './sender.js';
 
@@ -16,8 +16,13 @@ function checksFor(link, url) {
   const out = [];
   const shown = link.text !== link.href ? DOMAIN_IN_TEXT.exec(link.text.slice(0, MAX_TEXT))?.[1] : null;
   if (shown && registrableDomain(shown) !== url.registrableDomain) {
-    out.push(['mismatch', 'high', 'El enlace no lleva a donde dice',
-      `El texto muestra ${shown.toLowerCase()}, pero al pulsar irías a ${url.hostname}.`]);
+    if (TRACKING_DOMAINS.has(url.registrableDomain)) {
+      out.push(['tracking', 'low', 'Enlace de seguimiento',
+        `El enlace pasa por ${url.registrableDomain}, una plataforma de email marketing que mide los clics. Es habitual en newsletters legítimas, pero oculta el destino final.`]);
+    } else {
+      out.push(['mismatch', 'high', 'El enlace no lleva a donde dice',
+        `El texto muestra ${shown.toLowerCase()}, pero al pulsar irías a ${url.hostname}.`]);
+    }
   }
   if (url.hasAt) {
     out.push(['at-sign', 'high', 'URL con @ que oculta el destino real',
@@ -56,9 +61,13 @@ export function detect(email) {
   const out = [];
   const seen = new Set();
   for (const link of email.links ?? []) {
-    const url = parseUrl(link.href);
+    // Si el enlace está envuelto (Safe Links, Google...) se analiza el destino real.
+    const real = unwrapUrl(link.href);
+    const target = real ?? link.href;
+    const url = parseUrl(target);
     if (!url) continue;
-    for (const [id, severity, title, detail] of checksFor(link, url)) {
+    const shownText = link.text === link.href ? target : link.text;
+    for (const [id, severity, title, detail] of checksFor({ text: shownText, href: target }, url)) {
       const key = `${id}|${url.href}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -68,7 +77,7 @@ export function detect(email) {
         severity,
         title,
         detail,
-        evidence: link.text !== link.href ? `"${link.text}" → ${link.href}` : link.href,
+        evidence: (link.text !== link.href ? `"${link.text}" → ` : '') + (real ? `${real} (envuelto en ${new URL(link.href).hostname})` : link.href),
       }));
     }
   }

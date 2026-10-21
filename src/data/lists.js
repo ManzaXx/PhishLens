@@ -12,6 +12,15 @@ export const URL_SHORTENERS = new Set([
 ]);
 
 // TLDs muy usados en campañas de phishing por ser baratos o gratuitos.
+// Plataformas de email marketing que reescriben los enlaces para medir clics.
+export const TRACKING_DOMAINS = new Set([
+  'sendgrid.net', 'list-manage.com', 'mailchimp.com', 'mcusercontent.com', 'mandrillapp.com',
+  'hubspotlinks.com', 'hs-sites.com', 'hubspotemail.net', 'sparkpostmail.com', 'mailgun.org',
+  'rs6.net', 'awstrack.me', 'exacttarget.com', 'mktomail.com', 'mailjet.com', 'sendibt2.com',
+  'sendibt3.com', 'sendibm1.com', 'klclick.com', 'klaviyomail.com', 'createsend.com',
+  'cmail19.com', 'cmail20.com', 'emltrk.com', 'mlsend.com', 'mailerlite.com', 'acems1.com',
+]);
+
 export const SUSPICIOUS_TLDS = new Set([
   'xyz', 'top', 'zip', 'mov', 'click', 'link', 'live', 'online', 'site', 'shop', 'icu',
   'buzz', 'rest', 'monster', 'cfd', 'sbs', 'gq', 'ml', 'cf', 'tk', 'ga', 'work', 'support',

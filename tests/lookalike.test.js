@@ -45,3 +45,14 @@ test('detect revisa remitente y enlaces sin duplicar', () => {
   const out = detect(email).map((f) => `${f.id}:${f.severity}`).sort();
   assert.deepEqual(out, ['lookalike.brand-in-domain:medium', 'lookalike.typosquat:high']);
 });
+
+test('dominios regionales oficiales no son sospechosos', () => {
+  for (const d of ['outlook.es', 'hotmail.es', 'amazon.fr', 'amazon.com.mx', 'google.co.uk', 'dhl.fr', 'paypal.de', 'live.com']) {
+    assert.equal(findLookalike(d), null, d);
+  }
+});
+
+test('ccTLD solo vale para marcas que lo usan', () => {
+  assert.equal(findLookalike('bbva-es.com')?.brand.name, 'BBVA');
+  assert.equal(findLookalike('netflix.ru')?.kind, 'brand-in-domain');
+});
