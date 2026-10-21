@@ -56,3 +56,8 @@ test('ccTLD solo vale para marcas que lo usan', () => {
   assert.equal(findLookalike('bbva-es.com')?.brand.name, 'BBVA');
   assert.equal(findLookalike('netflix.ru')?.kind, 'brand-in-domain');
 });
+
+test('palabras contenidas en una marca no son typosquatting', () => {
+  assert.equal(findLookalike('cloud-mailer.test'), null);
+  assert.equal(findLookalike('outlet-store.test'), null);
+});

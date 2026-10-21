@@ -22,10 +22,43 @@ export function brandInText(text) {
   return BRANDS.find((b) => b.keywords.some((k) => t.includes(` ${k} `)));
 }
 
-export function detect(email) {
-  const from = email.from;
-  if (!from || !from.domain) return [];
+// Letras latinas mezcladas con cirílicas o griegas dentro de la misma palabra.
+const MIXED_SCRIPT = /(?=[^\s]*\p{Script=Latin})(?=[^\s]*[\p{Script=Cyrillic}\p{Script=Greek}])[\p{L}\p{M}]{2,}/u;
+const INVISIBLE = /[\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF]/;
+
+function unicodeChecks(email) {
   const out = [];
+  const fields = [['nombre del remitente', email.from?.name ?? ''], ['asunto', email.subject ?? '']];
+  for (const [label, value] of fields) {
+    const word = value.split(/\s+/).find((w) => MIXED_SCRIPT.test(w));
+    if (word) {
+      out.push(finding({
+        id: 'sender.mixed-script', detector: name, severity: 'high',
+        title: 'Letras de otro alfabeto camufladas',
+        detail: `El ${label} mezcla letras latinas con cirílicas o griegas que se ven idénticas. Es un truco para imitar una marca sin escribirla igual.`,
+        evidence: `${word} → ${[...word].map((c) => (c.charCodeAt(0) > 127 ? `U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}` : c)).join('')}`,
+      }));
+      break;
+    }
+  }
+  for (const [label, value] of fields) {
+    if (INVISIBLE.test(value)) {
+      out.push(finding({
+        id: 'sender.invisible-chars', detector: name, severity: 'medium',
+        title: 'Caracteres invisibles',
+        detail: `El ${label} contiene caracteres invisibles. Se usan para que los filtros no reconozcan palabras como "PayPal" o "contraseña".`,
+        evidence: value.replace(INVISIBLE, '⟦·⟧').slice(0, 120),
+      }));
+      break;
+    }
+  }
+  return out;
+}
+
+export function detect(email) {
+  const out = unicodeChecks(email);
+  const from = email.from;
+  if (!from || !from.domain) return out;
   const fromReg = registrableDomain(from.domain);
 
   if (email.replyTo?.domain && registrableDomain(email.replyTo.domain) !== fromReg) {

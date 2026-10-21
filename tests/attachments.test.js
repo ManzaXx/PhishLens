@@ -11,3 +11,4 @@ test('documento con macros', () => assert.deepEqual(ids(detect(att('informe.docm
 test('comprimido', () => assert.deepEqual(ids(detect(att('fotos.zip'))), ['attachments.archive:low']));
 test('imagen normal', () => assert.deepEqual(detect(att('foto.jpg', 'Factura.PDF')), []));
 test('mayúsculas y espacios', () => assert.deepEqual(ids(detect(att('FACTURA.PDF   .EXE'))), ['attachments.double-extension:high']));
+test('carácter RTL que invierte la extensión', () => assert.deepEqual(ids(detect(att('factura‮fdp.exe'))), ['attachments.rtl-override:high']));

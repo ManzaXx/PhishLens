@@ -11,9 +11,10 @@ const expected = {
   '04-phishing-correos': 'phishing',
   '05-phishing-microsoft365': 'phishing',
   '06-phishing-factura-adjunto': 'phishing',
+  '07-phishing-avanzado': 'phishing',
 };
 
-test('hay 6 ejemplos', () => assert.equal(SAMPLES.length, 6));
+test('hay 7 ejemplos', () => assert.equal(SAMPLES.length, 7));
 
 for (const sample of SAMPLES) {
   test(`${sample.id} → ${expected[sample.id]}`, () => {

@@ -27,3 +27,13 @@ test('remitente legítimo no genera hallazgos', () => {
   assert.deepEqual(detect(mail('From: PayPal <service@paypal.com>\nReply-To: service@paypal.com')), []);
   assert.deepEqual(detect(mail('From: Amazon.es <pedidos@amazon.es>')), []);
 });
+
+test('mezcla de alfabetos en el nombre (homoglifos Unicode)', () => {
+  // "Pаypal" con la "а" cirílica (U+0430)
+  assert.deepEqual(ids(detect(mail('From: "Pаypal" <x@pay.test>'))), ['sender.mixed-script:high']);
+});
+
+test('caracteres invisibles en el nombre o el asunto', () => {
+  const e = mail('From: "Pay​Pal Soporte" <x@pay.test>');
+  assert.ok(detect(e).some((f) => f.id === 'sender.invisible-chars' && f.severity === 'medium'));
+});

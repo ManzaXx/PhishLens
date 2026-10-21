@@ -1,7 +1,7 @@
 // Detector de enlaces engañosos o sospechosos.
 import { finding } from './finding.js';
 import { parseUrl, registrableDomain, unwrapUrl } from '../parser/url.js';
-import { URL_SHORTENERS, SUSPICIOUS_TLDS, TRACKING_DOMAINS } from '../data/lists.js';
+import { URL_SHORTENERS, SUSPICIOUS_TLDS, TRACKING_DOMAINS, DANGEROUS_EXTENSIONS, ARCHIVE_EXTENSIONS, MACRO_EXTENSIONS } from '../data/lists.js';
 import { BRANDS } from '../data/brands.js';
 import { isOfficialDomain } from './sender.js';
 
@@ -49,6 +49,12 @@ function checksFor(link, url) {
   if (brandInPath && !isOfficialDomain(brandInPath, url.hostname)) {
     out.push(['brand-in-path', 'medium', `Menciona a ${brandInPath.name} en un sitio ajeno`,
       `La ruta del enlace usa el nombre de ${brandInPath.name}, pero el sitio es ${url.hostname}.`]);
+  }
+  const ext = /\.([a-z0-9]{2,5})$/i.exec(url.pathOnly)?.[1]?.toLowerCase();
+  if (ext && (DANGEROUS_EXTENSIONS.has(ext) && !['html', 'htm', 'com'].includes(ext) || ARCHIVE_EXTENSIONS.has(ext) || MACRO_EXTENSIONS.has(ext))) {
+    const severe = DANGEROUS_EXTENSIONS.has(ext);
+    out.push(['download', severe ? 'high' : 'medium', 'Enlace que descarga un archivo',
+      `Al pulsar se descargaría un .${ext}${severe ? ', un tipo de archivo que puede ejecutar programas' : ''}.`]);
   }
   if (url.protocol === 'http' && LOGIN_PATH.test(url.path)) {
     out.push(['insecure-login', 'medium', 'Página de acceso sin HTTPS',

@@ -1,3 +1,5 @@
+Received: from vps-4471.hosting-barato.test (unknown [203.0.113.66]) by mx.example.com; Wed, 21 Oct 2026 07:03:04 +0200
+Received: from [10.8.0.3] (unknown [198.51.100.23]) by vps-4471.hosting-barato.test; Wed, 21 Oct 2026 07:03:01 +0200
 Return-Path: <bounce@mailer-masivo.test>
 Authentication-Results: mx.example.com;
  spf=fail smtp.mailfrom=mailer-masivo.test;
@@ -8,6 +10,8 @@ Reply-To: soporte.clientes@correo-rapido.test
 To: pablo@example.com
 Subject: =?UTF-8?B?w5psdGltbyBhdmlzbzogc3UgY3VlbnRhIGhhIHNpZG8gYmxvcXVlYWRh?=
 Date: Wed, 21 Oct 2026 07:03:00 +0200
+Message-ID: <20261021050300.4471@vps-4471.hosting-barato.test>
+X-Mailer: PHPMailer 6.8.1 (https://github.com/PHPMailer/PHPMailer)
 MIME-Version: 1.0
 Content-Type: text/html; charset=utf-8
 

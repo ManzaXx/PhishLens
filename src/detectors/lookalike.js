@@ -58,7 +58,8 @@ export function findLookalike(domain) {
   for (const token of tokens) {
     const normalized = normalizeHomoglyphs(token);
     for (const { brand, key } of BRAND_KEYS) {
-      if (token === key) continue;
+      // "cloud" está dentro de "icloud": es una palabra corriente, no una imitación.
+      if (token === key || key.includes(token)) continue;
       if (normalized === key || (Math.abs(token.length - key.length) <= 2 && levenshtein(token, key) <= maxDistance(key) && levenshtein(token, key) > 0)) {
         return { brand, domain: reg, kind: 'typosquat', token };
       }

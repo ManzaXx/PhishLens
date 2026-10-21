@@ -8,8 +8,10 @@ import * as links from './detectors/links.js';
 import * as lookalike from './detectors/lookalike.js';
 import * as attachments from './detectors/attachments.js';
 import * as language from './detectors/language.js';
+import * as headers from './detectors/headers.js';
+import * as html from './detectors/html.js';
 
-export const DEFAULT_DETECTORS = [auth, sender, links, lookalike, attachments, language];
+export const DEFAULT_DETECTORS = [auth, sender, headers, links, lookalike, attachments, html, language];
 
 export const LEVELS = [
   { min: 60, level: 'phishing', label: 'Probable phishing' },
@@ -23,7 +25,7 @@ export function levelFor(score) {
 }
 
 // Para el resumen se priorizan las señales más fáciles de entender.
-const SUMMARY_PRIORITY = ['sender', 'links', 'attachments', 'lookalike', 'language', 'auth', 'input'];
+const SUMMARY_PRIORITY = ['sender', 'links', 'attachments', 'html', 'lookalike', 'language', 'auth', 'headers', 'input'];
 
 function summarize(level, findings) {
   if (level === 'safe') {

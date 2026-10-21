@@ -37,6 +37,7 @@ export function parseUrl(raw) {
     host: url.host,
     hostname,
     path: url.pathname + url.search,
+    pathOnly: url.pathname,
     registrableDomain: isIp ? hostname : registrableDomain(hostname),
     tld: isIp ? '' : labels.at(-1),
     isIp,

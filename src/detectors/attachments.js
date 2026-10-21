@@ -9,6 +9,17 @@ const DOCUMENT_LIKE = /^(pdf|docx?|xlsx?|pptx?|txt|jpe?g|png|gif|csv|rtf|odt)$/;
 export function detect(email) {
   const out = [];
   for (const { filename } of email.attachments ?? []) {
+    if (/[\u202A-\u202E\u2066-\u2069]/.test(filename)) {
+      out.push(finding({
+        id: 'attachments.rtl-override',
+        detector: name,
+        severity: 'high',
+        title: 'Nombre de adjunto invertido',
+        detail: 'El nombre contiene un carácter que invierte el sentido del texto: "factura\u202Efdp.exe" se ve como "facturaexe.pdf".',
+        evidence: filename.replace(/[\u202A-\u202E\u2066-\u2069]/g, '⟦RLO⟧'),
+      }));
+      continue;
+    }
     const parts = String(filename).toLowerCase().split('.').map((p) => p.trim());
     if (parts.length < 2) continue;
     const ext = parts.at(-1);

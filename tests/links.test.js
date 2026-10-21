@@ -70,3 +70,8 @@ test('analiza el destino real de un enlace envuelto', () => {
   assert.deepEqual(out.map((f) => f.id).sort(), ['links.insecure-login', 'links.ip']);
   assert.match(out[0].evidence, /10\.0\.0\.5/);
 });
+
+test('enlace que descarga un ejecutable o un comprimido', () => {
+  assert.deepEqual(ids(detect(withLinks('https://files.example.net/factura.exe'))), ['links.download:high']);
+  assert.deepEqual(ids(detect(withLinks('https://files.example.net/docs/fotos.zip?x=1'))), ['links.download:medium']);
+});

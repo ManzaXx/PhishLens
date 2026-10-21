@@ -89,7 +89,7 @@ const BLOCK_END = /^(br|p|div|tr|li|h\d)$/;
  * Se evita usar regex con retroceso sobre todo el documento: un email malicioso
  * con miles de "<" sin cerrar podría bloquear la pestaña.
  */
-function* scanHtml(html) {
+export function* scanHtml(html) {
   let i = 0;
   while (i < html.length) {
     const lt = html.indexOf('<', i);

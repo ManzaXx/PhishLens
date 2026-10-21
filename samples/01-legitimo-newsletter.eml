@@ -1,3 +1,4 @@
+Received: from mail.aerovelo.example (mail.aerovelo.example [192.0.2.25]) by mx.example.com; Tue, 20 Oct 2026 09:12:03 +0200
 Return-Path: <rebotes@mail.aerovelo.example>
 Authentication-Results: mx.example.com;
  spf=pass smtp.mailfrom=mail.aerovelo.example;
