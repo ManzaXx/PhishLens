@@ -2,6 +2,8 @@
 import { finding } from './finding.js';
 import { parseUrl, registrableDomain } from '../parser/url.js';
 import { URL_SHORTENERS, SUSPICIOUS_TLDS } from '../data/lists.js';
+import { BRANDS } from '../data/brands.js';
+import { isOfficialDomain } from './sender.js';
 
 export const name = 'links';
 
@@ -34,6 +36,12 @@ function checksFor(link, url) {
   if (SUSPICIOUS_TLDS.has(url.tld)) {
     out.push(['tld', 'medium', `Dominio .${url.tld}`,
       `.${url.tld} es una extensión barata muy usada en campañas de phishing.`]);
+  }
+  const pathWords = ` ${url.path.toLowerCase().replace(/[^a-z0-9]+/g, ' ')} `;
+  const brandInPath = BRANDS.find((b) => b.keywords.some((k) => !k.includes(' ') && pathWords.includes(` ${k} `)));
+  if (brandInPath && !isOfficialDomain(brandInPath, url.hostname)) {
+    out.push(['brand-in-path', 'medium', `Menciona a ${brandInPath.name} en un sitio ajeno`,
+      `La ruta del enlace usa el nombre de ${brandInPath.name}, pero el sitio es ${url.hostname}.`]);
   }
   if (url.protocol === 'http' && LOGIN_PATH.test(url.path)) {
     out.push(['insecure-login', 'medium', 'Página de acceso sin HTTPS',

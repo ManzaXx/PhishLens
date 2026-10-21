@@ -48,3 +48,8 @@ test('no duplica hallazgos para el mismo enlace repetido', () => {
 test('ignora enlaces que no son http(s)', () => {
   assert.deepEqual(detect(withLinks('javascript:alert(1)')), []);
 });
+
+test('marca en la ruta de un dominio ajeno', () => {
+  assert.deepEqual(ids(detect(withLinks('https://files.example.net/paypal/verify'))), ['links.brand-in-path:medium']);
+  assert.deepEqual(detect(withLinks('https://www.paypal.com/paypal/verify')), []);
+});
