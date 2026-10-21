@@ -28,7 +28,7 @@ export function detect(email) {
       if (hiddenDepth > 0 && tag === hiddenTag) hiddenDepth--;
       continue;
     }
-    if (tag === 'form' || tag === 'input' && /type\s*=\s*["']?password/i.test(raw)) flags.form ??= raw;
+    if (tag === 'form' || (tag === 'input' && /type\s*=\s*["']?password/i.test(raw))) flags.form ??= raw;
     if (tag === 'script' || tag === 'iframe' || tag === 'object' || tag === 'embed' || EVENT_HANDLER.test(raw)) flags.script ??= raw;
     if (/\s(?:href|src)\s*=\s*["']?\s*data:(?!image\/)/i.test(raw)) flags.dataUri ??= raw;
     if (tag === 'img') images++;
