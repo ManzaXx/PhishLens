@@ -1,0 +1,18 @@
+Return-Path: <envios@amazon.es>
+Authentication-Results: mx.example.com;
+ spf=pass smtp.mailfrom=amazon.es;
+ dkim=pass header.d=amazon.es;
+ dmarc=pass header.from=amazon.es
+From: "Amazon.es" <confirmar-envio@amazon.es>
+To: pablo@example.com
+Subject: Tu pedido de Amazon.es se ha enviado
+Date: Mon, 19 Oct 2026 18:40:00 +0200
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGh0bWw+PGJvZHk+CjxwPkhvbGEgUGFibG8sPC9wPgo8cD5UdSBwZWRpZG8gNDAyLTEyMzQ1Njct
+ODkwMTIzNCBzZSBoYSBlbnZpYWRvIHkgbGxlZ2Fyw6EgZWwganVldmVzLjwvcD4KPHA+PGEgaHJl
+Zj0iaHR0cHM6Ly93d3cuYW1hem9uLmVzL2dwL2Nzcy9vcmRlci1oaXN0b3J5Ij5WZXIgbWlzIHBl
+ZGlkb3M8L2E+PC9wPgo8cD5HcmFjaWFzIHBvciB0dSBjb21wcmEuPC9wPgo8L2JvZHk+PC9odG1s
+Pgo=

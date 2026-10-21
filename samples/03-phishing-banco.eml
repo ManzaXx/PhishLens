@@ -1,0 +1,20 @@
+Return-Path: <bounce@mailer-masivo.test>
+Authentication-Results: mx.example.com;
+ spf=fail smtp.mailfrom=mailer-masivo.test;
+ dkim=none;
+ dmarc=fail header.from=santander-seguridad.test
+From: "Banco Santander" <avisos@santander-seguridad.test>
+Reply-To: soporte.clientes@correo-rapido.test
+To: pablo@example.com
+Subject: =?UTF-8?B?w5psdGltbyBhdmlzbzogc3UgY3VlbnRhIGhhIHNpZG8gYmxvcXVlYWRh?=
+Date: Wed, 21 Oct 2026 07:03:00 +0200
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<p>Estimado cliente,</p>
+<p>Hemos detectado un acceso no autorizado. Su cuenta será suspendida en 24 horas
+si no verifica sus datos bancarios.</p>
+<p><a href="http://santander-seguridad.test/acceso/login.php">https://www.bancosantander.es/clientes</a></p>
+<p>Atentamente,<br>Departamento de Seguridad</p>
+</body></html>

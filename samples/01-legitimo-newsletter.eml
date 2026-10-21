@@ -1,0 +1,35 @@
+Return-Path: <rebotes@mail.aerovelo.example>
+Authentication-Results: mx.example.com;
+ spf=pass smtp.mailfrom=mail.aerovelo.example;
+ dkim=pass header.d=aerovelo.example;
+ dmarc=pass header.from=aerovelo.example
+From: AEROVELO <novedades@aerovelo.example>
+To: pablo@example.com
+Subject: =?UTF-8?Q?Nuevas_bicis_de_gravel_en_el_cat=C3=A1logo?=
+Date: Tue, 20 Oct 2026 09:12:00 +0200
+Message-ID: <news-2026-10@aerovelo.example>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="nl-boundary"
+
+--nl-boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hola Pablo:
+
+Esta semana hemos a=C3=B1adido tres modelos de gravel al cat=C3=A1logo.
+Puedes verlos en https://www.aerovelo.example/gravel
+
+Si no quieres recibir m=C3=A1s correos, date de baja en
+https://www.aerovelo.example/baja
+
+--nl-boundary
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<h1>Nuevas bicis de gravel</h1>
+<p>Hola Pablo: esta semana hemos añadido tres modelos de gravel al catálogo.</p>
+<p><a href="https://www.aerovelo.example/gravel">Ver modelos</a></p>
+<p style="font-size:12px"><a href="https://www.aerovelo.example/baja">Darme de baja</a></p>
+</body></html>
+--nl-boundary--

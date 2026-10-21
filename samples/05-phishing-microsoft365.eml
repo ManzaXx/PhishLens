@@ -1,0 +1,15 @@
+Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=micr0soft-365.test; dkim=pass header.d=micr0soft-365.test; dmarc=fail header.from=micr0soft-365.test
+From: "Microsoft 365" <no-reply@micr0soft-365.test>
+To: pablo@example.com
+Subject: Your password expires today
+Date: Wed, 21 Oct 2026 10:00:00 +0200
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<p>Dear user,</p>
+<p>The password for your Microsoft 365 account expires today. To keep your mailbox active you must
+<b>confirm your password</b> within 2 hours, otherwise your account will be locked.</p>
+<p><a href="https://login.micr0soft-365.test/owa/verify?u=pablo">Keep my password</a></p>
+<p>Microsoft account team</p>
+</body></html>

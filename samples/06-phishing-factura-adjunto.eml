@@ -1,0 +1,27 @@
+Return-Path: <facturacion@proveedor-logistico.test>
+From: "Departamento de Facturación" <facturacion@proveedor-logistico.test>
+Reply-To: pagos.urgentes@gmail.com
+To: pablo@example.com
+Subject: Factura vencida n.º 2026-1187 - URGENTE
+Date: Wed, 21 Oct 2026 11:22:00 +0200
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="fx-77"
+
+--fx-77
+Content-Type: text/plain; charset=utf-8
+
+Buenos días,
+
+Adjuntamos la factura vencida. Si no se abona hoy mismo aplicaremos un recargo del 15 %
+y emprenderemos acciones legales.
+
+Un saludo.
+
+--fx-77
+Content-Type: application/octet-stream; name="Factura_2026-1187.pdf.exe"
+Content-Disposition: attachment; filename="Factura_2026-1187.pdf.exe"
+Content-Transfer-Encoding: base64
+
+UGhpc2hMZW5zOiBlc3RvIG5vIGVzIHVuIGVqZWN1dGFibGUgcmVhbC4K
+
+--fx-77--

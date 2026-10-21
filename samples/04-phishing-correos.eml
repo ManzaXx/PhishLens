@@ -1,0 +1,19 @@
+Return-Path: <info@envios-c0rreos.test>
+Authentication-Results: mx.example.com; spf=softfail smtp.mailfrom=envios-c0rreos.test; dkim=none; dmarc=none
+From: Correos <notificaciones@envios-c0rreos.test>
+To: pablo@example.com
+Subject: Su paquete esta retenido - pago de 1,99 EUR pendiente
+Date: Wed, 21 Oct 2026 08:15:00 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hola,
+
+Su paquete ES-4471-2026 no se ha podido entregar porque hay tasas de aduana pendientes (1,99 EUR).
+
+Pague inmediatamente para evitar la devolución al remitente:
+https://bit.ly/correos-pago-tasas
+
+Si no paga en 48 horas el envío será cancelado.
+
+Correos
