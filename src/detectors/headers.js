@@ -11,7 +11,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** Devuelve la ruta del email en orden de llegada: [{from, by, ip, date}] */
 export function parseReceived(email) {
   // Se acota cada cabecera: un Received de megas con "(" sin cerrar no debe bloquear los regex.
-  const hops = (email.headers?.get('received') ?? []).slice(0, 50).map((raw) => raw.slice(0, 2000)).map((value) => ({
+  const hops = (email.headers?.get('received') ?? []).slice(0, 30).map((raw) => raw.slice(0, 1000)).map((value) => ({
     from: /\bfrom\s+(\S+)/i.exec(value)?.[1] ?? '',
     by: /\bby\s+([^\s;]+)/i.exec(value)?.[1] ?? '',
     // La IP que vio el servidor receptor va entre paréntesis: "from x (host [IP])".

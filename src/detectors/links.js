@@ -64,8 +64,8 @@ function checksFor(link, url) {
 }
 
 export function detect(email) {
-  const out = [];
-  const seen = new Set();
+  // Un hallazgo por tipo de señal: con 200 enlaces iguales el informe sigue siendo legible.
+  const byId = new Map();
   for (const link of email.links ?? []) {
     // Si el enlace está envuelto (Safe Links, Google...) se analiza el destino real.
     const real = unwrapUrl(link.href);
@@ -74,18 +74,26 @@ export function detect(email) {
     if (!url) continue;
     const shownText = link.text === link.href ? target : link.text;
     for (const [id, severity, title, detail] of checksFor({ text: shownText, href: target }, url)) {
-      const key = `${id}|${url.href}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(finding({
-        id: `links.${id}`,
-        detector: name,
+      const entry = byId.get(id);
+      if (entry) {
+        entry.hrefs.add(url.href);
+        continue;
+      }
+      byId.set(id, {
+        hrefs: new Set([url.href]),
         severity,
         title,
         detail,
         evidence: (link.text !== link.href ? `"${link.text}" → ` : '') + (real ? `${real} (envuelto en ${new URL(link.href).hostname})` : link.href),
-      }));
+      });
     }
   }
-  return out;
+  return [...byId].map(([id, e]) => finding({
+    id: `links.${id}`,
+    detector: name,
+    severity: e.severity,
+    title: e.hrefs.size > 1 ? `${e.title} (${e.hrefs.size} enlaces)` : e.title,
+    detail: e.detail,
+    evidence: e.evidence,
+  }));
 }

@@ -4,6 +4,7 @@ import { highlight } from './highlight.js';
 import { adviceFor } from '../advice.js';
 import { defang, iocsToText } from '../ioc.js';
 import { htmlToText } from '../parser/eml.js';
+import { reveal } from '../text.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -21,11 +22,15 @@ export const DETECTOR_LABELS = {
 
 const SEVERITY_LABELS = { high: 'Grave', medium: 'Media', low: 'Leve', info: 'Info' };
 
-/** Crea un elemento con clase, texto, atributos e hijos. */
+/**
+ * Crea un elemento con clase, texto, atributos e hijos.
+ * El texto pasa por reveal(): un carácter RLO o invisible del email se muestra como ⟦U+202E⟧
+ * en lugar de reordenar o esconder lo que se ve en el informe (ataque "Trojan Source").
+ */
 function el(tag, { className, text, attrs } = {}, ...children) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (text != null) node.textContent = text;
+  if (text != null) node.textContent = reveal(text);
   for (const [k, v] of Object.entries(attrs ?? {})) node.setAttribute(k, v);
   for (const child of children) if (child) node.append(child);
   return node;
@@ -37,8 +42,11 @@ function svg(tag, attrs) {
   return node;
 }
 
+const ALLOWED_LINK = /^https:\/\/attack\.mitre\.org\/techniques\/T\d{4}(\/\d{3})?\/$/;
+
 /** Enlace externo propio de la app (documentación de MITRE), nunca uno del email. */
 function externalLink(href, text, className) {
+  if (!ALLOWED_LINK.test(href)) return el('span', { className, text });
   return el('a', { className, text, attrs: { href, target: '_blank', rel: 'noopener noreferrer' } });
 }
 
@@ -155,7 +163,7 @@ function safeViewPanel(report) {
   for (const part of highlight(text)) {
     box.append(part.kind
       ? el('mark', { className: `hl hl--${part.kind}`, text: part.text, attrs: { title: part.kind === 'url' ? 'Enlace (desactivado)' : 'Frase de ingeniería social' } })
-      : document.createTextNode(part.text));
+      : document.createTextNode(reveal(part.text)));
   }
   panel.append(box);
 

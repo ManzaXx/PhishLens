@@ -23,14 +23,17 @@ export function brandInText(text) {
 }
 
 // Letras latinas mezcladas con cirílicas o griegas dentro de la misma palabra.
-const MIXED_SCRIPT = /(?=[^\s]*\p{Script=Latin})(?=[^\s]*[\p{Script=Cyrillic}\p{Script=Greek}])[\p{L}\p{M}]{2,}/u;
+// Dos regex simples por palabra: una sola con lookaheads anidados era cuadrática con nombres enormes.
+const LATIN = /\p{Script=Latin}/u;
+const CYRILLIC_GREEK = /[\p{Script=Cyrillic}\p{Script=Greek}]/u;
+const isMixedScript = (word) => word.length <= 64 && LATIN.test(word) && CYRILLIC_GREEK.test(word);
 const INVISIBLE = /[\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF]/;
 
 function unicodeChecks(email) {
   const out = [];
   const fields = [['nombre del remitente', email.from?.name ?? ''], ['asunto', email.subject ?? '']];
   for (const [label, value] of fields) {
-    const word = value.split(/\s+/).find((w) => MIXED_SCRIPT.test(w));
+    const word = value.slice(0, 1000).split(/\s+/).find(isMixedScript);
     if (word) {
       out.push(finding({
         id: 'sender.mixed-script', detector: name, severity: 'high',

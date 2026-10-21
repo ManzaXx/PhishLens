@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.1.0 · 2026-10-21 · Seguridad
+
+Auditoría de seguridad completa. Detalles en [SECURITY.md](SECURITY.md).
+
+### Seguridad
+- **Trusted Types** y CSP más estricta (`default-src 'none'`, `frame-src`, `worker-src`, `object-src` y `form-action` a `'none'`).
+- Protección contra **clickjacking**: no se ejecuta dentro de un iframe.
+- **Contaminación de prototipos**: entidades HTML, resultados de autenticación y parámetros MIME ya no aceptan `__proto__` ni `constructor`.
+- **Límites contra DoS**: profundidad y número de partes MIME, enlaces, adjuntos, cabeceras `Received` y dominios parecidos.
+- **ReDoS** eliminado en `parseAddress` y en la detección de letras mezcladas.
+- Caracteres bidi e invisibles visibles en todo el informe (`⟦U+202E⟧`).
+- Los enlaces `javascript:` y `vbscript:` se detectan como código incrustado.
+- Solo se enlaza a MITRE ATT&CK con URLs validadas, y el tema guardado se valida.
+- GitHub Actions fijadas por SHA, `persist-credentials: false` y tiempo límite.
+
+### Cambiado
+- Las señales de enlaces repetidas se agrupan en una sola (`(12 enlaces)`).
+- 13 tests de seguridad nuevos (142 en total).
+
 ## 2.0.0 · 2026-10-21
 
 ### Añadido

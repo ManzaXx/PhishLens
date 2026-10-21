@@ -1,5 +1,9 @@
 // Parser de emails en formato .eml (RFC 5322 + MIME) sin dependencias ni DOM.
 import { extractUrls } from './url.js';
+import { own } from '../text.js';
+
+// Límites defensivos frente a emails construidos para agotar CPU o memoria.
+export const LIMITS = { depth: 20, parts: 500, links: 200, attachments: 100 };
 
 const KNOWN_HEADERS = new Set([
   'from', 'to', 'cc', 'subject', 'date', 'received', 'message-id', 'return-path',
@@ -77,7 +81,7 @@ export function decodeEntities(text) {
         return m;
       }
     }
-    return ENTITIES[e] ?? m;
+    return own(ENTITIES, e) ?? m;
   });
 }
 
@@ -217,7 +221,7 @@ function looksLikeHeaders(head) {
 /** Separa "text/html; charset=utf-8; name=x" en valor y parámetros. */
 function parseParams(value = '') {
   const [main, ...rest] = value.split(';');
-  const params = {};
+  const params = Object.create(null);
   for (const p of rest) {
     const m = /^\s*([^=\s*]+)(\*)?\s*=\s*(?:"([^"]*)"|(\S*))/.exec(p);
     if (!m) continue;
@@ -241,12 +245,14 @@ function parseParams(value = '') {
 export function parseAddress(value) {
   const v = String(value ?? '').trim();
   if (!v) return null;
-  const angle = /^(.*)<([^>]+)>\s*$/.exec(v);
+  // Búsqueda manual de "Nombre <dirección>": /^(.*)<([^>]+)>$/ es cuadrático con miles de "<".
   let name = '';
   let address = v;
-  if (angle) {
-    name = angle[1].trim().replace(/^"(.*)"$/, '$1').trim();
-    address = angle[2].trim();
+  const lt = v.lastIndexOf('<');
+  if (v.endsWith('>') && lt >= 0 && lt < v.length - 2) {
+    name = v.slice(0, lt).trim();
+    if (name.length >= 2 && name.startsWith('"') && name.endsWith('"')) name = name.slice(1, -1).trim();
+    address = v.slice(lt + 1, -1).trim();
   }
   address = address.toLowerCase();
   const at = address.lastIndexOf('@');
@@ -255,7 +261,8 @@ export function parseAddress(value) {
 
 // ---------- MIME ----------
 
-function walkPart(headers, body, acc) {
+function walkPart(headers, body, acc, depth = 0) {
+  if (depth > LIMITS.depth || acc.parts++ > LIMITS.parts) return;
   const type = parseParams(headers.get('content-type')?.[0] ?? 'text/plain');
   const disposition = parseParams(headers.get('content-disposition')?.[0] ?? '');
   const filename = disposition.params.filename || type.params.name || '';
@@ -267,13 +274,13 @@ function walkPart(headers, body, acc) {
       if (chunk.startsWith('--')) break;
       const part = chunk.replace(/^\r?\n/, '');
       const { head, body: partBody } = splitHeaderBody(part);
-      walkPart(parseHeaders(head), partBody.replace(/\r?\n$/, ''), acc);
+      walkPart(parseHeaders(head), partBody.replace(/\r?\n$/, ''), acc, depth + 1);
     }
     return;
   }
 
   if (filename || disposition.value === 'attachment') {
-    acc.attachments.push({ filename: filename || '(sin nombre)', contentType: type.value });
+    if (acc.attachments.length < LIMITS.attachments) acc.attachments.push({ filename: filename || '(sin nombre)', contentType: type.value });
     return;
   }
 
@@ -286,6 +293,7 @@ function extractLinks(html, text) {
   const links = [];
   const seen = new Set();
   const add = (link) => {
+    if (links.length >= LIMITS.links) return;
     const key = `${link.text}\u0000${link.href}`;
     if (seen.has(key)) return;
     seen.add(key);
@@ -319,7 +327,7 @@ export function parseEml(raw) {
   }
 
   const headers = parseHeaders(head);
-  const acc = { text: '', html: '', attachments: [] };
+  const acc = { text: '', html: '', attachments: [], parts: 0 };
   walkPart(headers, body, acc);
 
   email.headers = headers;

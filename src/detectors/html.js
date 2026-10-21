@@ -30,7 +30,7 @@ export function detect(email) {
     }
     if (tag === 'form' || (tag === 'input' && /type\s*=\s*["']?password/i.test(raw))) flags.form ??= raw;
     if (tag === 'script' || tag === 'iframe' || tag === 'object' || tag === 'embed' || EVENT_HANDLER.test(raw)) flags.script ??= raw;
-    if (/\s(?:href|src)\s*=\s*["']?\s*data:(?!image\/)/i.test(raw)) flags.dataUri ??= raw;
+    if (/\s(?:href|src|action)\s*=\s*["']?\s*(?:data:(?!image\/)|javascript:|vbscript:)/i.test(raw)) flags.dataUri ??= raw;
     if (tag === 'img') images++;
     const style = /\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(raw);
     if (style && HIDDEN_STYLE.test(style[1] ?? style[2])) {
@@ -62,8 +62,8 @@ export function detect(email) {
   if (flags.dataUri) {
     out.push(finding({
       id: 'html.data-uri', detector: name, severity: 'high',
-      title: 'Enlace con contenido incrustado (data:)',
-      detail: 'Un enlace data: abre una página creada dentro del propio email, sin dominio que se pueda comprobar.',
+      title: 'Enlace con código o contenido incrustado',
+      detail: 'Un enlace data: o javascript: ejecuta código o abre una página creada dentro del propio email, sin dominio que se pueda comprobar.',
       evidence: short(flags.dataUri),
     }));
   }

@@ -85,6 +85,7 @@ export function detect(email) {
   for (const domain of domains) {
     const hit = findLookalike(domain);
     if (!hit || seen.has(hit.domain)) continue;
+    if (seen.size >= 10) break;
     seen.add(hit.domain);
     const official = hit.brand.domains[0];
     out.push(hit.kind === 'typosquat'

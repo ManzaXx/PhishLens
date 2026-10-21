@@ -7,7 +7,7 @@
 **¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
 
 [![Tests](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml/badge.svg)](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml)
-![Tests](https://img.shields.io/badge/tests-129%20pasando-15803d)
+![Tests](https://img.shields.io/badge/tests-142%20pasando-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
@@ -104,8 +104,9 @@ proyectoCiber/
 │   ├── ioc.js               # Extracción y "defang" de indicadores
 │   ├── advice.js            # Recomendaciones según el veredicto
 │   └── ui/                  # Render del informe, resaltado y controlador de la página
+├── SECURITY.md              # Modelo de amenazas y mitigaciones
 ├── samples/                 # 7 emails .eml de ejemplo
-└── tests/                   # 129 tests con node:test
+└── tests/                   # 142 tests con node:test
 ```
 
 ### Decisiones técnicas
@@ -115,6 +116,7 @@ proyectoCiber/
 - **El email nunca se interpreta como HTML.** Se inserta con `textContent`, los enlaces del email no son clicables y el HTML se recorre con un escáner propio, sin crear nodos.
 - **Resistente a emails maliciosos.** El parser trabaja en tiempo lineal y los regex tienen cuantificadores acotados. Hay tests que comprueban que miles de etiquetas sin cerrar, paréntesis o puntos no bloquean la pestaña (ReDoS).
 - **Detectores aislados.** Si uno falla, el motor lo registra y sigue con el resto.
+- **Seguridad auditada.** Trusted Types, CSP sin `unsafe-inline`, límites contra DoS, protección contra contaminación de prototipos y clickjacking. Ver [SECURITY.md](SECURITY.md).
 - **Privacidad por diseño.** La CSP (`connect-src 'self'`, `script-src 'self'`, sin `unsafe-inline`) impide enviar datos fuera aunque hubiera un fallo.
 
 ## 🧪 Tests
@@ -124,7 +126,7 @@ cd proyectoCiber
 node --test
 ```
 
-GitHub Actions ejecuta los 129 tests en cada push (`.github/workflows/phishlens-tests.yml`). Cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, los 7 ejemplos de principio a fin y la resistencia a entradas maliciosas.
+GitHub Actions ejecuta los 142 tests en cada push (`.github/workflows/phishlens-tests.yml`). Cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, los 7 ejemplos de principio a fin y la resistencia a entradas maliciosas.
 
 ## 🌐 Publicar la demo
 

@@ -1,5 +1,6 @@
 // Detector de autenticación del remitente: SPF, DKIM y DMARC.
 import { finding } from './finding.js';
+import { own } from '../text.js';
 
 export const name = 'auth';
 
@@ -44,7 +45,7 @@ export function detect(email) {
     const m = new RegExp(`\\b${check.key}\\s*=\\s*([a-z]+)`, 'i').exec(header);
     if (!m) continue;
     const result = m[1].toLowerCase();
-    const severity = SEVERITY[result];
+    const severity = own(SEVERITY, result);
     if (!severity) continue;
     out.push(finding({
       id: `auth.${check.key}`,

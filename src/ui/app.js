@@ -4,6 +4,19 @@ import { SAMPLES } from '../../samples/index.js';
 import { renderReport, reportToJson, iocsToText } from './render.js';
 
 const MAX_BYTES = 5 * 1024 * 1024;
+
+// Anti-clickjacking: la CSP en <meta> no admite frame-ancestors, así que si otra web
+// incrusta PhishLens en un iframe se oculta la herramienta y se ofrece abrirla aparte.
+if (window.top !== window.self) {
+  document.body.replaceChildren();
+  const a = document.createElement('a');
+  a.href = window.location.href;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.textContent = 'Abre PhishLens en su propia pestaña';
+  document.body.append(a);
+  throw new Error('PhishLens no se ejecuta dentro de un iframe');
+}
 const $ = (sel) => document.querySelector(sel);
 
 const state = { tab: 'eml', fileText: null, lastReport: null };
@@ -26,7 +39,7 @@ function storage(fn) {
 }
 
 const savedTheme = storage((s) => s.getItem('phishlens-theme'));
-if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
 
 $('#theme-toggle').addEventListener('click', () => {
   const current = document.documentElement.dataset.theme
@@ -144,8 +157,15 @@ function run() {
     return;
   }
   showError('');
-  state.lastReport = analyzeInput(input);
-  renderReport(reportBox, state.lastReport);
+  try {
+    state.lastReport = analyzeInput(input);
+    renderReport(reportBox, state.lastReport);
+  } catch {
+    // Un email malformado nunca debe dejar la página rota.
+    reportBox.hidden = true;
+    showError('No se pudo analizar este contenido. Comprueba que es un email o una URL.');
+    return;
+  }
   reportBox.scrollIntoView({ block: 'start' });
 }
 
