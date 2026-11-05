@@ -1,0 +1,31 @@
+// Confianza del análisis (spec 2.2, §7.3): cuánto nos podemos fiar del informe, no cuánto
+// riesgo hay. Solo mira carencias de la entrada y del análisis, nunca la nota.
+
+const DEDUCTIONS = [
+  { amount: 0.4, reason: 'Sin cabeceras: solo se ha analizado el texto.', applies: (x) => !x.hasHeaders },
+  {
+    amount: 0.2,
+    reason: 'La autenticación no se puede confirmar: no hay resultados de confianza.',
+    applies: (x) => states(x).every((s) => WEAK_STATES.has(s)),
+  },
+  { amount: 0.1, reason: 'PhishLens no ha verificado nada por sí mismo.', applies: (x) => !states(x).includes('verified') },
+  { amount: 0.15, reason: 'El correo no se pudo leer entero (límites o MIME roto).', applies: (x) => (x.parseNotes?.length ?? 0) > 0 },
+  { amount: 0.15, reason: 'Algún detector falló.', applies: (x) => (x.errors?.length ?? 0) > 0 },
+  { amount: 0.1, reason: 'Solo una categoría aporta riesgo.', applies: (x) => (x.categories ?? []).filter((c) => c.score > 0).length === 1 },
+];
+
+const WEAK_STATES = new Set(['declared-untrusted', 'unverifiable', 'absent']);
+const states = (x) => ['spf', 'dkim', 'dmarc'].map((k) => x.auth?.[k]?.state ?? 'absent');
+
+/**
+ * @param {{hasHeaders: boolean, auth: object, parseNotes: Array, errors: Array, categories: Array}} input
+ * @returns {{level: 'high'|'medium'|'low', value: number, reasons: string[]}}
+ */
+export function confidenceFor(input) {
+  const hits = DEDUCTIONS.filter((d) => d.applies(input));
+  // Se trabaja en centésimas para que 1 − 0,15 − 0,10 dé 0,75 exacto.
+  const cents = Math.max(0, 100 - hits.reduce((sum, d) => sum + Math.round(d.amount * 100), 0));
+  const value = cents / 100;
+  const level = value >= 0.75 ? 'high' : value >= 0.45 ? 'medium' : 'low';
+  return { level, value, reasons: hits.map((d) => d.reason) };
+}
