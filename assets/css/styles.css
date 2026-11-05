@@ -17,6 +17,8 @@
   --suspicious-soft: #fef3c7;
   --phishing: #b91c1c;
   --phishing-soft: #fee2e2;
+  --critical: #9f1239;
+  --critical-soft: #ffe4e6;
   --info: #475569;
   --info-soft: #e2e8f0;
   --focus: #2563eb;
@@ -45,6 +47,8 @@
     --suspicious-soft: #2e2208;
     --phishing: #f87171;
     --phishing-soft: #331414;
+    --critical: #fb7185;
+    --critical-soft: #3a0d18;
     --info: #94a3b8;
     --info-soft: #1e2633;
     --focus: #60a5fa;
@@ -70,6 +74,8 @@
   --suspicious-soft: #2e2208;
   --phishing: #f87171;
   --phishing-soft: #331414;
+  --critical: #fb7185;
+  --critical-soft: #3a0d18;
   --info: #94a3b8;
   --info-soft: #1e2633;
   --focus: #60a5fa;
@@ -186,6 +192,7 @@ textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--ac
 .level-safe { --level: var(--safe); --level-soft: var(--safe-soft); }
 .level-suspicious { --level: var(--suspicious); --level-soft: var(--suspicious-soft); }
 .level-phishing { --level: var(--phishing); --level-soft: var(--phishing-soft); }
+.level-critical { --level: var(--critical); --level-soft: var(--critical-soft); }
 
 .verdict { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--level-soft); color: var(--level); font-weight: 800; font-size: .9rem; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
 .report__summary { font-size: 1.15rem; margin: 0 0 14px; }
@@ -250,7 +257,10 @@ textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--ac
 
 .side { position: sticky; top: 76px; }
 .breakdown { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.breakdown li { display: grid; grid-template-columns: minmax(0, 1fr) 70px 38px; gap: 10px; align-items: center; font-size: .88rem; }
+.breakdown li { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'label points' 'track track'; gap: 4px 10px; align-items: center; font-size: .88rem; }
+.breakdown__label { grid-area: label; }
+.breakdown__track { grid-area: track; }
+.breakdown__points { grid-area: points; white-space: nowrap; }
 .breakdown__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .breakdown__track { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
 .breakdown__bar { display: block; height: 100%; width: var(--w); border-radius: inherit; background: var(--level); }
@@ -362,3 +372,14 @@ textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--ac
 .route__tag { font-size: .75rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; }
 .route__tag--entry { color: var(--accent-strong); background: var(--accent-soft); }
 .route__tag--warn { color: var(--suspicious); background: var(--suspicious-soft); }
+
+/* PR 4: motivo principal, confianza y combinaciones */
+.report__reason { margin: 4px 0 6px; font-size: 1.02rem; }
+.confidence { margin: 10px 0 12px; font-size: .9rem; }
+.confidence__label { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); font-weight: 700; }
+.confidence details { display: inline-block; margin-left: 8px; vertical-align: top; }
+.confidence summary { cursor: pointer; color: var(--accent, inherit); text-decoration: underline; }
+.confidence summary:focus-visible { outline: 2px solid var(--level); outline-offset: 2px; border-radius: 4px; }
+.confidence__reasons { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
+.correlations, .trust-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: .92rem; }
+.correlations li::marker { color: var(--level); }

@@ -24,6 +24,9 @@ export const DETECTOR_LABELS = {
 };
 
 const SEVERITY_LABELS = { high: 'Grave', medium: 'Media', low: 'Leve', info: 'Info' };
+const RELIABILITY_LABELS = { high: 'fiabilidad alta', medium: 'fiabilidad media', low: 'fiabilidad baja' };
+const CONFIDENCE_LABELS = { high: 'alta', medium: 'media', low: 'baja' };
+const decimal = (n) => String(n).replace('.', ',');
 
 /**
  * Crea un elemento con clase, texto, atributos e hijos.
@@ -90,24 +93,37 @@ function gauge(score) {
   return root;
 }
 
-function breakdown(report) {
-  const totals = new Map();
-  for (const f of report.findings) {
-    if (!f.points) continue;
-    totals.set(f.detector, (totals.get(f.detector) ?? 0) + f.points);
-  }
-  if (totals.size === 0) return null;
-  const max = Math.max(...totals.values());
-  const list = el('ul', { className: 'breakdown', attrs: { 'aria-label': 'Puntos por categoría' } });
-  for (const [detector, points] of [...totals].sort((a, b) => b[1] - a[1])) {
+/** Riesgo por categoría: cada fila dice su número en texto; la barra solo acompaña. */
+function categoryList(report) {
+  const list = el('ul', { className: 'breakdown', attrs: { 'aria-label': 'Riesgo por categoría' } });
+  for (const c of report.categories ?? []) {
     const bar = el('span', { className: 'breakdown__bar' });
-    bar.style.setProperty('--w', `${Math.max(6, (points / max) * 100)}%`);
+    bar.style.setProperty('--w', `${(c.score / c.max) * 100}%`);
     list.append(el('li', {},
-      el('span', { className: 'breakdown__label', text: DETECTOR_LABELS[detector] ?? detector }),
-      el('span', { className: 'breakdown__track' }, bar),
-      el('span', { className: 'breakdown__points', text: `+${points}` })));
+      el('span', { className: 'breakdown__label', text: c.label }),
+      el('span', { className: 'breakdown__track', attrs: { 'aria-hidden': 'true' } }, bar),
+      el('span', { className: 'breakdown__points', text: `${decimal(c.score)} / ${c.max}` })));
   }
   return list;
+}
+
+/** Pastilla de confianza con sus motivos desplegables. */
+function confidenceBadge(confidence) {
+  if (!confidence) return null;
+  const box = el('div', { className: `confidence confidence--${confidence.level}` },
+    el('span', { className: 'confidence__label', text: `Confianza del análisis: ${CONFIDENCE_LABELS[confidence.level]}` }));
+  if (confidence.reasons.length) {
+    const list = el('ul', { className: 'confidence__reasons' });
+    for (const reason of confidence.reasons) list.append(el('li', { text: reason }));
+    box.append(el('details', {}, el('summary', { text: '¿Por qué?' }), list));
+  }
+  return box;
+}
+
+function listCard(title, className, items) {
+  const list = el('ul', { className });
+  for (const item of items) list.append(el('li', { text: item }));
+  return el('div', { className: 'card' }, el('h3', { text: title }), list);
 }
 
 function adviceBox(report) {
@@ -120,11 +136,17 @@ function adviceBox(report) {
 
 function findingCard(f) {
   const meta = el('div', { className: 'finding__meta' });
-  if (f.mitre && f.points) meta.append(externalLink(f.mitre.url, `ATT&CK ${f.mitre.id}`, 'mitre-tag'));
+  if (f.points && f.polarity !== 'trust') {
+    for (const t of f.techniques ?? []) {
+      const link = externalLink(t.url, `ATT&CK ${t.id}`, 'mitre-tag');
+      link.title = `${t.name} (${t.tactic}). ${t.why}`;
+      meta.append(link);
+    }
+  }
   return el('article', { className: `finding sev-${f.severity}` },
     el('div', { className: 'finding__top' },
       el('h4', { className: 'finding__title', text: f.title }),
-      el('span', { className: 'badge', text: f.points ? `${SEVERITY_LABELS[f.severity]} · +${f.points}` : SEVERITY_LABELS[f.severity] })),
+      el('span', { className: 'badge', text: f.points ? `${SEVERITY_LABELS[f.severity]} · ${RELIABILITY_LABELS[f.reliability]}` : SEVERITY_LABELS[f.severity] })),
     el('p', { className: 'finding__detail', text: f.detail }),
     f.evidence ? el('p', { className: 'finding__evidence', text: f.evidence }) : null,
     meta.childElementCount ? meta : null);
@@ -344,13 +366,14 @@ function mitrePanel(report) {
   }
   panel.append(el('p', { className: 'hint', text: 'Técnicas del marco MITRE ATT&CK que encajan con las señales encontradas.' }));
   const table = el('table', { className: 'mitre' });
-  table.append(el('thead', {}, el('tr', {}, el('th', { text: 'Técnica' }), el('th', { text: 'Nombre' }), el('th', { text: 'Señales' }))));
+  table.append(el('thead', {}, el('tr', {}, el('th', { text: 'Técnica' }), el('th', { text: 'Nombre' }), el('th', { text: 'Táctica' }), el('th', { text: 'Señales' }))));
   const body = el('tbody');
   for (const t of report.techniques) {
-    const count = report.findings.filter((f) => f.mitre?.id === t.id && f.points).length;
+    const count = report.findings.filter((f) => f.points && f.polarity !== 'trust' && f.techniques?.some((x) => x.id === t.id)).length;
     body.append(el('tr', {},
       el('td', {}, externalLink(t.url, t.id, 'mono')),
-      el('td', { text: t.name }),
+      el('td', { text: t.name, attrs: { title: t.why } }),
+      el('td', { text: t.tactic }),
       el('td', { text: String(count) })));
   }
   table.append(body);
@@ -405,12 +428,16 @@ export function renderReport(container, report, options = {}) {
     el('div', { className: 'report__verdict' },
       el('span', { className: 'verdict', text: report.label }),
       el('h2', { className: 'visually-hidden', text: 'Resultado del análisis' }),
+      report.mainReason ? el('p', { className: 'report__reason' }, el('strong', { text: report.mainReason })) : null,
       el('p', { className: 'report__summary', text: report.summary }),
+      confidenceBadge(report.confidence),
       actions));
 
   const side = el('aside', { className: 'side' });
-  const bars = breakdown(report);
-  if (bars) side.append(el('div', { className: 'card' }, el('h3', { text: 'Puntos por categoría' }), bars));
+  side.append(el('div', { className: 'card' }, el('h3', { text: 'Riesgo por categoría' }), categoryList(report)));
+  if (report.correlations?.length) side.append(listCard('Combinaciones peligrosas', 'correlations', report.correlations.map((c) => c.label)));
+  const trusted = report.findings.filter((f) => f.polarity === 'trust');
+  if (trusted.length) side.append(listCard('Señales a favor', 'trust-list', trusted.map((f) => f.title)));
   side.append(el('div', { className: 'card' }, adviceBox(report)));
 
   container.append(head, el('div', { className: 'report__body' }, reportTabs(report, options), side));
@@ -419,7 +446,7 @@ export function renderReport(container, report, options = {}) {
 
 /** Informe serializado para descargar. */
 export function reportToJson(report) {
-  return JSON.stringify({ tool: 'PhishLens', version: '2.0.0', generatedAt: new Date().toISOString(), ...report }, null, 2);
+  return JSON.stringify({ tool: 'PhishLens', version: '2.2.0-dev', generatedAt: new Date().toISOString(), ...report }, null, 2);
 }
 
 export { iocsToText };
