@@ -1,9 +1,9 @@
 // Parser de emails en formato .eml (RFC 5322 + MIME) sin dependencias ni DOM.
 import { extractUrls } from './url.js';
 import { extractAnchors } from './html.js';
+import { LIMITS } from '../lib/limits.js';
 
-// Límites defensivos frente a emails construidos para agotar CPU o memoria.
-export const LIMITS = { depth: 20, parts: 500, links: 200, attachments: 100 };
+export { LIMITS };
 
 const KNOWN_HEADERS = new Set([
   'from', 'to', 'cc', 'subject', 'date', 'received', 'message-id', 'return-path',
