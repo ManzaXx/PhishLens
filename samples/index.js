@@ -8,4 +8,7 @@ export const SAMPLES = [
   { id: '05-phishing-microsoft365', title: 'Falso Microsoft 365', file: '05-phishing-microsoft365.eml' },
   { id: '06-phishing-factura-adjunto', title: 'Factura con adjunto', file: '06-phishing-factura-adjunto.eml' },
   { id: '07-phishing-avanzado', title: 'Ataque avanzado', file: '07-phishing-avanzado.eml' },
+  { id: '08-ruta-falsificada', title: 'Ruta falsificada', file: '08-ruta-falsificada.eml' },
+  { id: '09-cabeceras-trampa', title: 'Cabeceras trampa', file: '09-cabeceras-trampa.eml' },
+  { id: '10-dominio-unicode', title: 'Dominios con otros alfabetos', file: '10-dominio-unicode.eml' },
 ];

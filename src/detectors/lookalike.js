@@ -9,7 +9,10 @@ import { sameShape, scriptsOf } from '../parser/skeleton.js';
 export const name = 'lookalike';
 
 // Palabras demasiado genéricas para buscarlas dentro de otros dominios.
-const GENERIC = new Set(['live', 'office', 'meta', 'mail']);
+const GENERIC = new Set(['live', 'office', 'meta', 'mail', 'db']);
+// Marcas que son palabras corrientes: solo cuentan como etiqueta exacta, nunca por parecido
+// (grange ≠ orange).
+const NO_FUZZY = new Set(['orange', 'ing', 'seur', 'gls', 'dgt', 'steam']);
 
 const BRAND_KEYS = BRANDS.flatMap((brand) => {
   const keys = new Set(brand.domains.map((d) => registrableDomain(d).split('.')[0]));
@@ -79,7 +82,7 @@ export function findLookalike(domain) {
     const normalized = normalizeHomoglyphs(token);
     for (const { brand, key } of BRAND_KEYS) {
       // "cloud" está dentro de "icloud": es una palabra corriente, no una imitación.
-      if (token === key || key.includes(token)) continue;
+      if (token === key || key.includes(token) || NO_FUZZY.has(key)) continue;
       if (normalized === key || (Math.abs(token.length - key.length) <= 2 && levenshtein(token, key) <= maxDistance(key) && levenshtein(token, key) > 0)) {
         return { brand, domain: reg, kind: 'typosquat', token };
       }

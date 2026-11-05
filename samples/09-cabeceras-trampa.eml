@@ -1,0 +1,16 @@
+From: "DocuSign <dse@docusign.net>" <firmas@documentos-pendientes.test>
+From: DocuSign <dse@docusign.net>
+Sender: envios@mailer-barato.test
+To: pablo@example.com
+Subject: Documento pendiente de firma
+Subject: Contrato actualizado
+Date: Thu, 22 Oct 2026 10:15:00 +0200
+Message-ID: <cab-09@documentos-pendientes.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Tienes un documento pendiente de firma: "Contrato_2026.pdf".
+
+Revisa y firma el documento aquí: https://documentos-pendientes.test/firmar
+
+El enlace caduca hoy.

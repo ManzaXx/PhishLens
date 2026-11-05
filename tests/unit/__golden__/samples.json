@@ -1217,5 +1217,524 @@
       ],
       "attachments": []
     }
+  },
+  "08-ruta-falsificada": {
+    "score": 100,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "6 señales graves o medias, entre ellas «Se hace pasar por PayPal» y «El servidor de origen dice ser de PayPal y no lo es». No pulses enlaces ni abras adjuntos.",
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1656",
+        "name": "Impersonation",
+        "url": "https://attack.mitre.org/techniques/T1656/"
+      },
+      {
+        "id": "T1672",
+        "name": "Email Spoofing",
+        "url": "https://attack.mitre.org/techniques/T1672/"
+      },
+      {
+        "id": "T1583.001",
+        "name": "Acquire Infrastructure: Domains",
+        "url": "https://attack.mitre.org/techniques/T1583/001/"
+      },
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      }
+    ],
+    "findings": [
+      {
+        "id": "sender.brand-impersonation",
+        "detector": "sender",
+        "severity": "high",
+        "points": 30,
+        "title": "Se hace pasar por PayPal",
+        "detail": "Dice ser PayPal pero paypal-avisos.test no es un dominio oficial de PayPal (paypal.com).",
+        "evidence": "\"PayPal\" <servicio@paypal-avisos.test>",
+        "mitre": {
+          "id": "T1656",
+          "name": "Impersonation",
+          "url": "https://attack.mitre.org/techniques/T1656/"
+        }
+      },
+      {
+        "id": "route.helo-mismatch",
+        "detector": "route",
+        "severity": "high",
+        "points": 30,
+        "title": "El servidor de origen dice ser de PayPal y no lo es",
+        "detail": "Al conectar se presentó como mail.paypal.com, pero el servidor receptor vio una máquina sin nombre inverso (10.12.0.7). El nombre de saludo lo elige el remitente.",
+        "evidence": "from mail.paypal.com (unknown [10.12.0.7]) by mx.example.com; Fri, 23 Oct 2026 09:00:12 +0200",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "route.private-ip-boundary",
+        "detector": "route",
+        "severity": "medium",
+        "points": 15,
+        "title": "El correo entró desde una IP privada",
+        "detail": "El servidor que entregó el correo al receptor tiene una dirección privada o reservada, que no puede venir de Internet. Suele indicar un Received inventado.",
+        "evidence": "mail.paypal.com → mx.example.com [10.12.0.7]",
+        "mitre": null
+      },
+      {
+        "id": "route.time-travel",
+        "detector": "route",
+        "severity": "medium",
+        "points": 15,
+        "title": "Un salto de la ruta tiene una hora anterior al previo",
+        "detail": "Cada servidor añade su Received después del anterior. Una hora que retrocede más de 5 minutos suele indicar cabeceras inventadas o copiadas de otro correo.",
+        "evidence": "[192.168.5.20] → relay.envios-urgentes.test (Wed, 21 Oct 2026 08:30:41 +0200) → relay.envios-urgentes.test → mail.paypal.com (Wed, 21 Oct 2026 08:00:03 +0200)",
+        "mitre": null
+      },
+      {
+        "id": "lookalike.brand-in-domain",
+        "detector": "lookalike",
+        "severity": "medium",
+        "points": 15,
+        "title": "Usa el nombre de PayPal en un dominio ajeno",
+        "detail": "paypal-avisos.test contiene \"paypal\" pero no pertenece a PayPal (paypal.com).",
+        "evidence": "paypal-avisos.test",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
+        "id": "language.threat",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Amenaza con consecuencias",
+        "detail": "Amenazar con bloquear, suspender o multar es una forma de que actúes sin pensar.",
+        "evidence": "…ar Si no lo haces, la cuenta quedará suspendida. Equipo de PayPal",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "auth.missing",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin resultados de autenticación",
+        "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
+        "evidence": "Falta la cabecera Authentication-Results",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "route.slow-delivery",
+        "detector": "route",
+        "severity": "low",
+        "points": 5,
+        "title": "El correo tardó más de un día en llegar",
+        "detail": "Un retraso tan largo puede deberse a colas de envío masivo o a cabeceras con fechas falsas.",
+        "evidence": "48 h entre el primer y el último salto",
+        "mitre": null
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "PayPal",
+        "address": "servicio@paypal-avisos.test",
+        "domain": "paypal-avisos.test"
+      },
+      "replyTo": null,
+      "returnPath": null,
+      "subject": "Tu cuenta ha sido limitada",
+      "links": [
+        {
+          "text": "https://paypal-avisos.test/verificar",
+          "href": "https://paypal-avisos.test/verificar"
+        }
+      ],
+      "authResults": null,
+      "date": "Wed, 21 Oct 2026 08:30:00 +0200",
+      "route": [
+        {
+          "from": "[192.168.5.20]",
+          "helo": "[192.168.5.20]",
+          "by": "relay.envios-urgentes.test",
+          "rdns": "",
+          "ip": "192.168.5.20",
+          "date": "Wed, 21 Oct 2026 08:30:41 +0200",
+          "time": 1792564241000
+        },
+        {
+          "from": "relay.envios-urgentes.test",
+          "helo": "relay.envios-urgentes.test",
+          "by": "mail.paypal.com",
+          "rdns": "relay.envios-urgentes.test",
+          "ip": "198.51.100.40",
+          "date": "Wed, 21 Oct 2026 08:00:03 +0200",
+          "time": 1792562403000
+        },
+        {
+          "from": "mail.paypal.com",
+          "helo": "mail.paypal.com",
+          "by": "mx.example.com",
+          "rdns": "unknown",
+          "ip": "10.12.0.7",
+          "date": "Fri, 23 Oct 2026 09:00:12 +0200",
+          "time": 1792738812000,
+          "entry": true
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://paypal-avisos.test/verificar"
+      ],
+      "domains": [
+        "paypal-avisos.test"
+      ],
+      "ips": [
+        "198.51.100.40"
+      ],
+      "emails": [
+        "servicio@paypal-avisos.test"
+      ],
+      "attachments": []
+    }
+  },
+  "09-cabeceras-trampa": {
+    "score": 100,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "4 señales graves o medias, entre ellas «El nombre visible muestra otra dirección» y «Se hace pasar por DocuSign». No pulses enlaces ni abras adjuntos.",
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1656",
+        "name": "Impersonation",
+        "url": "https://attack.mitre.org/techniques/T1656/"
+      },
+      {
+        "id": "T1566",
+        "name": "Phishing",
+        "url": "https://attack.mitre.org/techniques/T1566/"
+      },
+      {
+        "id": "T1672",
+        "name": "Email Spoofing",
+        "url": "https://attack.mitre.org/techniques/T1672/"
+      }
+    ],
+    "findings": [
+      {
+        "id": "sender.display-name-address",
+        "detector": "sender",
+        "severity": "high",
+        "points": 30,
+        "title": "El nombre visible muestra otra dirección",
+        "detail": "El nombre del remitente es \"dse@docusign.net\", pero el correo viene en realidad de firmas@documentos-pendientes.test. Muchos móviles solo enseñan el nombre.",
+        "evidence": "\"DocuSign <dse@docusign.net>\" <firmas@documentos-pendientes.test>",
+        "mitre": {
+          "id": "T1656",
+          "name": "Impersonation",
+          "url": "https://attack.mitre.org/techniques/T1656/"
+        }
+      },
+      {
+        "id": "sender.brand-impersonation",
+        "detector": "sender",
+        "severity": "high",
+        "points": 30,
+        "title": "Se hace pasar por DocuSign",
+        "detail": "Dice ser DocuSign pero documentos-pendientes.test no es un dominio oficial de DocuSign (docusign.com).",
+        "evidence": "\"DocuSign <dse@docusign.net>\" <firmas@documentos-pendientes.test>",
+        "mitre": {
+          "id": "T1656",
+          "name": "Impersonation",
+          "url": "https://attack.mitre.org/techniques/T1656/"
+        }
+      },
+      {
+        "id": "headers.duplicate-from",
+        "detector": "headers",
+        "severity": "high",
+        "points": 30,
+        "title": "El correo tiene varios remitentes (From)",
+        "detail": "Cada programa de correo puede enseñar un From distinto: tú ves uno y el filtro antispam comprobó otro. Es una técnica para burlar la autenticación.",
+        "evidence": "\"DocuSign <dse@docusign.net>\" <firmas@documentos-pendientes.test> · DocuSign <dse@docusign.net>",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      },
+      {
+        "id": "headers.duplicate",
+        "detector": "headers",
+        "severity": "medium",
+        "points": 15,
+        "title": "Cabeceras que deberían ser únicas aparecen repetidas",
+        "detail": "Un correo bien formado solo lleva una de cada. Repetirlas sirve para que el cliente de correo y los filtros lean cosas distintas.",
+        "evidence": "Subject ×2",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      },
+      {
+        "id": "auth.missing",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin resultados de autenticación",
+        "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
+        "evidence": "Falta la cabecera Authentication-Results",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "sender.sender-mismatch",
+        "detector": "sender",
+        "severity": "low",
+        "points": 5,
+        "title": "Enviado en nombre de otro dominio (Sender)",
+        "detail": "La cabecera Sender dice que lo envió mailer-barato.test en nombre de documentos-pendientes.test, y mailer-barato.test no lo ha firmado con DKIM. Es habitual en plataformas de envío, pero también en suplantaciones.",
+        "evidence": "From: firmas@documentos-pendientes.test · Sender: envios@mailer-barato.test",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "DocuSign <dse@docusign.net>",
+        "address": "firmas@documentos-pendientes.test",
+        "domain": "documentos-pendientes.test"
+      },
+      "replyTo": null,
+      "returnPath": null,
+      "subject": "Documento pendiente de firma",
+      "links": [
+        {
+          "text": "https://documentos-pendientes.test/firmar",
+          "href": "https://documentos-pendientes.test/firmar"
+        }
+      ],
+      "authResults": null,
+      "date": "Thu, 22 Oct 2026 10:15:00 +0200",
+      "route": [],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://documentos-pendientes.test/firmar"
+      ],
+      "domains": [
+        "documentos-pendientes.test"
+      ],
+      "ips": [],
+      "emails": [
+        "firmas@documentos-pendientes.test"
+      ],
+      "attachments": []
+    }
+  },
+  "10-dominio-unicode": {
+    "score": 100,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "6 señales graves o medias, entre ellas «Dominio con caracteres internacionales (punycode) (2 enlaces)» y «Dominio con letras de varios alfabetos». No pulses enlaces ni abras adjuntos.",
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1566.002",
+        "name": "Phishing: Spearphishing Link",
+        "url": "https://attack.mitre.org/techniques/T1566/002/"
+      },
+      {
+        "id": "T1583.001",
+        "name": "Acquire Infrastructure: Domains",
+        "url": "https://attack.mitre.org/techniques/T1583/001/"
+      },
+      {
+        "id": "T1598",
+        "name": "Phishing for Information",
+        "url": "https://attack.mitre.org/techniques/T1598/"
+      },
+      {
+        "id": "T1672",
+        "name": "Email Spoofing",
+        "url": "https://attack.mitre.org/techniques/T1672/"
+      }
+    ],
+    "findings": [
+      {
+        "id": "links.punycode",
+        "detector": "links",
+        "severity": "high",
+        "points": 30,
+        "title": "Dominio con caracteres internacionales (punycode) (2 enlaces)",
+        "detail": "xn--pypal-4ve.com es en realidad pаypal.com: usa letras de otros alfabetos que parecen latinas.",
+        "evidence": "https://xn--pypal-4ve.com/login",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "lookalike.mixed-script-domain",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Dominio con letras de varios alfabetos",
+        "detail": "La parte «pаypal» mezcla letras latinas con otras cirílicas, griegas o armenias que se ven iguales. Ningún dominio legítimo necesita mezclarlas.",
+        "evidence": "pаypal.com (xn--pypal-4ve.com)",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
+        "id": "lookalike.whole-script",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Dominio en otro alfabeto que imita a Apple",
+        "detail": "«аррӏе» está escrito entero con letras de otro alfabeto, pero se lee como apple.com.",
+        "evidence": "аррӏе.com (xn--80ak6aa92e.com)",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
+        "id": "lookalike.deceptive-subdomain",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Subdominio que finge ser PayPal",
+        "detail": "La dirección empieza por paypal.com, pero el dominio real es cuenta-segura.test. Lo que cuenta es lo que hay justo antes del final, no al principio.",
+        "evidence": "paypal.com.cuenta-segura.test",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
+        "id": "lookalike.brand-in-domain",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Usa el nombre de Bizum en un dominio ajeno",
+        "detail": "bizum-pagos.test junta \"bizum\" con \"pagos\" para parecer una página oficial de acceso, pero no pertenece a Bizum (bizum.com).",
+        "evidence": "bizum-pagos.test (marca + \"pagos\")",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
+        "id": "language.credentials",
+        "detector": "language",
+        "severity": "high",
+        "points": 30,
+        "title": "Pide credenciales o datos bancarios",
+        "detail": "Ninguna empresa legítima te pide la contraseña, el PIN o la tarjeta por email.",
+        "evidence": "…m-pagos.test/confirmar Si no confirmas tus datos hoy, bloquearemos tu cuenta.",
+        "mitre": {
+          "id": "T1598",
+          "name": "Phishing for Information",
+          "url": "https://attack.mitre.org/techniques/T1598/"
+        }
+      },
+      {
+        "id": "auth.missing",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin resultados de autenticación",
+        "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
+        "evidence": "Falta la cabecera Authentication-Results",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Alertas de seguridad",
+        "address": "notificaciones@alertas-cliente.test",
+        "domain": "alertas-cliente.test"
+      },
+      "replyTo": null,
+      "returnPath": null,
+      "subject": "Confirma tu identidad",
+      "links": [
+        {
+          "text": "https://xn--pypal-4ve.com/login",
+          "href": "https://xn--pypal-4ve.com/login"
+        },
+        {
+          "text": "https://xn--80ak6aa92e.com/id",
+          "href": "https://xn--80ak6aa92e.com/id"
+        },
+        {
+          "text": "https://paypal.com.cuenta-segura.test/acceso",
+          "href": "https://paypal.com.cuenta-segura.test/acceso"
+        },
+        {
+          "text": "https://bizum-pagos.test/confirmar",
+          "href": "https://bizum-pagos.test/confirmar"
+        }
+      ],
+      "authResults": null,
+      "date": "Fri, 23 Oct 2026 11:00:00 +0200",
+      "route": [],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://xn--pypal-4ve.com/login",
+        "https://xn--80ak6aa92e.com/id",
+        "https://paypal.com.cuenta-segura.test/acceso",
+        "https://bizum-pagos.test/confirmar"
+      ],
+      "domains": [
+        "alertas-cliente.test",
+        "xn--pypal-4ve.com",
+        "xn--80ak6aa92e.com",
+        "paypal.com.cuenta-segura.test",
+        "bizum-pagos.test"
+      ],
+      "ips": [],
+      "emails": [
+        "notificaciones@alertas-cliente.test"
+      ],
+      "attachments": []
+    }
   }
 }

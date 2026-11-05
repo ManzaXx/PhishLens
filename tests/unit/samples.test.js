@@ -12,9 +12,12 @@ const expected = {
   '05-phishing-microsoft365': 'phishing',
   '06-phishing-factura-adjunto': 'phishing',
   '07-phishing-avanzado': 'phishing',
+  '08-ruta-falsificada': 'phishing',
+  '09-cabeceras-trampa': 'phishing',
+  '10-dominio-unicode': 'phishing',
 };
 
-test('hay 7 ejemplos', () => assert.equal(SAMPLES.length, 7));
+test('hay 10 ejemplos', () => assert.equal(SAMPLES.length, 10));
 
 for (const sample of SAMPLES) {
   test(`${sample.id} → ${expected[sample.id]}`, () => {
@@ -24,3 +27,25 @@ for (const sample of SAMPLES) {
     assert.deepEqual(report.errors, []);
   });
 }
+
+// Cada regla nueva del PR3 aparece en alguna muestra temática.
+const RULES = {
+  '08-ruta-falsificada': ['route.private-ip-boundary', 'route.helo-mismatch', 'route.time-travel', 'route.slow-delivery'],
+  '09-cabeceras-trampa': ['headers.duplicate-from', 'headers.duplicate', 'sender.display-name-address', 'sender.sender-mismatch'],
+  '10-dominio-unicode': ['lookalike.mixed-script-domain', 'lookalike.whole-script', 'lookalike.deceptive-subdomain', 'lookalike.brand-in-domain'],
+};
+
+for (const [id, rules] of Object.entries(RULES)) {
+  test(`${id} contiene sus reglas`, () => {
+    const raw = readFileSync(new URL(`../../samples/${id}.eml`, import.meta.url), 'utf8');
+    const found = analyzeInput({ kind: 'eml', value: raw }).findings.map((f) => f.id);
+    for (const rule of rules) assert.ok(found.includes(rule), `${rule} no aparece: ${found.join(', ')}`);
+  });
+}
+
+test('las muestras legítimas no tienen ningún punto', () => {
+  for (const id of ['01-legitimo-newsletter', '02-legitimo-pedido']) {
+    const raw = readFileSync(new URL(`../../samples/${id}.eml`, import.meta.url), 'utf8');
+    assert.equal(analyzeInput({ kind: 'eml', value: raw }).score, 0, id);
+  }
+});

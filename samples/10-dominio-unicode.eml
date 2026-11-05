@@ -1,0 +1,16 @@
+From: Alertas de seguridad <notificaciones@alertas-cliente.test>
+To: pablo@example.com
+Subject: Confirma tu identidad
+Date: Fri, 23 Oct 2026 11:00:00 +0200
+Message-ID: <uni-10@alertas-cliente.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hemos detectado un acceso no autorizado. Confirma tu identidad en cualquiera de estos enlaces:
+
+https://xn--pypal-4ve.com/login
+https://xn--80ak6aa92e.com/id
+https://paypal.com.cuenta-segura.test/acceso
+https://bizum-pagos.test/confirmar
+
+Si no confirmas tus datos hoy, bloquearemos tu cuenta.

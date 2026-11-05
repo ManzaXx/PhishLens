@@ -105,3 +105,22 @@ test('combosquatting: marca más palabra de acceso es grave; sin ella, media', (
 test('los dominios oficiales y sus subdominios no dan nada', () => {
   assert.deepEqual(lookIds('paypal.com', 'www.paypal.com', 'login.paypal.com'), []);
 });
+
+// ---- PR3: marcas españolas ----
+import { BRANDS } from '../../src/data/brands.js';
+
+test('las marcas nuevas tienen fecha de comprobación y sus dominios oficiales no dan nada', () => {
+  const nuevas = ['ING', 'Banco Sabadell', 'Bankinter', 'Unicaja', 'Openbank', 'Abanca', 'Bizum', 'DGT', 'Seguridad Social', 'SEUR', 'GLS', 'Movistar', 'Vodafone', 'Orange', 'Endesa', 'Iberdrola', 'DocuSign', 'Dropbox', 'WeTransfer', 'Binance', 'Coinbase', 'Steam'];
+  for (const name of nuevas) {
+    const brand = BRANDS.find((b) => b.name === name);
+    assert.ok(brand, name);
+    assert.match(brand.checked, /^\d{4}-\d{2}-\d{2}$/, name);
+    for (const d of brand.domains) assert.deepEqual(lookIds(d, `www.${d}`), [], d);
+  }
+});
+
+test('marcas genéricas solo como etiqueta completa: sin falsos positivos por parecido', () => {
+  assert.deepEqual(lookIds('grange.test', 'bring.com', 'steamboat.test', 'kingston.test'), []);
+  assert.deepEqual(lookIds('orange-factura.test'), ['lookalike.brand-in-domain:medium']);
+  assert.deepEqual(lookIds('ing-acceso.test'), ['lookalike.brand-in-domain:high']);
+});
