@@ -42,7 +42,8 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 
 | Riesgo | Mitigación | Prueba |
 | --- | --- | --- |
-| Fuga por `fetch`, píxel, CSS o precarga | `default-src 'none'`, `connect-src 'none'`, `img-src 'self' data:`, `x-dns-prefetch-control: off`, `no-referrer`; las muestras van dentro de `samples/data.js` | `tests/e2e/privacy.e2e.js` en Chromium real, con control negativo que sí filtra |
+| Fuga por `fetch`, píxel o CSS | `default-src 'none'`, `connect-src 'none'`, `img-src 'self' data:`, `no-referrer`; las muestras van dentro de `samples/data.js` | `tests/e2e/privacy.e2e.js` en Chromium real, con control negativo que sí filtra |
+| Precarga DNS (`<link rel=dns-prefetch>`, dominios de `<img>`) | El HTML del correo nunca llega al DOM: el render solo crea nodos de texto, así que no hay elemento que dispare la consulta. `x-dns-prefetch-control: off` como segunda barrera | `tests/unit/security.test.js` (sin `innerHTML` y el meta presente). El e2e no ve consultas DNS: Playwright solo intercepta peticiones HTTP |
 | Un fallo futuro que inserte HTML | Trusted Types (`require-trusted-types-for 'script'; trusted-types 'none'`) | `tests/unit/security.test.js` |
 | Worker sin CSP | `worker-src 'none'`, ver [ADR 0003](adr/0003-sin-web-worker.md) | `tests/unit/security.test.js` |
 

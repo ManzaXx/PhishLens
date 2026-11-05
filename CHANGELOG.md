@@ -23,7 +23,7 @@ Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/20
 - **MITRE ATT&CK 20.1** fijado y comprobado contra el bundle STIX oficial (`tools/check-mitre.mjs`): varias técnicas por señal, con su táctica y el motivo.
 - [ADR 0002](docs/adr/0002-autenticacion-offline.md) y primera versión de [limitaciones](docs/limitations.md).
 - Documentación de [arquitectura](docs/architecture.md) y primer ADR.
-- **Límites de 2.2**: entrada de 25 MB, 1.000 cabeceras y 64 KB por cabecera, sin lanzar nunca; los adjuntos enormes no se decodifican enteros.
+- **Límites de 2.2**: entrada de 25 MB, 1.000 cabeceras y 64 KB por cabecera, sin lanzar nunca; los adjuntos enormes no se decodifican enteros. Pasado el límite de cabeceras se siguen leyendo las que cambian el veredicto (From, Content-Type, Authentication-Results…), y si no se ha podido leer todo el correo la confianza baja a «baja».
 - **Detector `mime`**: cabecera sin `:`, `Content-Type` repetido, boundary reutilizado o dentro del contenido, `message/rfc822` anidado y charset contradictorio, con tests diferenciales que documentan qué decide PhishLens en cada caso ambiguo.
 - **Fuzzing con semilla** (2.000 casos en CI, `npm run fuzz` para 20.000), test de rendimiento hasta 25 MB y [benchmark](docs/benchmark.md).
 - **Privacidad en un Chromium real** (`npm run test:e2e`): las 10 muestras y un correo lleno de contenido remoto, por todas las pestañas y en los dos temas, sin una sola petición fuera del origen; con control negativo.

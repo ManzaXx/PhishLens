@@ -10,6 +10,26 @@ export function loadPlaywright() {
 }
 
 /**
+ * Arranca Chromium. Si no hay ejecutable, fuera de CI los tests se saltan con el motivo;
+ * en CI (variable CI) es un fallo, para que un runner mal preparado no pase en verde sin probar nada.
+ * @returns {Promise<{browser?: object, skip?: string}>}
+ */
+export async function launchOrSkip(playwright, env = process.env) {
+  try {
+    return { browser: await playwright.chromium.launch() };
+  } catch (e) {
+    if (env.CI) throw e;
+    return { skip: `Chromium no arranca (${String(e.message).split('\n')[0]}); instala con npx playwright install chromium` };
+  }
+}
+
+/** Playwright y Chromium listos, o el motivo para saltar los tests. */
+export async function openBrowser() {
+  const loaded = loadPlaywright();
+  return loaded.skip ? { skip: loaded.skip } : launchOrSkip(loaded.playwright);
+}
+
+/**
  * Abre una página que registra toda petición fuera de `origin` y toda violación de CSP.
  * Las peticiones externas se abortan: el test las ve, pero nunca salen de la máquina.
  */

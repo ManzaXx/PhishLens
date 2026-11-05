@@ -3,18 +3,16 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { serve } from './server.js';
-import { loadPlaywright, watchedPage } from './browser.js';
+import { openBrowser, watchedPage } from './browser.js';
 import { SAMPLES } from '../../samples/index.js';
 
-const { playwright, skip } = loadPlaywright();
+const { browser, skip } = await openBrowser();
 const REMOTE = readFileSync(new URL('../fixtures/privacy/remote-content.eml', import.meta.url), 'utf8');
 let server;
-let browser;
 
 before(async () => {
   if (skip) return;
   server = await serve();
-  browser = await playwright.chromium.launch();
 });
 after(async () => {
   await browser?.close();

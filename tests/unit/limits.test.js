@@ -44,3 +44,32 @@ test('un adjunto base64 de 12 MB se decodifica solo hasta el límite', () => {
   assert.equal(a.truncated, true);
   assert.ok(ms < 1500, `${Math.round(ms)} ms`);
 });
+
+// ---------- Revisión final del PR5 ----------
+import { analyzeInput } from '../../src/core/engine.js';
+import { confidenceFor } from '../../src/core/confidence.js';
+
+test('un adjunto base64 con 200 KB de «=» se analiza en tiempo lineal', () => {
+  const raw = `From: a@b.test\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: application/pdf\r\nContent-Disposition: attachment; filename="x.pdf"\r\nContent-Transfer-Encoding: base64\r\n\r\n${'='.repeat(200 * 1024)}A\r\n--b--\r\n`;
+  const start = performance.now();
+  parseEml(raw);
+  const ms = performance.now() - start;
+  assert.ok(ms < 500, `${Math.round(ms)} ms`);
+});
+
+test('1.000 cabeceras de relleno no esconden Content-Type ni From', () => {
+  const filler = Array.from({ length: 1000 }, () => 'X-A: 1').join('\r\n');
+  const raw = `${filler}\r\nFrom: PayPal <service@paypa1-seguridad.test>\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: text/plain\r\n\r\nPaga la factura\r\n--b\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename="factura.pdf.exe"\r\n\r\nMZ\r\n--b--\r\n`;
+  const report = analyzeInput({ kind: 'eml', value: raw });
+  const found = report.findings.map((f) => f.id);
+  assert.ok(found.includes('attachments.double-extension'), found.join(', '));
+  assert.equal(report.email.from.address, 'service@paypa1-seguridad.test');
+  assert.equal(report.confidence.level, 'low');
+});
+
+test('si no se ha leído todo el correo la confianza es baja', () => {
+  for (const code of ['limit.headers', 'limit.input-bytes']) {
+    const c = confidenceFor({ hasHeaders: true, auth: { spf: { state: 'verified' }, dkim: { state: 'verified' }, dmarc: { state: 'verified' } }, parseNotes: [{ code }], errors: [], categories: [] });
+    assert.equal(c.level, 'low', code);
+  }
+});

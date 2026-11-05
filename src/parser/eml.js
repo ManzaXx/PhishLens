@@ -103,6 +103,13 @@ function splitHeaderBody(raw) {
  * Parsea las cabeceras. Si se pasa `list`, añade cada cabecera en orden con su texto
  * crudo (plegado y saltos de línea intactos): DKIM y la detección de duplicados lo necesitan.
  */
+const KEY_HEADERS = new Set([
+  'from', 'sender', 'reply-to', 'return-path', 'to', 'subject', 'date', 'message-id', 'mime-version',
+  'content-type', 'content-transfer-encoding', 'content-disposition',
+  'authentication-results', 'arc-authentication-results', 'dkim-signature', 'received',
+]);
+const KEY_HEADERS_MAX = 200;
+
 function parseHeaders(head, list = null, acc = null) {
   const headers = new Map();
   const tokens = head.split(/(\r?\n)/);
@@ -122,12 +129,17 @@ function parseHeaders(head, list = null, acc = null) {
       } else if (acc) note(acc, 'limit.header-bytes', `Alguna cabecera supera ${LIMITS.headerBytes} caracteres; se ha recortado.`);
       continue;
     }
-    if (ordered.length >= LIMITS.headers) {
-      if (acc) note(acc, 'limit.headers', `Más de ${LIMITS.headers} cabeceras; el resto no se ha analizado.`);
-      break;
-    }
     // Se mira solo el principio de la línea: el nombre nunca es largo y el valor se recorta.
     const m = /^([!-9;-~]{1,200}):[ \t]?/.exec(line);
+    // Pasado el límite se siguen leyendo solo las cabeceras que cambian el veredicto, para que
+    // cientos de cabeceras de relleno no escondan el Content-Type o el From.
+    if (ordered.length >= LIMITS.headers) {
+      if (acc) note(acc, 'limit.headers', `Más de ${LIMITS.headers} cabeceras; del resto solo se han leído las importantes.`);
+      if (!m || !KEY_HEADERS.has(m[1].toLowerCase()) || ordered.length >= LIMITS.headers + KEY_HEADERS_MAX) {
+        current = null;
+        continue;
+      }
+    }
     if (!m) {
       if (acc && line.trim()) note(acc, 'mime.header-without-colon', 'Hay una línea en las cabeceras sin «:». PhishLens la ignora y sigue leyendo; otros programas darían las cabeceras por terminadas ahí.');
       current = null;
@@ -213,7 +225,8 @@ function attachmentBytes(body, encoding) {
   if (enc === 'base64') {
     // Solo se decodifica lo que cabe en el límite; el tamaño real se calcula sin decodificar.
     const compact = String(body).replace(/\s/g, '');
-    const padding = (/=*$/.exec(compact)?.[0].length ?? 0);
+    // Sin regex: /=*$/ retrocede en tiempo cuadrático ante una racha larga de «=».
+    const padding = compact.endsWith('==') ? 2 : compact.endsWith('=') ? 1 : 0;
     const size = Math.max(0, Math.floor((compact.length * 3) / 4) - Math.min(2, padding));
     const needed = Math.ceil((LIMITS.attachmentBytes + 1) / 3) * 4;
     if (size > LIMITS.attachmentBytes && compact.length > needed) {

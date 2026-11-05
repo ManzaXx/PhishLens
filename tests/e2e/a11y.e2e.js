@@ -4,20 +4,20 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { serve } from './server.js';
-import { loadPlaywright } from './browser.js';
+import { openBrowser } from './browser.js';
 import { SAMPLES } from '../../samples/index.js';
 
 const AXE = process.env.AXE_PATH ?? fileURLToPath(new URL('../../node_modules/axe-core/axe.min.js', import.meta.url));
-const loaded = loadPlaywright();
-const skip = loaded.skip ?? (existsSync(AXE) ? false : `axe-core no está en ${AXE} (npm ci o AXE_PATH)`);
+const noAxe = existsSync(AXE) ? false : `axe-core no está en ${AXE} (npm ci o AXE_PATH)`;
+if (noAxe && process.env.CI) throw new Error(noAxe);
+const { browser, skip: noBrowser } = noAxe ? {} : await openBrowser();
+const skip = noAxe || noBrowser || false;
 const REPORTS = ['01-legitimo-newsletter', '03-phishing-banco', '06-phishing-factura-adjunto'];
 let server;
-let browser;
 
 before(async () => {
   if (skip) return;
   server = await serve();
-  browser = await loaded.playwright.chromium.launch();
 });
 after(async () => {
   await browser?.close();

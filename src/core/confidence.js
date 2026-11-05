@@ -10,10 +10,17 @@ const DEDUCTIONS = [
   },
   { amount: 0.1, reason: 'PhishLens no ha verificado nada por sí mismo.', applies: (x) => !states(x).includes('verified') },
   { amount: 0.15, reason: 'El correo no se pudo leer entero (límites o MIME roto).', applies: (x) => (x.parseNotes?.length ?? 0) > 0 },
+  {
+    amount: 0.6,
+    reason: 'Parte del correo no se ha leído (más de 1.000 cabeceras o más de 25 MB): el veredicto puede estar incompleto.',
+    applies: (x) => (x.parseNotes ?? []).some((n) => HIDING_LIMITS.has(n.code)),
+  },
   { amount: 0.15, reason: 'Algún detector falló.', applies: (x) => (x.errors?.length ?? 0) > 0 },
   { amount: 0.1, reason: 'Solo una categoría aporta riesgo.', applies: (x) => (x.categories ?? []).filter((c) => c.score > 0).length === 1 },
 ];
 
+// Límites que dejan sin leer parte de la estructura del correo.
+const HIDING_LIMITS = new Set(['limit.headers', 'limit.input-bytes']);
 const WEAK_STATES = new Set(['declared-untrusted', 'unverifiable', 'absent']);
 const states = (x) => ['spf', 'dkim', 'dmarc'].map((k) => x.auth?.[k]?.state ?? 'absent');
 
