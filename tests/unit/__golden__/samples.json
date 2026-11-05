@@ -1,0 +1,1188 @@
+{
+  "01-legitimo-newsletter": {
+    "score": 0,
+    "level": "safe",
+    "label": "Probablemente legítimo",
+    "summary": "No se han encontrado señales de phishing.",
+    "errors": [],
+    "techniques": [],
+    "findings": [],
+    "email": {
+      "from": {
+        "name": "AEROVELO",
+        "address": "novedades@aerovelo.example",
+        "domain": "aerovelo.example"
+      },
+      "replyTo": null,
+      "returnPath": "rebotes@mail.aerovelo.example",
+      "subject": "Nuevas bicis de gravel en el catálogo",
+      "links": [
+        {
+          "text": "Ver modelos",
+          "href": "https://www.aerovelo.example/gravel"
+        },
+        {
+          "text": "Darme de baja",
+          "href": "https://www.aerovelo.example/baja"
+        }
+      ],
+      "authResults": "mx.example.com; spf=pass smtp.mailfrom=mail.aerovelo.example; dkim=pass header.d=aerovelo.example; dmarc=pass header.from=aerovelo.example",
+      "date": "Tue, 20 Oct 2026 09:12:00 +0200",
+      "route": [
+        {
+          "from": "mail.aerovelo.example",
+          "by": "mx.example.com",
+          "ip": "192.0.2.25",
+          "date": "Tue, 20 Oct 2026 09:12:03 +0200"
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://www.aerovelo.example/gravel",
+        "https://www.aerovelo.example/baja"
+      ],
+      "domains": [
+        "aerovelo.example",
+        "mail.aerovelo.example",
+        "www.aerovelo.example"
+      ],
+      "ips": [
+        "192.0.2.25"
+      ],
+      "emails": [
+        "novedades@aerovelo.example",
+        "rebotes@mail.aerovelo.example"
+      ],
+      "attachments": []
+    }
+  },
+  "02-legitimo-pedido": {
+    "score": 0,
+    "level": "safe",
+    "label": "Probablemente legítimo",
+    "summary": "No se han encontrado señales de phishing.",
+    "errors": [],
+    "techniques": [],
+    "findings": [],
+    "email": {
+      "from": {
+        "name": "Amazon.es",
+        "address": "confirmar-envio@amazon.es",
+        "domain": "amazon.es"
+      },
+      "replyTo": null,
+      "returnPath": "envios@amazon.es",
+      "subject": "Tu pedido de Amazon.es se ha enviado",
+      "links": [
+        {
+          "text": "Ver mis pedidos",
+          "href": "https://www.amazon.es/gp/css/order-history"
+        }
+      ],
+      "authResults": "mx.example.com; spf=pass smtp.mailfrom=amazon.es; dkim=pass header.d=amazon.es; dmarc=pass header.from=amazon.es",
+      "date": "Mon, 19 Oct 2026 18:40:00 +0200",
+      "route": [
+        {
+          "from": "a10-17.smtp-out.amazonses.com",
+          "by": "mx.example.com",
+          "ip": "54.240.10.17",
+          "date": "Mon, 19 Oct 2026 18:40:02 +0200"
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://www.amazon.es/gp/css/order-history"
+      ],
+      "domains": [
+        "amazon.es",
+        "www.amazon.es"
+      ],
+      "ips": [
+        "54.240.10.17"
+      ],
+      "emails": [
+        "confirmar-envio@amazon.es",
+        "envios@amazon.es"
+      ],
+      "attachments": []
+    }
+  },
+  "03-phishing-banco": {
+    "score": 100,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "11 señales graves o medias, entre ellas «Se hace pasar por Santander» y «El enlace no lleva a donde dice». No pulses enlaces ni abras adjuntos.",
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1672",
+        "name": "Email Spoofing",
+        "url": "https://attack.mitre.org/techniques/T1672/"
+      },
+      {
+        "id": "T1656",
+        "name": "Impersonation",
+        "url": "https://attack.mitre.org/techniques/T1656/"
+      },
+      {
+        "id": "T1566.002",
+        "name": "Phishing: Spearphishing Link",
+        "url": "https://attack.mitre.org/techniques/T1566/002/"
+      },
+      {
+        "id": "T1598",
+        "name": "Phishing for Information",
+        "url": "https://attack.mitre.org/techniques/T1598/"
+      },
+      {
+        "id": "T1566",
+        "name": "Phishing",
+        "url": "https://attack.mitre.org/techniques/T1566/"
+      },
+      {
+        "id": "T1583.001",
+        "name": "Acquire Infrastructure: Domains",
+        "url": "https://attack.mitre.org/techniques/T1583/001/"
+      },
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      }
+    ],
+    "findings": [
+      {
+        "id": "auth.spf",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "SPF: fail",
+        "detail": "SPF comprueba que el servidor que envió el email está autorizado por el dominio. Si falla, el remitente puede estar falsificado.",
+        "evidence": "spf=fail",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "auth.dmarc",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "DMARC: fail",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
+        "evidence": "dmarc=fail",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "sender.brand-impersonation",
+        "detector": "sender",
+        "severity": "high",
+        "points": 30,
+        "title": "Se hace pasar por Santander",
+        "detail": "Dice ser Santander pero santander-seguridad.test no es un dominio oficial de Santander (bancosantander.es).",
+        "evidence": "\"Banco Santander\" <avisos@santander-seguridad.test>",
+        "mitre": {
+          "id": "T1656",
+          "name": "Impersonation",
+          "url": "https://attack.mitre.org/techniques/T1656/"
+        }
+      },
+      {
+        "id": "links.mismatch",
+        "detector": "links",
+        "severity": "high",
+        "points": 30,
+        "title": "El enlace no lleva a donde dice",
+        "detail": "El texto muestra www.bancosantander.es, pero al pulsar irías a santander-seguridad.test.",
+        "evidence": "\"https://www.bancosantander.es/clientes\" → http://santander-seguridad.test/acceso/login.php",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "language.credentials",
+        "detector": "language",
+        "severity": "high",
+        "points": 30,
+        "title": "Pide credenciales o datos bancarios",
+        "detail": "Ninguna empresa legítima te pide la contraseña, el PIN o la tarjeta por email.",
+        "evidence": "…suspendida en 24 horas si no verifica sus datos bancarios. https://www.bancosantander.…",
+        "mitre": {
+          "id": "T1598",
+          "name": "Phishing for Information",
+          "url": "https://attack.mitre.org/techniques/T1598/"
+        }
+      },
+      {
+        "id": "sender.replyto-mismatch",
+        "detector": "sender",
+        "severity": "medium",
+        "points": 15,
+        "title": "Las respuestas van a otro dominio",
+        "detail": "Escribe desde santander-seguridad.test, pero si respondes tu email irá a correo-rapido.test.",
+        "evidence": "From: avisos@santander-seguridad.test · Reply-To: soporte.clientes@correo-rapido.test",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      },
+      {
+        "id": "headers.mailer",
+        "detector": "headers",
+        "severity": "medium",
+        "points": 15,
+        "title": "Enviado con una herramienta de envío masivo",
+        "detail": "Este programa de envío aparece con mucha frecuencia en kits de phishing. Las empresas grandes usan sus propias plataformas.",
+        "evidence": "PHPMailer 6.8.1 (https://github.com/PHPMailer/PHPMailer)",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      },
+      {
+        "id": "links.insecure-login",
+        "detector": "links",
+        "severity": "medium",
+        "points": 15,
+        "title": "Página de acceso sin HTTPS",
+        "detail": "Un formulario de acceso sin cifrar no lo usaría ninguna empresa seria.",
+        "evidence": "\"https://www.bancosantander.es/clientes\" → http://santander-seguridad.test/acceso/login.php",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "lookalike.brand-in-domain",
+        "detector": "lookalike",
+        "severity": "medium",
+        "points": 15,
+        "title": "Usa el nombre de Santander en un dominio ajeno",
+        "detail": "santander-seguridad.test contiene \"santander\" pero no pertenece a Santander (bancosantander.es).",
+        "evidence": "santander-seguridad.test",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
+        "id": "language.threat",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Amenaza con consecuencias",
+        "detail": "Amenazar con bloquear, suspender o multar es una forma de que actúes sin pensar.",
+        "evidence": "Último aviso: su cuenta ha sido bloqueada Estimado cliente, Hemos dete…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "language.urgency",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Mete prisa",
+        "detail": "Los plazos muy cortos buscan que no te pares a comprobar si el mensaje es real.",
+        "evidence": "…do. Su cuenta será suspendida en 24 horas si no verifica sus datos banc…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "auth.dkim",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "DKIM: none",
+        "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
+        "evidence": "dkim=none",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "sender.returnpath-mismatch",
+        "detector": "sender",
+        "severity": "low",
+        "points": 5,
+        "title": "Return-Path de otro dominio",
+        "detail": "La dirección técnica de rebote no coincide con el remitente. Es habitual en newsletters, pero también en suplantaciones.",
+        "evidence": "From: avisos@santander-seguridad.test · Return-Path: bounce@mailer-masivo.test",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      },
+      {
+        "id": "headers.messageid-domain",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Message-ID de otro dominio",
+        "detail": "El identificador lo generó vps-4471.hosting-barato.test, no santander-seguridad.test. Es normal si se usa un proveedor de envío, pero también delata servidores ajenos.",
+        "evidence": "Message-ID: <20261021050300.4471@vps-4471.hosting-barato.test>",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Banco Santander",
+        "address": "avisos@santander-seguridad.test",
+        "domain": "santander-seguridad.test"
+      },
+      "replyTo": {
+        "name": "",
+        "address": "soporte.clientes@correo-rapido.test",
+        "domain": "correo-rapido.test"
+      },
+      "returnPath": "bounce@mailer-masivo.test",
+      "subject": "Último aviso: su cuenta ha sido bloqueada",
+      "links": [
+        {
+          "text": "https://www.bancosantander.es/clientes",
+          "href": "http://santander-seguridad.test/acceso/login.php"
+        }
+      ],
+      "authResults": "mx.example.com; spf=fail smtp.mailfrom=mailer-masivo.test; dkim=none; dmarc=fail header.from=santander-seguridad.test",
+      "date": "Wed, 21 Oct 2026 07:03:00 +0200",
+      "route": [
+        {
+          "from": "[10.8.0.3]",
+          "by": "vps-4471.hosting-barato.test",
+          "ip": "198.51.100.23",
+          "date": "Wed, 21 Oct 2026 07:03:01 +0200"
+        },
+        {
+          "from": "vps-4471.hosting-barato.test",
+          "by": "mx.example.com",
+          "ip": "203.0.113.66",
+          "date": "Wed, 21 Oct 2026 07:03:04 +0200"
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "http://santander-seguridad.test/acceso/login.php"
+      ],
+      "domains": [
+        "santander-seguridad.test",
+        "correo-rapido.test",
+        "mailer-masivo.test"
+      ],
+      "ips": [
+        "198.51.100.23",
+        "203.0.113.66"
+      ],
+      "emails": [
+        "avisos@santander-seguridad.test",
+        "soporte.clientes@correo-rapido.test",
+        "bounce@mailer-masivo.test"
+      ],
+      "attachments": []
+    }
+  },
+  "04-phishing-correos": {
+    "score": 100,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "7 señales graves o medias, entre ellas «Se hace pasar por Correos» y «Dominio que imita a Correos». No pulses enlaces ni abras adjuntos.",
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1656",
+        "name": "Impersonation",
+        "url": "https://attack.mitre.org/techniques/T1656/"
+      },
+      {
+        "id": "T1583.001",
+        "name": "Acquire Infrastructure: Domains",
+        "url": "https://attack.mitre.org/techniques/T1583/001/"
+      },
+      {
+        "id": "T1672",
+        "name": "Email Spoofing",
+        "url": "https://attack.mitre.org/techniques/T1672/"
+      },
+      {
+        "id": "T1566.002",
+        "name": "Phishing: Spearphishing Link",
+        "url": "https://attack.mitre.org/techniques/T1566/002/"
+      },
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      },
+      {
+        "id": "T1566",
+        "name": "Phishing",
+        "url": "https://attack.mitre.org/techniques/T1566/"
+      }
+    ],
+    "findings": [
+      {
+        "id": "sender.brand-impersonation",
+        "detector": "sender",
+        "severity": "high",
+        "points": 30,
+        "title": "Se hace pasar por Correos",
+        "detail": "Dice ser Correos pero envios-c0rreos.test no es un dominio oficial de Correos (correos.es).",
+        "evidence": "\"Correos\" <notificaciones@envios-c0rreos.test>",
+        "mitre": {
+          "id": "T1656",
+          "name": "Impersonation",
+          "url": "https://attack.mitre.org/techniques/T1656/"
+        }
+      },
+      {
+        "id": "lookalike.typosquat",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Dominio que imita a Correos",
+        "detail": "envios-c0rreos.test se parece mucho a correos.es, pero no es el mismo dominio.",
+        "evidence": "envios-c0rreos.test ≈ correos.es",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
+        "id": "auth.spf",
+        "detector": "auth",
+        "severity": "medium",
+        "points": 15,
+        "title": "SPF: softfail",
+        "detail": "SPF comprueba que el servidor que envió el email está autorizado por el dominio. Si falla, el remitente puede estar falsificado.",
+        "evidence": "spf=softfail",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "links.shortener",
+        "detector": "links",
+        "severity": "medium",
+        "points": 15,
+        "title": "Enlace acortado",
+        "detail": "bit.ly es un acortador: oculta el destino final del enlace.",
+        "evidence": "https://bit.ly/correos-pago-tasas",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "links.brand-in-path",
+        "detector": "links",
+        "severity": "medium",
+        "points": 15,
+        "title": "Menciona a Correos en un sitio ajeno",
+        "detail": "La ruta del enlace usa el nombre de Correos, pero el sitio es bit.ly.",
+        "evidence": "https://bit.ly/correos-pago-tasas",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "language.threat",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Amenaza con consecuencias",
+        "detail": "Amenazar con bloquear, suspender o multar es una forma de que actúes sin pensar.",
+        "evidence": "…no paga en 48 horas el envío será cancelado. Correos",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "language.urgency",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Mete prisa",
+        "detail": "Los plazos muy cortos buscan que no te pares a comprobar si el mensaje es real.",
+        "evidence": "…pendientes (1,99 EUR). Pague inmediatamente para evitar la devolución al…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "auth.dkim",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "DKIM: none",
+        "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
+        "evidence": "dkim=none",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "auth.dmarc",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "DMARC: none",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
+        "evidence": "dmarc=none",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "headers.missing-messageid",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin Message-ID",
+        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
+        "evidence": "",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Correos",
+        "address": "notificaciones@envios-c0rreos.test",
+        "domain": "envios-c0rreos.test"
+      },
+      "replyTo": null,
+      "returnPath": "info@envios-c0rreos.test",
+      "subject": "Su paquete esta retenido - pago de 1,99 EUR pendiente",
+      "links": [
+        {
+          "text": "https://bit.ly/correos-pago-tasas",
+          "href": "https://bit.ly/correos-pago-tasas"
+        }
+      ],
+      "authResults": "mx.example.com; spf=softfail smtp.mailfrom=envios-c0rreos.test; dkim=none; dmarc=none",
+      "date": "Wed, 21 Oct 2026 08:15:00 +0200",
+      "route": [],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://bit.ly/correos-pago-tasas"
+      ],
+      "domains": [
+        "envios-c0rreos.test",
+        "bit.ly"
+      ],
+      "ips": [],
+      "emails": [
+        "notificaciones@envios-c0rreos.test",
+        "info@envios-c0rreos.test"
+      ],
+      "attachments": []
+    }
+  },
+  "05-phishing-microsoft365": {
+    "score": 100,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "6 señales graves o medias, entre ellas «Se hace pasar por Microsoft» y «Dominio que imita a Microsoft». No pulses enlaces ni abras adjuntos.",
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1672",
+        "name": "Email Spoofing",
+        "url": "https://attack.mitre.org/techniques/T1672/"
+      },
+      {
+        "id": "T1656",
+        "name": "Impersonation",
+        "url": "https://attack.mitre.org/techniques/T1656/"
+      },
+      {
+        "id": "T1583.001",
+        "name": "Acquire Infrastructure: Domains",
+        "url": "https://attack.mitre.org/techniques/T1583/001/"
+      },
+      {
+        "id": "T1598",
+        "name": "Phishing for Information",
+        "url": "https://attack.mitre.org/techniques/T1598/"
+      },
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      },
+      {
+        "id": "T1566",
+        "name": "Phishing",
+        "url": "https://attack.mitre.org/techniques/T1566/"
+      }
+    ],
+    "findings": [
+      {
+        "id": "auth.dmarc",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "DMARC: fail",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
+        "evidence": "dmarc=fail",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "sender.brand-impersonation",
+        "detector": "sender",
+        "severity": "high",
+        "points": 30,
+        "title": "Se hace pasar por Microsoft",
+        "detail": "Dice ser Microsoft pero micr0soft-365.test no es un dominio oficial de Microsoft (microsoft.com).",
+        "evidence": "\"Microsoft 365\" <no-reply@micr0soft-365.test>",
+        "mitre": {
+          "id": "T1656",
+          "name": "Impersonation",
+          "url": "https://attack.mitre.org/techniques/T1656/"
+        }
+      },
+      {
+        "id": "lookalike.typosquat",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Dominio que imita a Microsoft",
+        "detail": "micr0soft-365.test se parece mucho a microsoft.com, pero no es el mismo dominio.",
+        "evidence": "micr0soft-365.test ≈ microsoft.com",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
+        "id": "language.credentials",
+        "detector": "language",
+        "severity": "high",
+        "points": 30,
+        "title": "Pide credenciales o datos bancarios",
+        "detail": "Ninguna empresa legítima te pide la contraseña, el PIN o la tarjeta por email.",
+        "evidence": "…your mailbox active you must confirm your password within 2 hours, otherwise you…",
+        "mitre": {
+          "id": "T1598",
+          "name": "Phishing for Information",
+          "url": "https://attack.mitre.org/techniques/T1598/"
+        }
+      },
+      {
+        "id": "language.threat",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Amenaza con consecuencias",
+        "detail": "Amenazar con bloquear, suspender o multar es una forma de que actúes sin pensar.",
+        "evidence": "…hours, otherwise your account will be locked. Keep my password Microsoft…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "language.urgency",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Mete prisa",
+        "detail": "Los plazos muy cortos buscan que no te pares a comprobar si el mensaje es real.",
+        "evidence": "…ou must confirm your password within 2 hours, otherwise your account will…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "headers.missing-messageid",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin Message-ID",
+        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
+        "evidence": "",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Microsoft 365",
+        "address": "no-reply@micr0soft-365.test",
+        "domain": "micr0soft-365.test"
+      },
+      "replyTo": null,
+      "returnPath": null,
+      "subject": "Your password expires today",
+      "links": [
+        {
+          "text": "Keep my password",
+          "href": "https://login.micr0soft-365.test/owa/verify?u=pablo"
+        }
+      ],
+      "authResults": "mx.example.com; spf=pass smtp.mailfrom=micr0soft-365.test; dkim=pass header.d=micr0soft-365.test; dmarc=fail header.from=micr0soft-365.test",
+      "date": "Wed, 21 Oct 2026 10:00:00 +0200",
+      "route": [],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://login.micr0soft-365.test/owa/verify?u=pablo"
+      ],
+      "domains": [
+        "micr0soft-365.test",
+        "login.micr0soft-365.test"
+      ],
+      "ips": [],
+      "emails": [
+        "no-reply@micr0soft-365.test"
+      ],
+      "attachments": []
+    }
+  },
+  "06-phishing-factura-adjunto": {
+    "score": 85,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "4 señales graves o medias, entre ellas «Adjunto con doble extensión» y «Las respuestas van a otro dominio». No pulses enlaces ni abras adjuntos.",
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1036.007",
+        "name": "Masquerading: Double File Extension",
+        "url": "https://attack.mitre.org/techniques/T1036/007/"
+      },
+      {
+        "id": "T1566",
+        "name": "Phishing",
+        "url": "https://attack.mitre.org/techniques/T1566/"
+      },
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      },
+      {
+        "id": "T1672",
+        "name": "Email Spoofing",
+        "url": "https://attack.mitre.org/techniques/T1672/"
+      }
+    ],
+    "findings": [
+      {
+        "id": "attachments.double-extension",
+        "detector": "attachments",
+        "severity": "high",
+        "points": 30,
+        "title": "Adjunto con doble extensión",
+        "detail": "\"Factura_2026-1187.pdf.exe\" parece un .pdf pero en realidad es un .exe. Es un truco clásico para colar malware.",
+        "evidence": "Factura_2026-1187.pdf.exe",
+        "mitre": {
+          "id": "T1036.007",
+          "name": "Masquerading: Double File Extension",
+          "url": "https://attack.mitre.org/techniques/T1036/007/"
+        }
+      },
+      {
+        "id": "sender.replyto-mismatch",
+        "detector": "sender",
+        "severity": "medium",
+        "points": 15,
+        "title": "Las respuestas van a otro dominio",
+        "detail": "Escribe desde proveedor-logistico.test, pero si respondes tu email irá a gmail.com.",
+        "evidence": "From: facturacion@proveedor-logistico.test · Reply-To: pagos.urgentes@gmail.com",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      },
+      {
+        "id": "language.threat",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Amenaza con consecuencias",
+        "detail": "Amenazar con bloquear, suspender o multar es una forma de que actúes sin pensar.",
+        "evidence": "…bona hoy mismo aplicaremos un recargo del 15 % y emprenderemos acci…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "language.urgency",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Mete prisa",
+        "detail": "Los plazos muy cortos buscan que no te pares a comprobar si el mensaje es real.",
+        "evidence": "…ctura vencida n.º 2026-1187 - URGENTE Buenos días, Adjuntamos la f…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        }
+      },
+      {
+        "id": "auth.missing",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin resultados de autenticación",
+        "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
+        "evidence": "Falta la cabecera Authentication-Results",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "headers.missing-messageid",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin Message-ID",
+        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
+        "evidence": "",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        }
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Departamento de Facturación",
+        "address": "facturacion@proveedor-logistico.test",
+        "domain": "proveedor-logistico.test"
+      },
+      "replyTo": {
+        "name": "",
+        "address": "pagos.urgentes@gmail.com",
+        "domain": "gmail.com"
+      },
+      "returnPath": "facturacion@proveedor-logistico.test",
+      "subject": "Factura vencida n.º 2026-1187 - URGENTE",
+      "links": [],
+      "authResults": null,
+      "date": "Wed, 21 Oct 2026 11:22:00 +0200",
+      "route": [],
+      "attachments": [
+        {
+          "filename": "Factura_2026-1187.pdf.exe",
+          "contentType": "application/octet-stream"
+        }
+      ]
+    },
+    "iocs": {
+      "urls": [],
+      "domains": [
+        "proveedor-logistico.test",
+        "gmail.com"
+      ],
+      "ips": [],
+      "emails": [
+        "facturacion@proveedor-logistico.test",
+        "pagos.urgentes@gmail.com"
+      ],
+      "attachments": [
+        "Factura_2026-1187.pdf.exe"
+      ]
+    }
+  },
+  "07-phishing-avanzado": {
+    "score": 100,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "8 señales graves o medias, entre ellas «Letras de otro alfabeto camufladas» y «El enlace no lleva a donde dice». No pulses enlaces ni abras adjuntos.",
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1656",
+        "name": "Impersonation",
+        "url": "https://attack.mitre.org/techniques/T1656/"
+      },
+      {
+        "id": "T1566.002",
+        "name": "Phishing: Spearphishing Link",
+        "url": "https://attack.mitre.org/techniques/T1566/002/"
+      },
+      {
+        "id": "T1598",
+        "name": "Phishing for Information",
+        "url": "https://attack.mitre.org/techniques/T1598/"
+      },
+      {
+        "id": "T1027",
+        "name": "Obfuscated Files or Information",
+        "url": "https://attack.mitre.org/techniques/T1027/"
+      },
+      {
+        "id": "T1672",
+        "name": "Email Spoofing",
+        "url": "https://attack.mitre.org/techniques/T1672/"
+      }
+    ],
+    "findings": [
+      {
+        "id": "sender.mixed-script",
+        "detector": "sender",
+        "severity": "high",
+        "points": 30,
+        "title": "Letras de otro alfabeto camufladas",
+        "detail": "El nombre del remitente mezcla letras latinas con cirílicas o griegas que se ven idénticas. Es un truco para imitar una marca sin escribirla igual.",
+        "evidence": "Pаypal → P[U+0430]ypal",
+        "mitre": {
+          "id": "T1656",
+          "name": "Impersonation",
+          "url": "https://attack.mitre.org/techniques/T1656/"
+        }
+      },
+      {
+        "id": "links.mismatch",
+        "detector": "links",
+        "severity": "high",
+        "points": 30,
+        "title": "El enlace no lleva a donde dice",
+        "detail": "El texto muestra www.paypal.com, pero al pulsar irías a 203.0.113.140.",
+        "evidence": "\"https://www.paypal.com/signin\" → http://203.0.113.140/paypal/login (envuelto en eur02.safelinks.protection.outlook.com)",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "links.ip",
+        "detector": "links",
+        "severity": "high",
+        "points": 30,
+        "title": "Enlace a una dirección IP",
+        "detail": "Las empresas legítimas usan nombres de dominio, no direcciones IP.",
+        "evidence": "\"https://www.paypal.com/signin\" → http://203.0.113.140/paypal/login (envuelto en eur02.safelinks.protection.outlook.com)",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "html.form",
+        "detector": "html",
+        "severity": "high",
+        "points": 30,
+        "title": "Formulario dentro del email",
+        "detail": "El email contiene un formulario para escribir datos. Ninguna empresa legítima te pide rellenar datos dentro de un correo.",
+        "evidence": "<form action=\"https://cuenta-verificacion.test/collect\" method=\"post\">",
+        "mitre": {
+          "id": "T1598",
+          "name": "Phishing for Information",
+          "url": "https://attack.mitre.org/techniques/T1598/"
+        }
+      },
+      {
+        "id": "language.credentials",
+        "detector": "language",
+        "severity": "high",
+        "points": 30,
+        "title": "Pide credenciales o datos bancarios",
+        "detail": "Ninguna empresa legítima te pide la contraseña, el PIN o la tarjeta por email.",
+        "evidence": "…do. Para proteger tu cuenta, confirma tu contraseña en el siguiente formulario:…",
+        "mitre": {
+          "id": "T1598",
+          "name": "Phishing for Information",
+          "url": "https://attack.mitre.org/techniques/T1598/"
+        }
+      },
+      {
+        "id": "sender.invisible-chars",
+        "detector": "sender",
+        "severity": "medium",
+        "points": 15,
+        "title": "Caracteres invisibles",
+        "detail": "El asunto contiene caracteres invisibles. Se usan para que los filtros no reconozcan palabras como \"PayPal\" o \"contraseña\".",
+        "evidence": "Actividad inusual en tu cuenta ⟦·⟧",
+        "mitre": {
+          "id": "T1027",
+          "name": "Obfuscated Files or Information",
+          "url": "https://attack.mitre.org/techniques/T1027/"
+        }
+      },
+      {
+        "id": "links.brand-in-path",
+        "detector": "links",
+        "severity": "medium",
+        "points": 15,
+        "title": "Menciona a PayPal en un sitio ajeno",
+        "detail": "La ruta del enlace usa el nombre de PayPal, pero el sitio es 203.0.113.140.",
+        "evidence": "\"https://www.paypal.com/signin\" → http://203.0.113.140/paypal/login (envuelto en eur02.safelinks.protection.outlook.com)",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "links.insecure-login",
+        "detector": "links",
+        "severity": "medium",
+        "points": 15,
+        "title": "Página de acceso sin HTTPS",
+        "detail": "Un formulario de acceso sin cifrar no lo usaría ninguna empresa seria.",
+        "evidence": "\"https://www.paypal.com/signin\" → http://203.0.113.140/paypal/login (envuelto en eur02.safelinks.protection.outlook.com)",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        }
+      },
+      {
+        "id": "auth.dkim",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "DKIM: none",
+        "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
+        "evidence": "dkim=none",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "auth.dmarc",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "DMARC: none",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
+        "evidence": "dmarc=none",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "html.hidden-text",
+        "detector": "html",
+        "severity": "low",
+        "points": 5,
+        "title": "Mucho texto oculto",
+        "detail": "Hay 194 caracteres invisibles para el lector. Se usa para engañar a los filtros antispam con texto inocente.",
+        "evidence": "",
+        "mitre": {
+          "id": "T1027",
+          "name": "Obfuscated Files or Information",
+          "url": "https://attack.mitre.org/techniques/T1027/"
+        }
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Pаypal · Seguridad",
+        "address": "seguridad@cloud-mailer.test",
+        "domain": "cloud-mailer.test"
+      },
+      "replyTo": null,
+      "returnPath": null,
+      "subject": "Actividad inusual en tu cuenta ​",
+      "links": [
+        {
+          "text": "https://www.paypal.com/signin",
+          "href": "https://eur02.safelinks.protection.outlook.com/?url=http%3A%2F%2F203.0.113.140%2Fpaypal%2Flogin&data=05"
+        }
+      ],
+      "authResults": "mx.example.com; spf=pass smtp.mailfrom=cloud-mailer.test; dkim=none; dmarc=none",
+      "date": "Wed, 21 Oct 2026 12:30:00 +0200",
+      "route": [
+        {
+          "from": "smtp.cloud-mailer.test",
+          "by": "mx.example.com",
+          "ip": "203.0.113.140",
+          "date": "Wed, 21 Oct 2026 12:30:05 +0200"
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "http://203.0.113.140/paypal/login"
+      ],
+      "domains": [
+        "cloud-mailer.test"
+      ],
+      "ips": [
+        "203.0.113.140"
+      ],
+      "emails": [
+        "seguridad@cloud-mailer.test"
+      ],
+      "attachments": []
+    }
+  }
+}

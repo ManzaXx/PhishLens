@@ -5,7 +5,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "golden:update": "node tests/helpers/golden.js --write"
   },
   "license": "MIT"
 }
