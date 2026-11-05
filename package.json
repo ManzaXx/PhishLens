@@ -8,7 +8,13 @@
     "test": "node --test",
     "golden:update": "node tests/helpers/golden.js --write",
     "fuzz": "FUZZ_ITER=20000 node --test tests/fuzz/fuzz.test.js",
-    "bench": "node --expose-gc tools/bench.mjs"
+    "bench": "node --expose-gc tools/bench.mjs",
+    "samples": "node tools/gen-samples.mjs",
+    "test:e2e": "node --test tests/e2e/*.e2e.js"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "axe-core": "4.14.0",
+    "playwright": "1.63.0"
+  }
 }

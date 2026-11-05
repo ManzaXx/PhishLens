@@ -1,6 +1,7 @@
 // Pruebas de seguridad: entradas hostiles que intentan romper, bloquear o engañar a PhishLens.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { parseEml, parseAddress } from '../../src/parser/eml.js';
 import { decodeEntities, htmlToText } from '../../src/parser/html.js';
 import { analyzeInput } from '../../src/core/engine.js';
@@ -96,4 +97,12 @@ test('enlaces javascript: se marcan como contenido peligroso', () => {
 test('htmlToText nunca devuelve etiquetas ejecutables', () => {
   const out = htmlToText('<img src=x onerror=alert(1)><svg onload=alert(1)><script>alert(1)</script>hola');
   assert.doesNotMatch(out, /<|onerror|onload|alert/);
+});
+
+test('la CSP de index.html prohíbe toda conexión y la precarga de DNS está apagada', () => {
+  const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+  const csp = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1] ?? '';
+  assert.match(csp, /(^|;)\s*connect-src 'none'\s*(;|$)/);
+  assert.match(csp, /(^|;)\s*default-src 'none'\s*(;|$)/);
+  assert.match(html, /<meta http-equiv="x-dns-prefetch-control" content="off">/);
 });

@@ -130,7 +130,7 @@ proyectoCiber/
 - **Resistente a emails maliciosos.** El parser trabaja en tiempo lineal y los regex tienen cuantificadores acotados. Hay tests que comprueban que miles de etiquetas sin cerrar, paréntesis o puntos no bloquean la pestaña (ReDoS).
 - **Detectores aislados.** Si uno falla, el motor lo registra y sigue con el resto.
 - **Seguridad auditada.** Trusted Types, CSP sin `unsafe-inline`, límites contra DoS, protección contra contaminación de prototipos y clickjacking. Ver [SECURITY.md](SECURITY.md).
-- **Privacidad por diseño.** La CSP (`connect-src 'self'`, `script-src 'self'`, sin `unsafe-inline`) impide enviar datos fuera aunque hubiera un fallo.
+- **Privacidad por diseño.** La CSP (`connect-src 'none'`, `script-src 'self'`, sin `unsafe-inline`) impide enviar datos fuera aunque hubiera un fallo, y un test en Chromium real comprueba que analizar un correo no hace ni una petición fuera del origen.
 
 ## 🧪 Tests
 

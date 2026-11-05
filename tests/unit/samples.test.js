@@ -49,3 +49,12 @@ test('las muestras legítimas no tienen ningún punto', () => {
     assert.equal(analyzeInput({ kind: 'eml', value: raw }).score, 0, id);
   }
 });
+
+test('samples/data.js está sincronizado con los .eml (npm run samples)', async () => {
+  const { SAMPLE_TEXTS } = await import('../../samples/data.js');
+  assert.deepEqual(Object.keys(SAMPLE_TEXTS).sort(), SAMPLES.map((s) => s.id).sort());
+  for (const sample of SAMPLES) {
+    const raw = readFileSync(new URL(`../../samples/${sample.file}`, import.meta.url), 'utf8');
+    assert.equal(SAMPLE_TEXTS[sample.id], raw, sample.id);
+  }
+});

@@ -1,0 +1,30 @@
+From: "Boletín" <boletin@remitente.test>
+To: ana@example.com
+Subject: Contenido remoto de todo tipo
+Date: Wed, 21 Oct 2026 07:03:00 +0000
+Message-ID: <privacidad@remitente.test>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><head>
+<link rel="stylesheet" href="https://tracker.test/estilos.css">
+<link rel="prefetch" href="https://tracker.test/prefetch">
+<link rel="dns-prefetch" href="//dns.tracker.test">
+<style>@import url("https://tracker.test/import.css"); body { background: url(https://tracker.test/fondo.png) }</style>
+<meta http-equiv="refresh" content="0; url=https://tracker.test/refresh">
+<base href="https://tracker.test/">
+</head><body>
+<img src="https://tracker.test/pixel.gif?id=ana" width="1" height="1">
+<img srcset="https://tracker.test/a.png 1x, https://tracker.test/b.png 2x">
+<picture><source srcset="https://tracker.test/c.webp"><img src="https://tracker.test/d.png"></picture>
+<video src="https://tracker.test/v.mp4" poster="https://tracker.test/poster.png"></video>
+<audio src="https://tracker.test/a.mp3"></audio>
+<iframe src="https://tracker.test/marco"></iframe>
+<object data="https://tracker.test/obj.swf"></object>
+<embed src="https://tracker.test/embed.swf">
+<script src="https://tracker.test/x.js"></script>
+<div style="background-image:url('https://tracker.test/div.png')">Hola Ana</div>
+<form action="https://tracker.test/form"><input name="clave" type="password"></form>
+<a href="https://tracker.test/enlace" ping="https://tracker.test/ping">Pulsa aquí</a>
+<svg><image href="https://tracker.test/svg.png"/></svg>
+</body></html>

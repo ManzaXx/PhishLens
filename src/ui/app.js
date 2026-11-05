@@ -1,6 +1,7 @@
 // Controlador de la página: entradas, ejemplos, tema y acciones del informe.
 import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
 import { SAMPLES } from '../../samples/index.js';
+import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { renderReport, reportToJson, iocsToText } from './render.js';
 
 import { LIMITS } from '../lib/limits.js';
@@ -277,16 +278,11 @@ for (const sample of SAMPLES) {
   dot.className = `chip__dot chip__dot--${sample.id.includes('legitimo') ? 'safe' : 'phishing'}`;
   dot.setAttribute('aria-hidden', 'true');
   btn.append(dot, sample.title);
-  btn.addEventListener('click', async () => {
-    try {
-      const res = await fetch(`samples/${sample.file}`);
-      if (!res.ok) throw new Error(res.statusText);
-      rawInput.value = await res.text();
-      selectTab($('#tab-text'));
-      run();
-    } catch {
-      showError('No se pudo cargar el ejemplo. Abre la página desde un servidor (no con file://).');
-    }
+  // Las muestras van dentro de samples/data.js: la CSP (connect-src 'none') no deja pedirlas por red.
+  btn.addEventListener('click', () => {
+    rawInput.value = SAMPLE_TEXTS[sample.id];
+    selectTab($('#tab-text'));
+    run();
   });
   samplesBox.append(btn);
 }
