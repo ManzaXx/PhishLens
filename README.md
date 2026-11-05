@@ -42,6 +42,10 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 |---|---|---|
 | ![Cabeceras y ruta Received](docs/img/cabeceras.png) | ![Informe de un email legítimo](docs/img/informe-legitimo.png) | ![Vista móvil](docs/img/movil.png) |
 
+| Ruta con avisos por salto | Dominios Unicode | Autenticación |
+|---|---|---|
+| ![Ruta Received con la entrada y una IP privada marcadas](docs/img/ruta-claro.png) | ![Dominio en cirílico mostrado en Unicode y punycode](docs/img/unicode-claro.png) | ![Pestaña de autenticación SPF, DKIM y DMARC](docs/img/autenticacion-claro.png) |
+
 ## 🔍 Qué detecta
 
 | Detector | Señales | ATT&CK |
