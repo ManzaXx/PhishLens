@@ -41,7 +41,7 @@ function summarize(level, findings) {
     .join(' y ');
   if (level === 'critical') return `Combina varias señales graves, entre ellas ${top}. No pulses enlaces ni abras adjuntos y bórralo.`;
   return level === 'phishing'
-    ? `${strong.length} señales graves o medias, entre ellas ${top}. No pulses enlaces ni abras adjuntos.`
+    ? `${strong.length === 1 ? `Una señal grave o media: ${top}` : `${strong.length} señales graves o medias, entre ellas ${top}`}. No pulses enlaces ni abras adjuntos.`
     : `${strong.length === 1 ? 'Una señal sospechosa' : `${strong.length} señales sospechosas`}: ${top}. Compruébalo por otra vía antes de actuar.`;
 }
 

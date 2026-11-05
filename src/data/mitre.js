@@ -34,7 +34,8 @@ const RULES = [
   [/^attachments\./, ['T1566.001']],
   [/^links\./, ['T1566.002', 'T1204.001']],
   [/^lookalike\./, ['T1583.001']],
-  [/^auth\.(dkim-body-verified|dkim-verified-aligned|dkim-weak)$/, []],
+  // Sin cabeceras o con firma débil no hay suplantación demostrada: no se le asigna técnica.
+  [/^auth\.(dkim-body-verified|dkim-verified-aligned|dkim-weak|missing)$/, []],
   [/^auth\./, ['T1684.002']],
   [/^sender\.(brand-impersonation|mixed-script|display-name-address)$/, ['T1684.001']],
   [/^sender\.invisible-chars$/, ['T1027']],

@@ -1820,13 +1820,6 @@
         "tactic": "Execution",
         "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
         "url": "https://attack.mitre.org/techniques/T1204/"
-      },
-      {
-        "id": "T1684.002",
-        "name": "Social Engineering: Email Spoofing",
-        "tactic": "Stealth",
-        "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-        "url": "https://attack.mitre.org/techniques/T1684/002/"
       }
     ],
     "findings": [
@@ -1965,27 +1958,13 @@
         "title": "Sin resultados de autenticación",
         "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
         "evidence": "Falta la cabecera Authentication-Results",
-        "mitre": {
-          "id": "T1684.002",
-          "name": "Social Engineering: Email Spoofing",
-          "tactic": "Stealth",
-          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-          "url": "https://attack.mitre.org/techniques/T1684/002/"
-        },
+        "mitre": null,
         "category": "authentication",
         "reliability": "medium",
         "provenance": "declared",
         "polarity": "risk",
         "brand": null,
-        "techniques": [
-          {
-            "id": "T1684.002",
-            "name": "Social Engineering: Email Spoofing",
-            "tactic": "Stealth",
-            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-            "url": "https://attack.mitre.org/techniques/T1684/002/"
-          }
-        ]
+        "techniques": []
       },
       {
         "id": "headers.missing-messageid",
@@ -2893,27 +2872,13 @@
         "title": "Sin resultados de autenticación",
         "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
         "evidence": "Falta la cabecera Authentication-Results",
-        "mitre": {
-          "id": "T1684.002",
-          "name": "Social Engineering: Email Spoofing",
-          "tactic": "Stealth",
-          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-          "url": "https://attack.mitre.org/techniques/T1684/002/"
-        },
+        "mitre": null,
         "category": "authentication",
         "reliability": "medium",
         "provenance": "declared",
         "polarity": "risk",
         "brand": null,
-        "techniques": [
-          {
-            "id": "T1684.002",
-            "name": "Social Engineering: Email Spoofing",
-            "tactic": "Stealth",
-            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-            "url": "https://attack.mitre.org/techniques/T1684/002/"
-          }
-        ]
+        "techniques": []
       },
       {
         "id": "route.slow-delivery",
@@ -3190,27 +3155,13 @@
         "title": "Sin resultados de autenticación",
         "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
         "evidence": "Falta la cabecera Authentication-Results",
-        "mitre": {
-          "id": "T1684.002",
-          "name": "Social Engineering: Email Spoofing",
-          "tactic": "Stealth",
-          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-          "url": "https://attack.mitre.org/techniques/T1684/002/"
-        },
+        "mitre": null,
         "category": "authentication",
         "reliability": "medium",
         "provenance": "declared",
         "polarity": "risk",
         "brand": null,
-        "techniques": [
-          {
-            "id": "T1684.002",
-            "name": "Social Engineering: Email Spoofing",
-            "tactic": "Stealth",
-            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-            "url": "https://attack.mitre.org/techniques/T1684/002/"
-          }
-        ]
+        "techniques": []
       },
       {
         "id": "sender.sender-mismatch",
@@ -3380,13 +3331,6 @@
         "tactic": "Reconnaissance",
         "why": "El correo intenta que la víctima entregue datos o contraseñas.",
         "url": "https://attack.mitre.org/techniques/T1598/"
-      },
-      {
-        "id": "T1684.002",
-        "name": "Social Engineering: Email Spoofing",
-        "tactic": "Stealth",
-        "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-        "url": "https://attack.mitre.org/techniques/T1684/002/"
       }
     ],
     "findings": [
@@ -3585,27 +3529,13 @@
         "title": "Sin resultados de autenticación",
         "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
         "evidence": "Falta la cabecera Authentication-Results",
-        "mitre": {
-          "id": "T1684.002",
-          "name": "Social Engineering: Email Spoofing",
-          "tactic": "Stealth",
-          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-          "url": "https://attack.mitre.org/techniques/T1684/002/"
-        },
+        "mitre": null,
         "category": "authentication",
         "reliability": "medium",
         "provenance": "declared",
         "polarity": "risk",
         "brand": null,
-        "techniques": [
-          {
-            "id": "T1684.002",
-            "name": "Social Engineering: Email Spoofing",
-            "tactic": "Stealth",
-            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
-            "url": "https://attack.mitre.org/techniques/T1684/002/"
-          }
-        ]
+        "techniques": []
       }
     ],
     "email": {

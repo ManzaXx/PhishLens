@@ -51,3 +51,7 @@ test('el informe junta las técnicas sin repetir', () => {
   const r = analyzeInput({ kind: 'url', value: 'http://192.168.0.1/paypal/login' });
   assert.deepEqual(r.techniques.map((t) => t.id), ['T1566.002', 'T1204.001']);
 });
+
+test('no tener cabeceras de autenticación no es falsificarlas: auth.missing no tiene técnica', () => {
+  assert.deepEqual(techniquesFor('auth.missing'), []);
+});

@@ -91,3 +91,17 @@ test('el informe no arrastra los bytes de los adjuntos (exportación JSON ligera
   assert.equal(a.size, 3);
   assert.equal(a.sha256, 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
 });
+
+test('resumen en singular: con una sola señal grave dice «Una señal grave o media»', () => {
+  const f = (id, severity, category) => finding({ id, detector: id.split('.')[0], severity, title: id, category, reliability: 'high' });
+  const fake = { name: 'fake', detect: () => [
+    f('sender.brand-impersonation', 'high', 'sender'),
+    f('language.credentials', 'low', 'language'),
+    f('links.ip', 'low', 'links'),
+    f('attachments.archive', 'low', 'attachments'),
+    f('route.slow-delivery', 'low', 'infrastructure'),
+  ] };
+  const r = analyze(parseEml('From: a@b.test\n\nhola'), [fake]);
+  assert.equal(r.level, 'phishing', `nota ${r.score}`);
+  assert.match(r.summary, /^Una señal grave o media: «sender\.brand-impersonation»\. No pulses/);
+});
