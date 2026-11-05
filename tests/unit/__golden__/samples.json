@@ -162,7 +162,7 @@
         "points": 30,
         "title": "SPF: fail",
         "detail": "SPF comprueba que el servidor que envió el email está autorizado por el dominio. Si falla, el remitente puede estar falsificado.",
-        "evidence": "spf=fail",
+        "evidence": "spf=fail (según mx.example.com)",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",
@@ -176,7 +176,7 @@
         "points": 30,
         "title": "DMARC: fail",
         "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
-        "evidence": "dmarc=fail",
+        "evidence": "dmarc=fail (según mx.example.com)",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",
@@ -316,7 +316,7 @@
         "points": 5,
         "title": "DKIM: none",
         "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
-        "evidence": "dkim=none",
+        "evidence": "dkim=none (según mx.example.com)",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",
@@ -414,7 +414,7 @@
     "score": 100,
     "level": "phishing",
     "label": "Probable phishing",
-    "summary": "7 señales graves o medias, entre ellas «Se hace pasar por Correos» y «Dominio que imita a Correos». No pulses enlaces ni abras adjuntos.",
+    "summary": "8 señales graves o medias, entre ellas «Se hace pasar por Correos» y «Dominio que imita a Correos». No pulses enlaces ni abras adjuntos.",
     "errors": [],
     "techniques": [
       {
@@ -483,8 +483,22 @@
         "severity": "medium",
         "points": 15,
         "title": "SPF: softfail",
-        "detail": "SPF comprueba que el servidor que envió el email está autorizado por el dominio. Si falla, el remitente puede estar falsificado.",
-        "evidence": "spf=softfail",
+        "detail": "SPF comprueba que el servidor que envió el email está autorizado por el dominio. Si falla, el remitente puede estar falsificado. Ojo: esta cabecera no la añadió el servidor que recibió el correo, así que podría estar inventada.",
+        "evidence": "spf=softfail (según mx.example.com)",
+        "mitre": {
+          "id": "T1672",
+          "name": "Email Spoofing",
+          "url": "https://attack.mitre.org/techniques/T1672/"
+        }
+      },
+      {
+        "id": "auth.dmarc-unaligned",
+        "detector": "auth",
+        "severity": "medium",
+        "points": 15,
+        "title": "Ni SPF ni DKIM respaldan al remitente visible",
+        "detail": "DMARC exige que SPF o DKIM pasen con el mismo dominio (organizativo) que aparece en el From. Aquí no ocurre, así que el remitente que ves no está autenticado.",
+        "evidence": "From: envios-c0rreos.test",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",
@@ -553,8 +567,8 @@
         "severity": "low",
         "points": 5,
         "title": "DKIM: none",
-        "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
-        "evidence": "dkim=none",
+        "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser. Ojo: esta cabecera no la añadió el servidor que recibió el correo, así que podría estar inventada.",
+        "evidence": "dkim=none (según mx.example.com)",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",
@@ -567,8 +581,8 @@
         "severity": "low",
         "points": 5,
         "title": "DMARC: none",
-        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
-        "evidence": "dmarc=none",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación. Ojo: esta cabecera no la añadió el servidor que recibió el correo, así que podría estar inventada.",
+        "evidence": "dmarc=none (según mx.example.com)",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",
@@ -671,8 +685,8 @@
         "severity": "high",
         "points": 30,
         "title": "DMARC: fail",
-        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
-        "evidence": "dmarc=fail",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación. Ojo: esta cabecera no la añadió el servidor que recibió el correo, así que podría estar inventada.",
+        "evidence": "dmarc=fail (según mx.example.com)",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",
@@ -1106,7 +1120,7 @@
         "points": 5,
         "title": "DKIM: none",
         "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
-        "evidence": "dkim=none",
+        "evidence": "dkim=none (según mx.example.com)",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",
@@ -1120,7 +1134,7 @@
         "points": 5,
         "title": "DMARC: none",
         "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
-        "evidence": "dmarc=none",
+        "evidence": "dmarc=none (según mx.example.com)",
         "mitre": {
           "id": "T1672",
           "name": "Email Spoofing",

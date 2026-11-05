@@ -1,6 +1,8 @@
-// Detector de autenticación del remitente: SPF, DKIM y DMARC.
+// Detector de autenticación del remitente: SPF, DKIM y DMARC, distinguiendo lo que PhishLens
+// comprueba, lo que una cabecera declara (y si es de fiar) y lo que no se puede saber sin red.
 import { finding } from '../core/finding.js';
 import { own } from '../lib/text.js';
+import { evaluateAuth } from '../auth/index.js';
 
 export const name = 'auth';
 
@@ -23,38 +25,151 @@ const CHECKS = [
 ];
 
 const SEVERITY = { fail: 'high', permerror: 'medium', softfail: 'medium', temperror: 'low', none: 'low', neutral: 'low' };
+const UNTRUSTED_NOTE = ' Ojo: esta cabecera no la añadió el servidor que recibió el correo, así que podría estar inventada.';
+const WEAK = { 'l-tag': 'la firma solo cubre parte del cuerpo (l=)', expired: 'la firma ha caducado (x=)', 'rsa-sha1': 'usa RSA-SHA1, prohibido por RFC 8301' };
+const clip = (text, max = 300) => (text.length > max ? `${text.slice(0, max)}…` : text);
+
+function declaredFindings(header) {
+  const out = [];
+  for (const check of CHECKS) {
+    const r = header.parsed.results.find((x) => x.method === check.key);
+    if (!r) continue;
+    const severity = own(SEVERITY, r.result);
+    if (!severity) continue;
+    out.push(finding({
+      id: `auth.${check.key}`,
+      detector: name,
+      severity,
+      title: `${check.label}: ${r.result}`,
+      detail: header.trusted ? check.detail : check.detail + UNTRUSTED_NOTE,
+      evidence: `${check.key}=${r.result}${header.parsed.authservId ? ` (según ${header.parsed.authservId})` : ''}`,
+      reliability: header.trusted ? 'medium' : 'low',
+    }));
+  }
+  return out;
+}
+
+function forgedFindings(headers) {
+  return headers.filter((h) => h.forged).map((h) => finding({
+    id: 'auth.forged-results',
+    detector: name,
+    severity: 'high',
+    title: 'Resultados de autenticación falsificados',
+    detail: `Hay una cabecera Authentication-Results que ${h.why}. Quien envía el correo la escribió para aparentar que pasó SPF, DKIM o DMARC.`,
+    evidence: clip(h.raw),
+    reliability: 'high',
+    provenance: 'inferred',
+  }));
+}
+
+function dmarcFindings(auth) {
+  const { alignment } = auth.dmarc;
+  const { header, classified } = auth.internal;
+  if (!alignment.judgeable || alignment.aligned) return [];
+  const evidence = `From: ${alignment.fromDomain}`;
+  if (header?.trusted && auth.dmarc.result === 'pass') {
+    return [finding({
+      id: 'auth.dmarc-declared-mismatch',
+      detector: name,
+      severity: 'high',
+      title: 'DMARC declarado como pass sin ningún resultado alineado',
+      detail: `La cabecera de ${header.parsed.authservId} dice dmarc=pass, pero ni SPF ni DKIM pasan con un dominio que coincida con el remitente visible. Las piezas no cuadran.`,
+      evidence,
+      reliability: 'high',
+      provenance: 'inferred',
+    })];
+  }
+  const declaresFail = classified.headers.some((h) => h.parsed.results.some((r) => r.method === 'dmarc' && r.result === 'fail'));
+  if (declaresFail) return [];
+  return [finding({
+    id: 'auth.dmarc-unaligned',
+    detector: name,
+    severity: 'medium',
+    title: 'Ni SPF ni DKIM respaldan al remitente visible',
+    detail: 'DMARC exige que SPF o DKIM pasen con el mismo dominio (organizativo) que aparece en el From. Aquí no ocurre, así que el remitente que ves no está autenticado.',
+    evidence,
+    reliability: 'medium',
+    provenance: 'inferred',
+  })];
+}
+
+function dkimFindings(bodies) {
+  const out = [];
+  const domains = (list) => [...new Set(list.map((b) => `d=${b.sig.d}`))].join(', ');
+  const modified = bodies.filter((b) => b.bodyHashOk === false);
+  const verified = bodies.filter((b) => b.bodyHashOk === true);
+  if (modified.length) {
+    out.push(finding({
+      id: 'auth.dkim-body-modified',
+      detector: name,
+      severity: 'high',
+      title: 'El cuerpo no coincide con la firma DKIM',
+      detail: 'PhishLens ha calculado el hash del cuerpo y no coincide con el que firmó el dominio (bh=). El contenido se modificó después de firmarse.',
+      evidence: domains(modified),
+      reliability: 'high',
+      provenance: 'verified',
+    }));
+  }
+  if (verified.length) {
+    out.push(finding({
+      id: 'auth.dkim-body-verified',
+      detector: name,
+      severity: 'info',
+      title: 'El cuerpo coincide con la firma DKIM',
+      detail: 'PhishLens ha comprobado que el cuerpo es el mismo que firmó el dominio. La firma en sí solo se puede verificar con su clave pública.',
+      evidence: domains(verified),
+      reliability: 'high',
+      provenance: 'verified',
+      polarity: 'trust',
+    }));
+  }
+  const weak = bodies.filter((b) => b.issues.some((i) => own(WEAK, i)));
+  if (weak.length) {
+    const reasons = [...new Set(weak.flatMap((b) => b.issues.map((i) => own(WEAK, i)).filter(Boolean)))];
+    out.push(finding({
+      id: 'auth.dkim-weak',
+      detector: name,
+      severity: 'low',
+      title: 'Firma DKIM débil',
+      detail: `La firma existe pero ofrece menos garantías: ${reasons.join('; ')}.`,
+      evidence: domains(weak),
+      reliability: 'medium',
+      provenance: 'verified',
+    }));
+  }
+  return out;
+}
+
+function spfOfflineFindings(offline) {
+  if (!offline || (offline.result !== 'fail' && offline.result !== 'softfail')) return [];
+  return [finding({
+    id: 'auth.spf-offline',
+    detector: name,
+    severity: offline.result === 'fail' ? 'high' : 'medium',
+    title: `SPF comprobado en local: ${offline.result}`,
+    detail: `Según el registro SPF que has pegado, la IP ${offline.ip} no está autorizada a enviar correo de ese dominio.`,
+    evidence: `${offline.ip} → ${offline.mechanism ?? 'sin coincidencia'}`,
+    reliability: 'high',
+    provenance: 'verified',
+  })];
+}
 
 export function detect(email) {
   if (!email.hasHeaders) return [];
-  const results = email.headers.get('authentication-results') ?? [];
-  if (results.length === 0) {
-    return [finding({
+  const auth = evaluateAuth(email);
+  const { header, classified, bodies, spfOffline } = auth.internal;
+  const out = [...forgedFindings(classified.headers)];
+  if (classified.headers.length === 0) {
+    out.push(finding({
       id: 'auth.missing',
       detector: name,
       severity: 'low',
       title: 'Sin resultados de autenticación',
       detail: 'El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.',
       evidence: 'Falta la cabecera Authentication-Results',
-    })];
-  }
-
-  // La primera cabecera la añade el servidor que recibió el email (la más fiable).
-  const header = results[0];
-  const out = [];
-  for (const check of CHECKS) {
-    const m = new RegExp(`\\b${check.key}\\s*=\\s*([a-z]+)`, 'i').exec(header);
-    if (!m) continue;
-    const result = m[1].toLowerCase();
-    const severity = own(SEVERITY, result);
-    if (!severity) continue;
-    out.push(finding({
-      id: `auth.${check.key}`,
-      detector: name,
-      severity,
-      title: `${check.label}: ${result}`,
-      detail: check.detail,
-      evidence: m[0],
     }));
   }
+  if (header) out.push(...declaredFindings(header));
+  out.push(...dmarcFindings(auth), ...dkimFindings(bodies), ...spfOfflineFindings(spfOffline));
   return out;
 }

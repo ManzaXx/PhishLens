@@ -4,6 +4,7 @@ import { parseUrl } from '../parser/url.js';
 import { finding, SEVERITY_ORDER } from './finding.js';
 import { extractIocs } from '../intel/ioc.js';
 import { parseReceived } from '../parser/received.js';
+import { authReport } from '../auth/index.js';
 import * as auth from '../detectors/auth.js';
 import * as sender from '../detectors/sender.js';
 import * as links from '../detectors/links.js';
@@ -84,12 +85,16 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
       text: email.text,
       html: email.html,
     },
+    auth: authReport(email),
     iocs: extractIocs(email),
   };
 }
 
-/** Punto de entrada de la UI: {kind: 'eml' | 'text' | 'url', value}. */
-export function analyzeInput({ kind, value }) {
+/**
+ * Punto de entrada de la UI: {kind: 'eml' | 'text' | 'url', value}.
+ * Opcionales del analista: spfRecord (registro TXT pegado) y dkim (resultado de verifyDkimSignature).
+ */
+export function analyzeInput({ kind, value, spfRecord, dkim }) {
   if (kind === 'url') {
     const extra = [];
     if (!parseUrl(value)) {
@@ -106,6 +111,7 @@ export function analyzeInput({ kind, value }) {
   }
 
   const email = parseEml(value);
+  if (spfRecord || dkim) email.analyst = { spfRecord: spfRecord || null, dkim: dkim ?? null };
   const extra = [];
   if (!email.hasHeaders) {
     extra.push(finding({

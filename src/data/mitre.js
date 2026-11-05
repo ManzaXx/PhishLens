@@ -22,6 +22,7 @@ const RULES = [
   [/^attachments\./, 'T1566.001'],
   [/^links\./, 'T1566.002'],
   [/^lookalike\./, 'T1583.001'],
+  [/^auth\.(dkim-body-verified|dkim-weak)$/, null],
   [/^auth\./, 'T1672'],
   [/^sender\.(brand-impersonation|mixed-script)$/, 'T1656'],
   [/^sender\.invisible-chars$/, 'T1027'],
@@ -37,7 +38,7 @@ const RULES = [
 /** Técnica ATT&CK asociada a un id de hallazgo, o null. */
 export function techniqueFor(findingId) {
   const rule = RULES.find(([re]) => re.test(findingId));
-  if (!rule) return null;
-  const id = rule[1];
+  const id = rule?.[1];
+  if (!id) return null;
   return { id, name: TECHNIQUES[id], url: `https://attack.mitre.org/techniques/${id.replace('.', '/')}/` };
 }
