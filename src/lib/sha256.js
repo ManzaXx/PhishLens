@@ -16,6 +16,19 @@ const rotr = (x, n) => (x >>> n) | (x << (32 - n));
 
 /** Hash SHA-256 en hexadecimal. Las cadenas se codifican en UTF-8. */
 export function sha256(input) {
+  return [...digest(input)].map((x) => x.toString(16).padStart(8, '0')).join('');
+}
+
+/** Hash SHA-256 como 32 bytes. */
+export function sha256Bytes(input) {
+  const words = digest(input);
+  const out = new Uint8Array(32);
+  const view = new DataView(out.buffer);
+  words.forEach((w, i) => view.setUint32(i * 4, w));
+  return out;
+}
+
+function digest(input) {
   const data = typeof input === 'string' ? new TextEncoder().encode(input) : input;
   const length = data.length;
   // Mensaje + 0x80 + ceros + longitud en bits (64 bits), múltiplo de 64 bytes.
@@ -45,5 +58,5 @@ export function sha256(input) {
     }
     h[0] += a; h[1] += b; h[2] += c; h[3] += d; h[4] += e; h[5] += f; h[6] += g; h[7] += hh;
   }
-  return [...h].map((x) => x.toString(16).padStart(8, '0')).join('');
+  return h;
 }

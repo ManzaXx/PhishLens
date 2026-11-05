@@ -1,0 +1,4 @@
+{
+  "rsa2026._domainkey.banco-ficticio.test": "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAivgJdQRB9Rjg7ol9LWARDsb8kBGqGWgKUbcpbB8IpLrPjqqHOdHvuXzX8Eh/4PMsfa84IaUauMyK3M8VUoGxFkvlx5LIlqb+t9sHrMTp3kF9ucmLnPvv6Hf90RFlQss3wuGG4OwIg8qzVR/ud4iGsE8TLMtCnjOOSHGj7mdlg0SjTeSvsj6nR7oVMi710LpXfMoPuStnnT1j7BcH6HPApz+b1Yx9eNPWq9QXgWms0Tw+XdkiJMGEvRR7SmknqMAPnmMQYSmaoDbWaR+Y2Tz+F7JGa6ccTnvRJ6gvrJW8dy+xI8lYJa25dFQJQdw9p/jtfF522dYO0D8XbioEbMSvDwIDAQAB",
+  "ed2026._domainkey.banco-ficticio.test": "v=DKIM1; k=ed25519; p=fsNhgGiPluRwCCm8n1bsd0jPabSf4wvc9AsGN8dtBHI="
+}

@@ -1,0 +1,20 @@
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/simple;
+ d=banco-ficticio.test; i=@banco-ficticio.test; q=dns/txt; s=ed2026;
+ t=1793905600; h=from : to : subject : date : message-id;
+ bh=XfyAzzcyT/TBY8bYhiJt3jiuMH8fn6n3aw59Pb7h6lY=;
+ b=p7e+zHmKAqv/bxmIZIit4CzbrMO4uwf7fPvKK1L9LOh4HQdLMhutl/t3Q5wntVfmBhc6Z
+ 8ibFJbDjZC8KsfCCQ==
+From: Banco Ficticio <avisos@banco-ficticio.test>
+To: cliente@example.com
+Subject:  Aviso   de seguridad 
+Date: Wed, 21 Oct 2026 07:03:05 +0000
+Message-ID: <aviso-1@banco-ficticio.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hola,  
+
+Hemos detectado un acceso nuevo a tu cuenta.	 
+Si no has sido tu, llama al 900 000 000.
+
+

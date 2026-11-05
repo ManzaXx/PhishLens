@@ -1,0 +1,23 @@
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=banco-ficticio.test; i=@banco-ficticio.test; l=97; q=dns/txt;
+ s=rsa2026; t=1793905600; h=from : to : subject : date : message-id;
+ bh=u7nKkOpxaF85wBBGxT6ct5mIMci6JcUnrb8PJAUknCc=;
+ b=IUFEB840aZ8qL22TJpx2jGkGPMaKXTCbgAmbZE/kmmT/8WnIkry9g4BN7IfbonMicRrFq
+ NiWZt1wExM5BwDMBA/dAXtej7lVIfq/ZoBKilf6l03oUC2QIRPm3k+yo6B0IPnEGQOz9Q/W
+ 0/88Y4Zdp1CqUyIYDeIgafD5eFAi/FH6OCG+BSs4Z7JBE1yVh/2JDLPa15flmaBlioVBxqn
+ uwruPXKR69mGxkQNGhyMGN9JpynE4AxyTSJB8JiwICxc1H3hDI/4HPXvXLeEqGDGthAm3DC
+ WvDuuFWXJctjQmhAfZlowzShcit+feuV5zjGVUWTyEUHZwko2uRPkPi/eiAw==
+From: Banco Ficticio <avisos@banco-ficticio.test>
+To: cliente@example.com
+Subject:  Aviso   de seguridad 
+Date: Wed, 21 Oct 2026 07:03:05 +0000
+Message-ID: <aviso-1@banco-ficticio.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hola,  
+
+Hemos detectado un acceso nuevo a tu cuenta.	 
+Si no has sido tu, llama al 900 000 000.
+
+
