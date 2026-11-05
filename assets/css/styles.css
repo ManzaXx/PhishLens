@@ -261,7 +261,7 @@ textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--ac
 .breakdown__label { grid-area: label; }
 .breakdown__track { grid-area: track; }
 .breakdown__points { grid-area: points; white-space: nowrap; }
-.breakdown__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.breakdown__label { overflow-wrap: anywhere; }
 .breakdown__track { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
 .breakdown__bar { display: block; height: 100%; width: var(--w); border-radius: inherit; background: var(--level); }
 .breakdown__points { text-align: right; font-family: var(--mono); font-size: .8rem; color: var(--muted); }
@@ -330,6 +330,32 @@ textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--ac
 
 /* ---------- Impresión ---------- */
 @media print {
+  /* El papel siempre en claro, aunque la pantalla esté en oscuro. */
+  :root:not([data-theme="light"]), :root[data-theme="dark"] {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --border: #dde1e7;
+    --text: #14181f;
+    --muted: #5b6472;
+    --accent: #0f766e;
+    --accent-strong: #0b5f59;
+    --accent-soft: #d5f1ee;
+    --on-accent: #ffffff;
+    --safe: #15803d;
+    --safe-soft: #dcfce7;
+    --suspicious: #b45309;
+    --suspicious-soft: #fef3c7;
+    --phishing: #b91c1c;
+    --phishing-soft: #fee2e2;
+    --critical: #9f1239;
+    --critical-soft: #ffe4e6;
+    --info: #475569;
+    --info-soft: #e2e8f0;
+    --focus: #2563eb;
+    --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 8px 24px rgb(16 24 40 / 6%);
+    color-scheme: light;
+  }
   .topbar, .hero, .analyzer, .how, .privacy, .footer, .report__actions, .skip, .tabs, .ioc-head .btn, body::before { display: none !important; }
   .report__panels .panel[hidden] { display: block !important; }
   .report__body { grid-template-columns: 1fr !important; }

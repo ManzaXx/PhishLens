@@ -103,7 +103,7 @@ function categoryList(report) {
     list.append(el('li', {},
       el('span', { className: 'breakdown__label', text: c.label }),
       el('span', { className: 'breakdown__track', attrs: { 'aria-hidden': 'true' } }, bar),
-      el('span', { className: 'breakdown__points', text: `${decimal(c.score)} / ${c.max}` })));
+      el('span', { className: 'breakdown__points', text: `${decimal(c.score)} / ${c.max}`, attrs: { 'aria-label': `${decimal(c.score)} de ${c.max}` } })));
   }
   return list;
 }
@@ -429,7 +429,8 @@ export function renderReport(container, report, options = {}) {
     el('div', { className: 'report__verdict' },
       el('span', { className: 'verdict', text: report.label }),
       el('h2', { className: 'visually-hidden', text: 'Resultado del análisis' }),
-      report.mainReason ? el('p', { className: 'report__reason' }, el('strong', { text: report.mainReason })) : null,
+      // Con nota 0 el motivo («no hay señales») repetiría el resumen.
+      report.mainReason && report.score > 0 ? el('p', { className: 'report__reason' }, el('strong', { text: report.mainReason })) : null,
       el('p', { className: 'report__summary', text: report.summary }),
       confidenceBadge(report.confidence),
       actions));

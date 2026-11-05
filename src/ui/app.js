@@ -208,6 +208,17 @@ reportBox.addEventListener('click', (e) => {
   onReportAction(e);
 });
 
+// Al imprimir se abren los «¿Por qué?» del informe (no el formulario de DKIM/SPF) y luego se dejan como estaban.
+let openedForPrint = [];
+window.addEventListener('beforeprint', () => {
+  openedForPrint = [...reportBox.querySelectorAll('details:not([open]):not(.auth-local)')];
+  for (const d of openedForPrint) d.open = true;
+});
+window.addEventListener('afterprint', () => {
+  for (const d of openedForPrint) d.open = false;
+  openedForPrint = [];
+});
+
 // ---------- Comprobación local de DKIM y SPF ----------
 const authLive = $('#auth-live');
 
