@@ -52,6 +52,8 @@ const noisyOr = (ps) => 1 - [...ps].sort((a, b) => a - b).reduce((acc, p) => acc
 
 const IMPERSONATION = /^sender\.(brand-impersonation|display-name-address|mixed-script)$/;
 const isImpersonation = (f) => IMPERSONATION.test(f.id) || (f.id.startsWith('lookalike.') && f.category === 'sender');
+// Para pedir credenciales o servir la marca desde una IP basta con que el enlace la nombre.
+const namesBrand = (f) => isImpersonation(f) || f.id === 'links.brand-in-path';
 
 const CORRELATIONS = [
   {
@@ -62,7 +64,12 @@ const CORRELATIONS = [
   {
     id: 'brand-credentials',
     label: 'Suplantación de marca que pide credenciales',
-    match: (risk) => [risk.filter(isImpersonation), risk.filter((f) => ['html.form', 'language.credentials', 'links.insecure-login'].includes(f.id))],
+    match: (risk) => [risk.filter(namesBrand), risk.filter((f) => ['html.form', 'language.credentials', 'links.insecure-login'].includes(f.id))],
+  },
+  {
+    id: 'brand-raw-ip',
+    label: 'Marca suplantada con enlaces a una dirección IP',
+    match: (risk) => [risk.filter(namesBrand), risk.filter((f) => f.id === 'links.ip')],
   },
   {
     id: 'attachment-pressure',

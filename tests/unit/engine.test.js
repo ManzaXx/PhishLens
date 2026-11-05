@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { analyze, analyzeInput, levelFor } from '../../src/core/engine.js';
 import { parseEml } from '../../src/parser/eml.js';
 import { finding } from '../../src/core/finding.js';
+import { scoreFindings } from '../../src/core/scoring.js';
 
 const fake = (name, severities) => ({
   name,
@@ -16,20 +17,39 @@ test('levelFor y umbrales', () => {
   assert.equal(levelFor(59).level, 'suspicious');
   assert.equal(levelFor(60).level, 'phishing');
   assert.equal(levelFor(60).label, 'Probable phishing');
+  assert.equal(levelFor(80).level, 'critical');
 });
 
-test('suma puntos, ordena por severidad y limita a 100', () => {
+test('la nota sale de scoring y los hallazgos van ordenados por severidad', () => {
   const r = analyze(parseEml('From: a@b.com\n\nx'), [fake('a', ['low', 'high', 'high']), fake('b', ['high', 'medium'])]);
-  assert.equal(r.score, 100);
-  assert.equal(r.level, 'phishing');
+  const expected = scoreFindings(r.findings);
+  assert.equal(r.score, expected.score);
+  assert.equal(r.level, expected.level);
+  assert.deepEqual(r.categories, expected.categories);
   assert.deepEqual(r.findings.map((f) => f.severity), ['high', 'high', 'high', 'medium', 'low']);
+});
+
+test('el informe trae categorías, confianza, motivo principal y correlaciones', () => {
+  const r = analyzeInput({ kind: 'eml', value: 'From: "PayPal" <x@pay.test>\nSubject: x\n\nhola' });
+  assert.equal(r.categories.length, 6);
+  assert.ok(['high', 'medium', 'low'].includes(r.confidence.level));
+  assert.equal(typeof r.mainReason, 'string');
+  assert.ok(r.correlations.some((c) => c.id === 'brand-auth'));
+  assert.ok(Array.isArray(r.trust));
+});
+
+test('texto sin cabeceras: confianza baja aunque la nota sea 0', () => {
+  const r = analyzeInput({ kind: 'text', value: 'hola qué tal' });
+  assert.equal(r.score, 0);
+  assert.equal(r.confidence.level, 'low');
 });
 
 test('un detector que falla no tumba el análisis', () => {
   const broken = { name: 'roto', detect: () => { throw new Error('boom'); } };
   const r = analyze(parseEml('From: a@b.com\n\nx'), [broken, fake('ok', ['medium'])]);
-  assert.equal(r.score, 15);
+  assert.ok(r.score > 0);
   assert.deepEqual(r.errors, [{ detector: 'roto', message: 'boom' }]);
+  assert.ok(r.confidence.reasons.includes('Algún detector falló.'));
 });
 
 test('URL con IP y login es phishing', () => {
@@ -61,7 +81,7 @@ test('el informe incluye resumen y datos del email', () => {
 
 test('el resumen prioriza remitente y enlaces sobre autenticación', () => {
   const r = analyzeInput({ kind: 'eml', value: 'From: "PayPal" <a@pp-help.test>\nAuthentication-Results: x; spf=fail; dkim=fail; dmarc=fail\nSubject: x\n\nhola' });
-  assert.match(r.summary, /^\d+ señales graves o medias, entre ellas «Se hace pasar por PayPal»/);
+  assert.match(r.summary, /entre ellas «Se hace pasar por PayPal»/);
 });
 
 test('el informe no arrastra los bytes de los adjuntos (exportación JSON ligera)', () => {

@@ -150,3 +150,9 @@ test('levelFor: fronteras de los cuatro niveles', () => {
   assert.equal(levelFor(25).level, 'suspicious');
   assert.equal(levelFor(24).level, 'safe');
 });
+
+test('marca en la ruta de un enlace a una IP que pide acceso: dos correlaciones', () => {
+  const result = scoreFindings([make('links.ip', 'high'), make('links.brand-in-path', 'medium'), make('links.insecure-login', 'medium')]);
+  assert.deepEqual(result.correlations.map((c) => c.id), ['brand-credentials', 'brand-raw-ip']);
+  assert.equal(result.level, 'phishing');
+});

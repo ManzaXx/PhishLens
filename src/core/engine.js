@@ -2,6 +2,8 @@
 import { parseEml, emailFromUrl } from '../parser/eml.js';
 import { parseUrl } from '../parser/url.js';
 import { finding, SEVERITY_ORDER } from './finding.js';
+import { scoreFindings } from './scoring.js';
+import { confidenceFor } from './confidence.js';
 import { extractIocs } from '../intel/ioc.js';
 import { parseReceived } from '../parser/received.js';
 import { authReport } from '../auth/index.js';
@@ -18,16 +20,7 @@ import * as html from '../detectors/html.js';
 
 export const DEFAULT_DETECTORS = [auth, sender, headers, route, links, lookalike, attachments, html, language];
 
-export const LEVELS = [
-  { min: 60, level: 'phishing', label: 'Probable phishing' },
-  { min: 25, level: 'suspicious', label: 'Sospechoso' },
-  { min: 0, level: 'safe', label: 'Probablemente legítimo' },
-];
-
-export function levelFor(score) {
-  const { level, label } = LEVELS.find((l) => score >= l.min);
-  return { level, label };
-}
+export { LEVELS, levelFor } from './scoring.js';
 
 // Para el resumen se priorizan las señales más fáciles de entender.
 const SUMMARY_PRIORITY = ['sender', 'links', 'attachments', 'html', 'lookalike', 'language', 'auth', 'route', 'headers', 'input'];
@@ -45,6 +38,7 @@ function summarize(level, findings) {
     .slice(0, 2)
     .map((f) => `«${f.title}»`)
     .join(' y ');
+  if (level === 'critical') return `Combina varias señales graves, entre ellas ${top}. No pulses enlaces ni abras adjuntos y bórralo.`;
   return level === 'phishing'
     ? `${strong.length} señales graves o medias, entre ellas ${top}. No pulses enlaces ni abras adjuntos.`
     : `${strong.length === 1 ? 'Una señal sospechosa' : `${strong.length} señales sospechosas`}: ${top}. Compruébalo por otra vía antes de actuar.`;
@@ -63,14 +57,24 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
   }
   found.sort((a, b) => SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity));
 
-  const score = Math.min(100, found.reduce((sum, f) => sum + f.points, 0));
-  const techniques = [...new Map(found.filter((f) => f.mitre && f.points > 0).map((f) => [f.mitre.id, f.mitre])).values()];
-  const { level, label } = levelFor(score);
+  const scored = scoreFindings(found);
+  const { score, level, label } = scored;
+  const risky = found.filter((f) => f.polarity !== 'trust' && f.severity !== 'info');
+  const techniques = [...new Map(risky.flatMap((f) => f.techniques).map((t) => [t.id, t])).values()];
+  const auth = authReport(email);
+  const confidence = confidenceFor({
+    hasHeaders: email.hasHeaders, auth, parseNotes: email.parseNotes ?? [], errors, categories: scored.categories,
+  });
   return {
     score,
     level,
     label,
     summary: summarize(level, found),
+    mainReason: scored.mainReason,
+    categories: scored.categories,
+    confidence,
+    correlations: scored.correlations,
+    trust: scored.trust,
     findings: found,
     techniques,
     errors,
@@ -87,7 +91,7 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
       text: email.text,
       html: email.html,
     },
-    auth: authReport(email),
+    auth,
     iocs: extractIocs(email),
   };
 }

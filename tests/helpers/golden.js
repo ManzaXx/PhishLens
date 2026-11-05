@@ -1,5 +1,5 @@
-// Foto "golden" de los informes de las muestras: solo los campos que ya existían en la v2.1.
-// Sirve para demostrar que una reestructura no cambia ningún veredicto.
+// Foto "golden" de los informes de las muestras. Desde el PR 4 incluye la nota contextual
+// (categorías, confianza, correlaciones) y el modelo nuevo de cada hallazgo.
 // Uso: node tests/helpers/golden.js --write
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -13,8 +13,8 @@ const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj?.[k] ?? n
 export function legacyView(report) {
   const { email } = report;
   return {
-    ...pick(report, ['score', 'level', 'label', 'summary', 'errors', 'techniques']),
-    findings: report.findings.map((f) => pick(f, ['id', 'detector', 'severity', 'points', 'title', 'detail', 'evidence', 'mitre'])),
+    ...pick(report, ['score', 'level', 'label', 'summary', 'mainReason', 'categories', 'confidence', 'correlations', 'trust', 'errors', 'techniques']),
+    findings: report.findings.map((f) => pick(f, ['id', 'detector', 'severity', 'points', 'title', 'detail', 'evidence', 'mitre', 'category', 'reliability', 'provenance', 'polarity', 'brand', 'techniques'])),
     email: {
       ...pick(email, ['from', 'replyTo', 'returnPath', 'subject', 'links', 'authResults', 'date', 'route']),
       attachments: (email.attachments ?? []).map((a) => pick(a, ['filename', 'contentType'])),

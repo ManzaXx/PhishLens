@@ -1,7 +1,7 @@
 // Recomendaciones según el veredicto y las señales encontradas.
 
 export function adviceFor(report) {
-  const ids = new Set(report.findings.filter((f) => f.points > 0).map((f) => f.id));
+  const ids = new Set(report.findings.filter((f) => f.points > 0 && f.polarity !== 'trust').map((f) => f.id));
   const has = (prefix) => [...ids].some((id) => id.startsWith(prefix));
 
   if (report.level === 'safe') {
