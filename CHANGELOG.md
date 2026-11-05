@@ -18,11 +18,16 @@ Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/20
 - **Dominios con otros alfabetos**: decodificador punycode propio (RFC 3492), tabla de confusables de Unicode 16 (UTS #39), dominios que mezclan alfabetos o están enteros en cirílico, homógrafos de marca con cualquier alfabeto (`ɑpple.com`, cherokee, copto), subdominios engañosos y combosquatting. Los dominios `xn--` se enseñan también en Unicode y la evidencia nombra cada letra extranjera (`⟦U+0430 а→a⟧`).
 - **22 marcas españolas** con sus dominios oficiales comprobados y fechados.
 - Tres muestras nuevas: ruta falsificada, cabeceras trampa y dominios Unicode.
+- **Nota contextual**: seis categorías que saturan, combinaciones peligrosas (suplantación + autenticación fallida, suplantación + credenciales, marca + IP, adjunto + presión, mismo lookalike en remitente y enlaces), señales a favor que rebajan lo blando y nivel nuevo **«Phishing casi seguro»** (80+). Explicado en [docs/scoring.md](docs/scoring.md), con tests de propiedades.
+- **Confianza del análisis** (alta, media o baja) con sus motivos, independiente de la nota.
+- **MITRE ATT&CK 20.1** fijado y comprobado contra el bundle STIX oficial (`tools/check-mitre.mjs`): varias técnicas por señal, con su táctica y el motivo.
 - [ADR 0002](docs/adr/0002-autenticacion-offline.md) y primera versión de [limitaciones](docs/limitations.md).
 - Documentación de [arquitectura](docs/architecture.md) y primer ADR.
 - Tests nuevos: golden de las 7 muestras (demuestra que la reestructura no cambia ningún veredicto), SHA-256 con vectores de NIST y regla de dependencias entre capas.
 
 ### Cambiado
+- La nota ya no es una suma de puntos: las muestras de phishing pasan a 61–94, y cuatro a «Phishing casi seguro». Las insignias de cada señal muestran su gravedad y su fiabilidad en lugar de los puntos.
+- ATT&CK 20 revocó T1656 y T1672: las señales de suplantación pasan a **T1684.001** y las de cabeceras falseadas a **T1684.002**. Las cabeceras técnicas genéricas ya no se asocian a ninguna técnica.
 - `links.punycode` es leve salvo que el dominio imite letras latinas: un dominio internacional normal (`españa.es`) ya no se marca como grave.
 - Código reorganizado en `core/`, `parser/`, `intel/` y `lib/`; tests en `tests/unit/`.
 - `proyectoCiber/` es autónomo, con sus propios workflows, para poder publicarlo como repositorio independiente.

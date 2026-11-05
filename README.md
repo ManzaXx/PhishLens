@@ -24,7 +24,7 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 ## ✨ Funcionalidades
 
 - **8 detectores y más de 40 señales**: autenticación, remitente, cabeceras, enlaces, dominios parecidos, adjuntos, HTML y lenguaje.
-- **Informe explicado**: nota con semáforo, resumen, desglose de puntos por categoría y recomendaciones de qué hacer.
+- **Informe explicado**: nota con semáforo, motivo principal, confianza del análisis, riesgo por categoría, combinaciones peligrosas y recomendaciones de qué hacer.
 - **Vista segura**: el email como texto plano, sin enlaces activos y con las frases de ingeniería social resaltadas.
 - **Ruta del email**: reconstruye los saltos `Received` con sus IPs.
 - **IOCs defanged** (`hxxp://evil[.]xyz`) con botón de copiar para pegarlos en un ticket.
@@ -52,23 +52,30 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 |---|---|---|
 | **Autenticación** | SPF, DKIM y DMARC con su **estado** (verificado por PhishLens, declarado por el receptor, declarado sin confirmar, no verificable sin DNS); `Authentication-Results` **falsificadas**; DMARC sin alineación; cuerpo modificado tras la firma DKIM (hash `bh=` comprobado en local); firma DKIM y SPF verificables pegando la clave o el registro | T1684.002 |
 | **Remitente** | `Reply-To` y `Return-Path` de otro dominio, marca suplantada desde un dominio ajeno o un correo gratuito, letras cirílicas o griegas camufladas (`Pаypal`), caracteres invisibles, nombre visible con otra dirección (`"soporte@paypal.com" <x@evil.test>`), `Sender` de otro dominio sin firmar | T1684.001, T1027 |
-| **Cabeceras técnicas** | `Message-ID` de otro dominio, falta `Date` o `Message-ID`, fecha futura, `X-Mailer` de kits de phishing (PHPMailer…), varios `From` o cabeceras únicas repetidas | T1566 |
+| **Cabeceras técnicas** | `Message-ID` de otro dominio, falta `Date` o `Message-ID`, fecha futura, `X-Mailer` de kits de phishing (PHPMailer…), varios `From` o cabeceras únicas repetidas | T1684.002 (varios `From`) |
 | **Ruta del correo** | IP privada en el salto de entrada, horas que retroceden, entrega de más de 24 h, más de 25 saltos, servidor que dice ser una marca (HELO) sin serlo | T1684.002 |
-| **Enlaces** | Texto que muestra otro dominio, IPs, acortadores, `@` que oculta el host, punycode, TLD baratos, login sin HTTPS, marca en la ruta, descarga directa de ejecutables, enlaces de seguimiento | T1566.002 |
+| **Enlaces** | Texto que muestra otro dominio, IPs, acortadores, `@` que oculta el host, punycode, TLD baratos, login sin HTTPS, marca en la ruta, descarga directa de ejecutables, enlaces de seguimiento | T1566.002, T1204.001 |
 | **Dominios parecidos** | Levenshtein y homoglifos (`0→o`, `1→l`, `rn→m`) frente a 37 marcas (22 españolas verificadas), confusables de Unicode UTS #39, dominios con alfabetos mezclados o enteros en cirílico (`аррӏе.com`), homógrafos con letras latinas raras o de otros alfabetos (`ɑpple.com`), subdominios engañosos (`paypal.com.cuenta-segura.test`), marca + palabra de acceso (combosquatting) | T1583.001 |
-| **Adjuntos** | Ejecutables, doble extensión (`factura.pdf.exe`), nombre invertido con RLO, macros, comprimidos | T1566.001, T1036.007, T1036.002 |
+| **Adjuntos** | Ejecutables, doble extensión (`factura.pdf.exe`), nombre invertido con RLO, macros, comprimidos | T1566.001, T1204.002, T1036.007, T1036.002 |
 | **Contenido HTML** | Formularios dentro del email, JavaScript o iframes, enlaces `data:`, texto oculto para burlar filtros, emails que son solo una imagen | T1598, T1059.007, T1027 |
 | **Lenguaje** | Urgencia, amenazas, premios y peticiones de credenciales, en español e inglés | T1204, T1598 |
 
 ### Puntuación
 
-Cada señal suma puntos según su gravedad: **leve 5**, **media 15** y **grave 30**. La nota máxima es 100.
+La nota (0–100) combina seis categorías: Autenticación, Remitente, Enlaces, Adjuntos, Lenguaje e Infraestructura.
+
+- Cada señal pesa según su gravedad y su fiabilidad, y cada categoría satura: diez enlaces raros no valen más que uno muy grave.
+- Las **combinaciones peligrosas** suben la nota, por ejemplo suplantación de marca con autenticación fallida.
+- Una firma DKIM verificada rebaja las señales blandas.
+
+Aparte de la nota, el informe da la **confianza del análisis** (alta, media o baja) según lo que se pudo comprobar. Detalle y ejemplo resuelto en [docs/scoring.md](docs/scoring.md).
 
 | Nota | Veredicto |
 |---|---|
 | 0–24 | 🟢 Probablemente legítimo |
 | 25–59 | 🟠 Sospechoso |
-| 60–100 | 🔴 Probable phishing |
+| 60–79 | 🔴 Probable phishing |
+| 80–100 | 🟣 Phishing casi seguro |
 
 ## 🚀 Pruébalo
 

@@ -26,5 +26,7 @@ PhishLens trabaja sin red y en el navegador. Estas son las consecuencias, para q
 ## General
 
 - Son heurísticas: una nota baja no garantiza que un correo sea seguro.
+- **Pesos a mano.** Los pesos, las combinaciones y la escala de la nota están calibrados con las muestras y los ejemplos de la especificación, no entrenados con datos reales.
+- **La confianza mide carencias, no aciertos.** Una confianza alta dice que se pudo revisar casi todo, no que el veredicto sea correcto.
 - No se consultan listas negras, WHOIS ni servicios de reputación.
 - No se analiza el contenido de los adjuntos (solo nombre, tipo y SHA-256), ni el formato `.msg` de Outlook.
