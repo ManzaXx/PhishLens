@@ -2,7 +2,9 @@
 // Cualquiera puede escribir "dmarc=pass" en su correo: solo cuenta lo que añadió el receptor
 // (o un proveedor conocido) ANTES de que el correo cruzara de otra organización.
 import { parseAuthResults } from './authres.js';
-import { parseHop } from '../parser/received.js';
+import { receivingHop } from '../parser/received.js';
+
+export { receivingHop };
 import { registrableDomain } from '../parser/url.js';
 import { TRUSTED_AUTHSERV } from '../data/authserv.js';
 
@@ -14,28 +16,6 @@ function inTrustedList(id) {
   return TRUSTED_AUTHSERV.some((pattern) => (pattern.startsWith('*.')
     ? id.endsWith(pattern.slice(1)) && id.length > pattern.length - 1
     : id === pattern));
-}
-
-/**
- * El salto en el que el receptor aceptó el correo desde fuera: el Received más bajo del bloque
- * superior de saltos de la organización receptora. Todo lo que hay debajo lo escribió otro.
- */
-export function receivingHop(email) {
-  const list = email.headerList ?? [];
-  const received = list.filter((h) => h.name === 'received').map((h) => ({ index: h.index, ...parseHop(h.value) }));
-  const receiver = received[0]?.by?.toLowerCase() || null;
-  const receiverOrg = org(receiver);
-  let entry = null;
-  for (const hop of received) {
-    if (!receiver || !hop.by || org(hop.by) !== receiverOrg) break;
-    entry = hop;
-    // El salto solo es interno si el receptor resolvió al emisor (rDNS) dentro de su organización.
-    // Un HELO o un Received escrito por el remitente no puede alargar la zona de confianza.
-    const sender = hop.rdns && hop.rdns !== 'unknown' ? hop.rdns : '';
-    if (!sender || org(sender) !== receiverOrg) break;
-  }
-  const boundary = entry ? received.find((hop) => hop.index > entry.index) ?? null : null;
-  return { receiver, receiverOrg, entry, boundary };
 }
 
 /**

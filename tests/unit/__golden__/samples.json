@@ -31,10 +31,13 @@
       "route": [
         {
           "from": "mail.aerovelo.example",
+          "helo": "mail.aerovelo.example",
           "by": "mx.example.com",
           "rdns": "mail.aerovelo.example",
           "ip": "192.0.2.25",
-          "date": "Tue, 20 Oct 2026 09:12:03 +0200"
+          "date": "Tue, 20 Oct 2026 09:12:03 +0200",
+          "time": 1792480323000,
+          "entry": true
         }
       ],
       "attachments": []
@@ -87,10 +90,13 @@
       "route": [
         {
           "from": "a10-17.smtp-out.amazonses.com",
+          "helo": "a10-17.smtp-out.amazonses.com",
           "by": "mx.example.com",
           "rdns": "a10-17.smtp-out.amazonses.com",
           "ip": "54.240.10.17",
-          "date": "Mon, 19 Oct 2026 18:40:02 +0200"
+          "date": "Mon, 19 Oct 2026 18:40:02 +0200",
+          "time": 1792428002000,
+          "entry": true
         }
       ],
       "attachments": []
@@ -378,17 +384,22 @@
       "route": [
         {
           "from": "[10.8.0.3]",
+          "helo": "[10.8.0.3]",
           "by": "vps-4471.hosting-barato.test",
           "rdns": "unknown",
           "ip": "198.51.100.23",
-          "date": "Wed, 21 Oct 2026 07:03:01 +0200"
+          "date": "Wed, 21 Oct 2026 07:03:01 +0200",
+          "time": 1792558981000
         },
         {
           "from": "vps-4471.hosting-barato.test",
+          "helo": "vps-4471.hosting-barato.test",
           "by": "mx.example.com",
           "rdns": "unknown",
           "ip": "203.0.113.66",
-          "date": "Wed, 21 Oct 2026 07:03:04 +0200"
+          "date": "Wed, 21 Oct 2026 07:03:04 +0200",
+          "time": 1792558984000,
+          "entry": true
         }
       ],
       "attachments": []
@@ -1180,10 +1191,13 @@
       "route": [
         {
           "from": "smtp.cloud-mailer.test",
+          "helo": "smtp.cloud-mailer.test",
           "by": "mx.example.com",
           "rdns": "smtp.cloud-mailer.test",
           "ip": "203.0.113.140",
-          "date": "Wed, 21 Oct 2026 12:30:05 +0200"
+          "date": "Wed, 21 Oct 2026 12:30:05 +0200",
+          "time": 1792578605000,
+          "entry": true
         }
       ],
       "attachments": []
