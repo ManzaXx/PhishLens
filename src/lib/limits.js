@@ -7,4 +7,7 @@ export const LIMITS = {
   attachments: 100,
   attachmentBytes: 10 * 1024 * 1024,
   rawBytes: 25 * 1024 * 1024,
+  inputBytes: 25 * 1024 * 1024,
+  headers: 1000,
+  headerBytes: 64 * 1024,
 };

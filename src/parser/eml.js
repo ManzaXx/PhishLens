@@ -103,24 +103,37 @@ function splitHeaderBody(raw) {
  * Parsea las cabeceras. Si se pasa `list`, añade cada cabecera en orden con su texto
  * crudo (plegado y saltos de línea intactos): DKIM y la detección de duplicados lo necesitan.
  */
-function parseHeaders(head, list = null) {
+function parseHeaders(head, list = null, acc = null) {
   const headers = new Map();
   const tokens = head.split(/(\r?\n)/);
   const ordered = [];
   let current = null;
+  const cap = (text) => {
+    if (text.length <= LIMITS.headerBytes) return text;
+    if (acc) note(acc, 'limit.header-bytes', `Alguna cabecera supera ${LIMITS.headerBytes} caracteres; se ha recortado.`);
+    return text.slice(0, LIMITS.headerBytes);
+  };
   for (let i = 0; i < tokens.length; i += 2) {
     const line = tokens[i];
     if (/^[ \t]/.test(line) && current) {
-      current.value += ' ' + line.trim();
-      current.raw += tokens[i - 1] + line;
+      if (current.value.length < LIMITS.headerBytes) {
+        current.value = cap(`${current.value} ${line.trim()}`);
+        current.raw = cap(current.raw + tokens[i - 1] + line);
+      } else if (acc) note(acc, 'limit.header-bytes', `Alguna cabecera supera ${LIMITS.headerBytes} caracteres; se ha recortado.`);
       continue;
     }
-    const m = /^([!-9;-~]+):[ \t]?(.*)$/.exec(line);
+    if (ordered.length >= LIMITS.headers) {
+      if (acc) note(acc, 'limit.headers', `Más de ${LIMITS.headers} cabeceras; el resto no se ha analizado.`);
+      break;
+    }
+    // Se mira solo el principio de la línea: el nombre nunca es largo y el valor se recorta.
+    const m = /^([!-9;-~]{1,200}):[ \t]?/.exec(line);
     if (!m) {
       current = null;
       continue;
     }
-    current = { name: m[1].toLowerCase(), value: m[2].trim(), raw: line };
+    const value = cap(line.slice(m[0].length));
+    current = { name: m[1].toLowerCase(), value: value.trim(), raw: cap(line) };
     ordered.push(current);
     if (!headers.has(current.name)) headers.set(current.name, []);
     headers.get(current.name).push(current);
@@ -196,7 +209,18 @@ function note(acc, code, detail) {
  */
 function attachmentBytes(body, encoding) {
   const enc = (encoding || '').toLowerCase().trim();
-  if (enc === 'base64') return { ...decodeBase64(body), code: 'mime.bad-base64' };
+  if (enc === 'base64') {
+    // Solo se decodifica lo que cabe en el límite; el tamaño real se calcula sin decodificar.
+    const compact = String(body).replace(/\s/g, '');
+    const padding = (/=*$/.exec(compact)?.[0].length ?? 0);
+    const size = Math.max(0, Math.floor((compact.length * 3) / 4) - Math.min(2, padding));
+    const needed = Math.ceil((LIMITS.attachmentBytes + 1) / 3) * 4;
+    if (size > LIMITS.attachmentBytes && compact.length > needed) {
+      const { bytes, lossy } = decodeBase64(compact.slice(0, needed));
+      return { bytes, lossy, size, code: 'mime.bad-base64' };
+    }
+    return { ...decodeBase64(body), code: 'mime.bad-base64' };
+  }
   if (enc === 'quoted-printable') return { bytes: qpToBytes(body), lossy: false };
   // 7bit, 8bit o binary: el texto ya pasó por el decodificador UTF-8 del navegador, así que
   // un carácter por encima de U+00FF significa que los bytes originales no se pueden recuperar.
@@ -245,19 +269,19 @@ function walkPart(headers, body, acc, depth = 0) {
       note(acc, 'limit.attachments', `Más de ${LIMITS.attachments} adjuntos; el resto no se ha analizado.`);
       return;
     }
-    const { bytes: all, lossy, code } = attachmentBytes(body, headers.get('content-transfer-encoding')?.[0]);
+    const { bytes: all, lossy, code, size: realSize } = attachmentBytes(body, headers.get('content-transfer-encoding')?.[0]);
     if (lossy) {
       note(acc, code, code === 'mime.bad-base64'
         ? 'Algún adjunto tiene base64 corrupto o truncado; se conserva lo legible pero no se calcula su hash.'
         : 'Algún adjunto 8bit no se puede reconstruir byte a byte; no se calcula su hash.');
     }
-    const truncated = all.length > LIMITS.attachmentBytes;
+    const truncated = (realSize ?? all.length) > LIMITS.attachmentBytes;
     if (truncated) note(acc, 'limit.attachment-bytes', `Algún adjunto supera ${LIMITS.attachmentBytes} bytes; se ha recortado y no se calcula su hash.`);
     const bytes = truncated ? all.slice(0, LIMITS.attachmentBytes) : all;
     acc.attachments.push({
       filename: filename || '(sin nombre)',
       contentType: type.value,
-      size: all.length,
+      size: realSize ?? all.length,
       bytes,
       // Un hash parcial, deformado o del fichero vacío engañaría como IOC.
       sha256: truncated || lossy || bytes.length === 0 ? null : sha256(bytes),
@@ -302,7 +326,8 @@ function emptyEmail() {
 
 /** Parsea un email en crudo. Nunca lanza: la entrada basura se trata como texto. */
 export function parseEml(raw) {
-  const source = String(raw ?? '').replace(/^﻿/, '');
+  const full = String(raw ?? '').replace(/^\uFEFF/, '');
+  const source = full.length > LIMITS.inputBytes ? full.slice(0, LIMITS.inputBytes) : full;
   const email = emptyEmail();
   const { head, body } = splitHeaderBody(source);
 
@@ -312,9 +337,10 @@ export function parseEml(raw) {
     return email;
   }
 
-  const headerList = [];
-  const headers = parseHeaders(head, headerList);
   const acc = { text: '', html: '', attachments: [], parts: 0, notes: [], noted: new Set() };
+  if (source !== full) note(acc, 'limit.input-bytes', `La entrada supera ${LIMITS.inputBytes} caracteres; solo se ha analizado el principio.`);
+  const headerList = [];
+  const headers = parseHeaders(head, headerList, acc);
   if (body.length > LIMITS.rawBytes) note(acc, 'limit.raw-bytes', `El cuerpo supera ${LIMITS.rawBytes} bytes; solo se conserva el principio para las comprobaciones de integridad.`);
   walkPart(headers, body, acc);
 

@@ -3,7 +3,10 @@ import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
 import { SAMPLES } from '../../samples/index.js';
 import { renderReport, reportToJson, iocsToText } from './render.js';
 
-const MAX_BYTES = 5 * 1024 * 1024;
+import { LIMITS } from '../lib/limits.js';
+
+const MAX_BYTES = LIMITS.inputBytes;
+const MAX_MB = Math.round(MAX_BYTES / 1024 / 1024);
 
 // Anti-clickjacking: la CSP en <meta> no admite frame-ancestors, así que si otra web
 // incrusta PhishLens en un iframe se oculta la herramienta y se ofrece abrirla aparte.
@@ -93,7 +96,7 @@ async function loadFile(file) {
   state.fileText = null;
   if (!file) return;
   if (file.size > MAX_BYTES) {
-    showError(`El archivo pesa ${(file.size / 1024 / 1024).toFixed(1)} MB. El máximo es 5 MB.`);
+    showError(`El archivo pesa ${(file.size / 1024 / 1024).toFixed(1)} MB. El máximo es ${MAX_MB} MB.`);
     return;
   }
   if (!/\.(eml|txt)$/i.test(file.name) && file.type !== 'message/rfc822') {
@@ -154,7 +157,7 @@ function run() {
     return;
   }
   if (input.value.length > MAX_BYTES) {
-    showError('El texto supera los 5 MB.');
+    showError(`El texto supera los ${MAX_MB} MB.`);
     return;
   }
   showError('');
