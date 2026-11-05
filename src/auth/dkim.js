@@ -2,7 +2,7 @@
 // - Siempre: se lee la firma y se comprueba el hash del cuerpo (bh=), que no necesita clave.
 // - Solo si el analista pega la clave pública: se verifica la firma con WebCrypto (verifyDkimSignature).
 import { sha256Bytes } from '../lib/sha256.js';
-import { bytesToBase64 } from '../lib/base64.js';
+import { base64ToBytes, bytesToBase64 } from '../lib/base64.js';
 
 const MAX_SIGNATURES = 10;
 const MAX_SIGNATURE_LENGTH = 8192;
@@ -85,4 +85,74 @@ export function checkDkimBodies(email, { now = Date.now() } = {}) {
       const bodyHashOk = body !== null && bytesToBase64(sha256Bytes(body)) === sig.bh;
       return { sig, raw: h.raw, bodyHashOk, issues };
     });
+}
+
+/**
+ * Datos que cubre la firma (RFC 6376 §5.4.2 y §3.7): las cabeceras de h= tomadas de abajo
+ * arriba, cada una canonicalizada y terminada en CRLF, y al final la propia DKIM-Signature
+ * con b= vacío y sin CRLF.
+ */
+export function signedHeaderData(email, sig, sigRaw) {
+  const pending = new Map();
+  for (const h of email.headerList ?? []) {
+    if (!pending.has(h.name)) pending.set(h.name, []);
+    pending.get(h.name).push(h.raw);
+  }
+  let data = '';
+  for (const name of sig.h) {
+    const stack = pending.get(name);
+    if (stack?.length) data += `${canonicalizeHeader(stack.pop(), sig.c.header)}\r\n`;
+  }
+  const unsigned = sigRaw.replace(/(;|:)([ \t\r\n]*b[ \t\r\n]*=)[^;]*/i, '$1$2');
+  return data + canonicalizeHeader(unsigned, sig.c.header);
+}
+
+/** Interpreta el registro TXT de la clave: {k, p} o {error}. Acepta trozos entre comillas. */
+export function parseDkimKeyRecord(txt) {
+  let text = String(txt ?? '').slice(0, 8192);
+  if (text.includes('"')) text = [...text.matchAll(/"([^"]*)"/g)].map((m) => m[1]).join('');
+  const tags = Object.create(null);
+  for (const part of text.split(';')) {
+    const eq = part.indexOf('=');
+    if (eq > 0) tags[part.slice(0, eq).trim().toLowerCase()] = part.slice(eq + 1).replace(/\s+/g, '');
+  }
+  if (!('p' in tags)) return { error: 'malformed' };
+  if (tags.p === '') return { error: 'revoked' };
+  const k = (tags.k || 'rsa').toLowerCase();
+  if (k !== 'rsa' && k !== 'ed25519') return { error: 'unsupported' };
+  const p = base64ToBytes(tags.p);
+  return p && p.length ? { k, p } : { error: 'malformed' };
+}
+
+const KEY_ERRORS = { revoked: 'clave revocada', malformed: 'clave mal formada', unsupported: 'algoritmo no compatible' };
+
+/**
+ * Verifica la firma DKIM número `index` con la clave que pegó el analista.
+ * Asíncrona porque usa WebCrypto; nunca lanza.
+ */
+export async function verifyDkimSignature(email, keyTxt, index = 0) {
+  const entry = checkDkimBodies(email)[index];
+  if (!entry) return { ok: false, reason: 'no hay firma DKIM', domain: '', selector: '' };
+  const { sig } = entry;
+  const result = (ok, reason) => ({ ok, reason, domain: sig?.d ?? '', selector: sig?.s ?? '' });
+  if (!sig) return result(false, 'firma mal formada');
+  if (!SUPPORTED.has(sig.a)) return result(false, 'algoritmo no compatible');
+  if (entry.bodyHashOk === false) return result(false, 'el cuerpo no coincide con bh=');
+  const key = parseDkimKeyRecord(keyTxt);
+  if (key.error) return result(false, KEY_ERRORS[key.error]);
+  if ((key.k === 'ed25519') !== (sig.a === 'ed25519-sha256')) return result(false, 'firma no válida');
+  const signature = base64ToBytes(sig.b);
+  if (!signature) return result(false, 'firma mal formada');
+  const data = ENCODER.encode(signedHeaderData(email, sig, entry.raw));
+  try {
+    const subtle = globalThis.crypto.subtle;
+    const ok = key.k === 'rsa'
+      ? await subtle.verify('RSASSA-PKCS1-v1_5',
+        await subtle.importKey('spki', key.p, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']), signature, data)
+      // RFC 8463: Ed25519 firma el hash SHA-256 de los datos, no los datos.
+      : await subtle.verify('Ed25519', await subtle.importKey('raw', key.p, { name: 'Ed25519' }, false, ['verify']), signature, sha256Bytes(data));
+    return result(ok, ok ? 'firma válida' : 'firma no válida');
+  } catch {
+    return result(false, 'clave mal formada');
+  }
 }
