@@ -3,6 +3,8 @@ import { finding } from '../core/finding.js';
 import { parseUrl, registrableDomain } from '../parser/url.js';
 import { BRANDS } from '../data/brands.js';
 import { isOfficialDomain } from './sender.js';
+import { toUnicode } from '../parser/punycode.js';
+import { sameShape, scriptsOf } from '../parser/skeleton.js';
 
 export const name = 'lookalike';
 
@@ -72,6 +74,44 @@ export function findLookalike(domain) {
   return null;
 }
 
+const LOOKALIKE_SCRIPTS = new Set(['Cyrillic', 'Greek', 'Armenian']);
+
+/** Imitación con letras de otro alfabeto: { kind, brand, label, unicode } o null. */
+export function findScriptSpoof(domain) {
+  const ascii = String(domain ?? '').toLowerCase();
+  const unicode = toUnicode(ascii);
+  const labels = unicode.split('.').slice(0, -1);
+  for (const label of labels) {
+    const scripts = scriptsOf(label);
+    const foreign = [...scripts].some((s) => LOOKALIKE_SCRIPTS.has(s));
+    if (!foreign) continue;
+    if (scripts.has('Latin')) return { kind: 'mixed-script-domain', brand: null, label, unicode };
+    if (scripts.size === 1) {
+      const hit = BRAND_KEYS.find(({ key }) => label.split('-').some((part) => sameShape(part, key)));
+      if (hit) return { kind: 'whole-script', brand: hit.brand, label, unicode };
+    }
+  }
+  return null;
+}
+
+function scriptFinding(domain, hit) {
+  const shown = `${hit.unicode} (${domain})`;
+  if (hit.kind === 'mixed-script-domain') {
+    return finding({
+      id: 'lookalike.mixed-script-domain', detector: name, severity: 'high',
+      title: 'Dominio con letras de varios alfabetos',
+      detail: `La parte «${hit.label}» mezcla letras latinas con otras cirílicas, griegas o armenias que se ven iguales. Ningún dominio legítimo necesita mezclarlas.`,
+      evidence: shown,
+    });
+  }
+  return finding({
+    id: 'lookalike.whole-script', detector: name, severity: 'high',
+    title: `Dominio en otro alfabeto que imita a ${hit.brand.name}`,
+    detail: `«${hit.label}» está escrito entero con letras de otro alfabeto, pero se lee como ${hit.brand.domains[0]}.`,
+    evidence: shown,
+  });
+}
+
 export function detect(email) {
   const domains = [];
   if (email.from?.domain) domains.push(email.from.domain);
@@ -83,9 +123,16 @@ export function detect(email) {
   const out = [];
   const seen = new Set();
   for (const domain of domains) {
+    if (seen.size >= 10) break;
+    const spoof = findScriptSpoof(domain);
+    if (spoof) {
+      const reg = registrableDomain(domain);
+      if (!seen.has(reg)) out.push(scriptFinding(domain, spoof));
+      seen.add(reg);
+      continue;
+    }
     const hit = findLookalike(domain);
     if (!hit || seen.has(hit.domain)) continue;
-    if (seen.size >= 10) break;
     seen.add(hit.domain);
     const official = hit.brand.domains[0];
     out.push(hit.kind === 'typosquat'

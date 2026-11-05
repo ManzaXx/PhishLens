@@ -61,3 +61,27 @@ test('palabras contenidas en una marca no son typosquatting', () => {
   assert.equal(findLookalike('cloud-mailer.test'), null);
   assert.equal(findLookalike('outlet-store.test'), null);
 });
+
+// ---- PR3: alfabetos mezclados y dominios enteros en otro alfabeto ----
+import { detect as detectLookalike } from '../../src/detectors/lookalike.js';
+import { parseEml as parse } from '../../src/parser/eml.js';
+
+const host = (unicode) => new URL(`http://${unicode}`).hostname;
+const linkMail = (...hosts) => parse(`From: a@b.test\nContent-Type: text/plain\n\n${hosts.map((h) => `http://${h}/login`).join('\n')}`);
+const lookIds = (...hosts) => detectLookalike(linkMail(...hosts)).map((f) => `${f.id}:${f.severity}`);
+
+test('dominio que mezcla latín y cirílico (pаypal con a cirílica)', () => {
+  const found = detectLookalike(linkMail(host('pаypal.com')));
+  const f = found.find((x) => x.id === 'lookalike.mixed-script-domain');
+  assert.equal(f?.severity, 'high');
+  assert.match(f.evidence, /pаypal\.com/);
+  assert.match(f.evidence, /xn--/);
+});
+
+test('dominio entero en cirílico que dibuja una marca (аррӏе.com)', () => {
+  assert.ok(lookIds('xn--80ak6aa92e.com').includes('lookalike.whole-script:high'));
+});
+
+test('dominios internacionales legítimos no son imitaciones', () => {
+  assert.deepEqual(lookIds(host('españa.es'), host('münchen.de'), host('пример.рф')), []);
+});

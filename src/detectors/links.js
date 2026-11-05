@@ -4,6 +4,8 @@ import { parseUrl, registrableDomain, unwrapUrl } from '../parser/url.js';
 import { URL_SHORTENERS, SUSPICIOUS_TLDS, TRACKING_DOMAINS, DANGEROUS_EXTENSIONS, ARCHIVE_EXTENSIONS, MACRO_EXTENSIONS } from '../data/lists.js';
 import { BRANDS } from '../data/brands.js';
 import { isOfficialDomain } from './sender.js';
+import { toUnicode } from '../parser/punycode.js';
+import { findScriptSpoof } from './lookalike.js';
 
 export const name = 'links';
 
@@ -33,8 +35,12 @@ function checksFor(link, url) {
       'Las empresas legítimas usan nombres de dominio, no direcciones IP.']);
   }
   if (url.isPunycode) {
-    out.push(['punycode', 'high', 'Dominio con caracteres internacionales (punycode)',
-      `${url.hostname} usa letras de otros alfabetos que pueden parecer idénticas a las latinas.`]);
+    // Grave solo si las letras imitan a otras (eso lo detalla lookalike); un IDN normal es leve.
+    const spoof = findScriptSpoof(url.hostname);
+    out.push(['punycode', spoof ? 'high' : 'low', 'Dominio con caracteres internacionales (punycode)',
+      spoof
+        ? `${url.hostname} es en realidad ${toUnicode(url.hostname)}: usa letras de otros alfabetos que parecen latinas.`
+        : `${url.hostname} es ${toUnicode(url.hostname)}, un dominio con letras no inglesas. Comprueba que es el que esperas.`]);
   }
   if (URL_SHORTENERS.has(url.registrableDomain) || URL_SHORTENERS.has(url.hostname)) {
     out.push(['shortener', 'medium', 'Enlace acortado',

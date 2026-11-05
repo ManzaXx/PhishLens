@@ -75,3 +75,9 @@ test('enlace que descarga un ejecutable o un comprimido', () => {
   assert.deepEqual(ids(detect(withLinks('https://files.example.net/factura.exe'))), ['links.download:high']);
   assert.deepEqual(ids(detect(withLinks('https://files.example.net/docs/fotos.zip?x=1'))), ['links.download:medium']);
 });
+
+test('punycode de un dominio internacional normal es leve y se muestra en Unicode', () => {
+  const found = detect(withLinks('https://xn--espaa-rta.es/'));
+  assert.deepEqual(ids(found), ['links.punycode:low']);
+  assert.match(found[0].detail, /españa\.es/);
+});
