@@ -41,10 +41,41 @@ test('adjunto quoted-printable y 7bit', () => {
   assert.equal(parseEml(withAttachment('7bit', 'abc')).attachments[0].sha256, ABC_SHA);
 });
 
-test('base64 corrupto no lanza', () => {
-  const [a] = parseEml(withAttachment('base64', '@@@')).attachments;
+test('base64 corrupto no lanza ni publica el hash del fichero vacío', () => {
+  const email = parseEml(withAttachment('base64', '@@@'));
+  const [a] = email.attachments;
   assert.equal(a.bytes.length, 0);
-  assert.equal(a.sha256, EMPTY_SHA);
+  assert.equal(a.sha256, null);
+  assert.ok(codes(email).includes('mime.bad-base64'));
+});
+
+test('base64 truncado conserva el prefijo válido y no da hash', () => {
+  const email = parseEml(withAttachment('base64', 'YWJjZ'));
+  const [a] = email.attachments;
+  assert.deepEqual([...a.bytes], [97, 98, 99]);
+  assert.equal(a.sha256, null);
+  assert.ok(codes(email).includes('mime.bad-base64'));
+});
+
+test('base64 válido sin relleno no se marca como corrupto', () => {
+  const email = parseEml(withAttachment('base64', 'YWI'));
+  assert.deepEqual([...email.attachments[0].bytes], [97, 98]);
+  assert.ok(email.attachments[0].sha256);
+  assert.ok(!codes(email).includes('mime.bad-base64'));
+});
+
+test('adjunto 8bit con caracteres no Latin-1 no da un hash falso', () => {
+  const email = parseEml(withAttachment('8bit', '😀😀'));
+  assert.equal(email.attachments[0].sha256, null);
+  assert.ok(codes(email).includes('mime.lossy-attachment'));
+});
+
+test('un adjunto quoted-printable de 5 MB se decodifica en menos de 1 s', () => {
+  const body = 'a'.repeat(75).concat('=\r\n').repeat(Math.ceil((5 * 1024 * 1024) / 78));
+  const start = performance.now();
+  const [a] = parseEml(withAttachment('quoted-printable', body)).attachments;
+  assert.ok(performance.now() - start < 1000, `${Math.round(performance.now() - start)} ms`);
+  assert.equal(a.size, 75 * Math.ceil((5 * 1024 * 1024) / 78));
 });
 
 test('adjunto mayor que el límite se trunca sin hash', () => {

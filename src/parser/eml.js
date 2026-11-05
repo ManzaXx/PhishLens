@@ -22,30 +22,56 @@ function bytesToString(bytes, charset = 'utf-8') {
   }
 }
 
-function base64ToBytes(b64) {
-  const clean = b64.replace(/[^A-Za-z0-9+/=]/g, '');
+/**
+ * Decodifica base64 de forma tolerante: conserva el prefijo válido y avisa (`lossy`)
+ * si había caracteres extraños, relleno en mitad del texto o un último carácter suelto.
+ * Los espacios y saltos de línea son normales y no cuentan como pérdida.
+ */
+function decodeBase64(b64) {
+  const compact = String(b64).replace(/[\s]/g, '');
+  let clean = compact.replace(/[^A-Za-z0-9+/]/g, '');
+  let lossy = !/^[A-Za-z0-9+/]*={0,2}$/.test(compact);
+  if (clean.length % 4 === 1) {
+    clean = clean.slice(0, -1);
+    lossy = true;
+  }
   try {
     const bin = atob(clean);
-    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return { bytes, lossy };
   } catch {
-    return new Uint8Array();
+    return { bytes: new Uint8Array(), lossy: true };
   }
 }
 
+function base64ToBytes(b64) {
+  return decodeBase64(b64).bytes;
+}
+
+const ENCODER = new TextEncoder();
+const HEX = (c) => (c >= 48 && c <= 57 ? c - 48 : c >= 65 && c <= 70 ? c - 55 : c >= 97 && c <= 102 ? c - 87 : -1);
+
+/** Quoted-printable a bytes en tiempo lineal y sin crear objetos por carácter. */
 function qpToBytes(text, isHeader = false) {
-  let src = isHeader ? text.replace(/_/g, ' ') : text.replace(/=\r?\n/g, '');
-  const bytes = [];
+  const src = isHeader ? text.replace(/_/g, ' ') : text.replace(/=\r?\n/g, '');
+  const out = new Uint8Array(src.length * 3);
+  let n = 0;
   for (let i = 0; i < src.length; i++) {
-    const hex = src.slice(i + 1, i + 3);
-    if (src[i] === '=' && /^[0-9A-Fa-f]{2}$/.test(hex)) {
-      bytes.push(parseInt(hex, 16));
+    const c = src.charCodeAt(i);
+    if (c === 61 && i + 2 < src.length && HEX(src.charCodeAt(i + 1)) >= 0 && HEX(src.charCodeAt(i + 2)) >= 0) {
+      out[n++] = HEX(src.charCodeAt(i + 1)) * 16 + HEX(src.charCodeAt(i + 2));
       i += 2;
+    } else if (c < 0x80) {
+      out[n++] = c;
     } else {
-      // Caracteres ya no ASCII se codifican tal cual en UTF-8
-      bytes.push(...new TextEncoder().encode(src[i]));
+      // Caracteres no ASCII (ya decodificados por el lector de ficheros) se codifican en UTF-8.
+      const pair = c >= 0xd800 && c <= 0xdbff && i + 1 < src.length;
+      n += ENCODER.encodeInto(src.slice(i, pair ? i + 2 : i + 1), out.subarray(n)).written;
+      if (pair) i++;
     }
   }
-  return new Uint8Array(bytes);
+  return out.slice(0, n);
 }
 
 /** Decodifica palabras codificadas RFC 2047: =?charset?B|Q?texto?= */
@@ -164,12 +190,24 @@ function note(acc, code, detail) {
   acc.notes.push({ code, detail });
 }
 
-/** Bytes reales de un adjunto según su codificación de transferencia. */
+/**
+ * Bytes reales de un adjunto según su codificación de transferencia.
+ * `lossy` indica que el resultado no es fiel al fichero original y su hash engañaría.
+ */
 function attachmentBytes(body, encoding) {
   const enc = (encoding || '').toLowerCase().trim();
-  if (enc === 'base64') return base64ToBytes(body);
-  if (enc === 'quoted-printable') return qpToBytes(body);
-  return Uint8Array.from(body, (c) => c.charCodeAt(0) & 0xff);
+  if (enc === 'base64') return { ...decodeBase64(body), code: 'mime.bad-base64' };
+  if (enc === 'quoted-printable') return { bytes: qpToBytes(body), lossy: false };
+  // 7bit, 8bit o binary: el texto ya pasó por el decodificador UTF-8 del navegador, así que
+  // un carácter por encima de U+00FF significa que los bytes originales no se pueden recuperar.
+  const bytes = new Uint8Array(body.length);
+  let lossy = false;
+  for (let i = 0; i < body.length; i++) {
+    const c = body.charCodeAt(i);
+    if (c > 0xff) lossy = true;
+    bytes[i] = c & 0xff;
+  }
+  return { bytes, lossy, code: 'mime.lossy-attachment' };
 }
 
 function walkPart(headers, body, acc, depth = 0) {
@@ -207,7 +245,12 @@ function walkPart(headers, body, acc, depth = 0) {
       note(acc, 'limit.attachments', `Más de ${LIMITS.attachments} adjuntos; el resto no se ha analizado.`);
       return;
     }
-    const all = attachmentBytes(body, headers.get('content-transfer-encoding')?.[0]);
+    const { bytes: all, lossy, code } = attachmentBytes(body, headers.get('content-transfer-encoding')?.[0]);
+    if (lossy) {
+      note(acc, code, code === 'mime.bad-base64'
+        ? 'Algún adjunto tiene base64 corrupto o truncado; se conserva lo legible pero no se calcula su hash.'
+        : 'Algún adjunto 8bit no se puede reconstruir byte a byte; no se calcula su hash.');
+    }
     const truncated = all.length > LIMITS.attachmentBytes;
     if (truncated) note(acc, 'limit.attachment-bytes', `Algún adjunto supera ${LIMITS.attachmentBytes} bytes; se ha recortado y no se calcula su hash.`);
     const bytes = truncated ? all.slice(0, LIMITS.attachmentBytes) : all;
@@ -216,7 +259,8 @@ function walkPart(headers, body, acc, depth = 0) {
       contentType: type.value,
       size: all.length,
       bytes,
-      sha256: truncated ? null : sha256(bytes),
+      // Un hash parcial, deformado o del fichero vacío engañaría como IOC.
+      sha256: truncated || lossy || bytes.length === 0 ? null : sha256(bytes),
       truncated,
     });
     return;
