@@ -19,7 +19,7 @@ export const BRANDS = [
   { name: 'LinkedIn', keywords: ['linkedin'], domains: ['linkedin.com'] },
   // Marcas muy suplantadas en España (PR3). `checked`: fecha en que se confirmó cada dominio
   // con una página servida desde él o con la ayuda oficial de la marca (`source`).
-  { name: 'ING', keywords: ['ing', 'ing direct'], domains: ['ing.es'], checked: '2026-11-05', source: 'https://ing.es/sobre-ing/prensa/' },
+  { name: 'ING', keywords: ['ing direct', 'ing bank', 'banco ing'], domains: ['ing.es'], checked: '2026-11-05', source: 'https://ing.es/sobre-ing/prensa/' },
   { name: 'Banco Sabadell', keywords: ['sabadell'], domains: ['bancsabadell.com'], checked: '2026-11-05', source: 'https://prensa.bancsabadell.com/' },
   { name: 'Bankinter', keywords: ['bankinter'], domains: ['bankinter.com'], checked: '2026-11-05', source: 'https://www.bankinter.com/webcorporativa/' },
   { name: 'Unicaja', keywords: ['unicaja'], domains: ['unicajabanco.es', 'unicajabanco.com'], checked: '2026-11-05', source: 'https://www.unicajabanco.es/en/legales/aviso-legal' },
@@ -32,7 +32,8 @@ export const BRANDS = [
   { name: 'GLS', keywords: ['gls'], domains: ['gls-group.com', 'gls-group.eu'], checked: '2026-11-05', source: 'https://gls-group.com/ES/es/sobre-nosotros/' },
   { name: 'Movistar', keywords: ['movistar'], domains: ['movistar.es', 'movistarplus.es'], checked: '2026-11-05', source: 'https://comunidad.movistar.es/' },
   { name: 'Vodafone', keywords: ['vodafone'], domains: ['vodafone.es', 'vodafone.com'], ccTLD: true, checked: '2026-11-05', source: 'https://www.vodafone.es/c/conocenos/es/aviso-legal/' },
-  { name: 'Orange', keywords: ['orange'], domains: ['orange.es'], ccTLD: true, checked: '2026-11-05', source: 'https://www.orange.es/static/pdf/Condiciones_Legales_Orange_Promociones.pdf' },
+  // orange-business.com: Orange Business, filial del grupo (https://en.wikipedia.org/wiki/Orange_Business, 2026-11-05).
+  { name: 'Orange', keywords: ['orange'], domains: ['orange.es', 'orange-business.com'], ccTLD: true, checked: '2026-11-05', source: 'https://www.orange.es/static/pdf/Condiciones_Legales_Orange_Promociones.pdf' },
   { name: 'Endesa', keywords: ['endesa'], domains: ['endesa.com'], checked: '2026-11-05', source: 'https://www.endesa.com/es/te-ayudamos' },
   { name: 'Iberdrola', keywords: ['iberdrola'], domains: ['iberdrola.es', 'iberdrola.com', 'iberdrolaespana.com'], checked: '2026-11-05', source: 'https://www.iberdrola.com/about-us/iberdrola-espana' },
   { name: 'DocuSign', keywords: ['docusign'], domains: ['docusign.com', 'docusign.net'], checked: '2026-11-05', source: 'https://www.docusign.com/trust/alerts/fraud-alert-spoofed-docusign-emails-june-1-2025' },
@@ -40,5 +41,5 @@ export const BRANDS = [
   { name: 'WeTransfer', keywords: ['wetransfer'], domains: ['wetransfer.com'], checked: '2026-11-05', source: 'https://wetransfer.com/resources/send-large-files' },
   { name: 'Binance', keywords: ['binance'], domains: ['binance.com'], checked: '2026-11-05', source: 'https://www.binance.com/en/blog/security/7696837599073467231' },
   { name: 'Coinbase', keywords: ['coinbase'], domains: ['coinbase.com'], checked: '2026-11-05', source: 'https://support.coinbase.com/' },
-  { name: 'Steam', keywords: ['steam'], domains: ['steampowered.com', 'steamcommunity.com'], checked: '2026-11-05', source: 'https://help.steampowered.com/' },
+  { name: 'Steam', keywords: ['steam support', 'steampowered', 'steamcommunity'], domains: ['steampowered.com', 'steamcommunity.com'], checked: '2026-11-05', source: 'https://help.steampowered.com/' },
 ];

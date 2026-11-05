@@ -142,3 +142,7 @@ test('homógrafos de marca con letras latinas raras u otros alfabetos (ɑpple, C
 test('una etiqueta Unicode que no dibuja ninguna marca no es homógrafo', () => {
   assert.deepEqual(lookIds(host('café.es'), host('zürich.ch')), []);
 });
+
+test('marcas que son palabras corrientes no cuentan en subdominios ajenos (www.ing.unipi.it)', () => {
+  assert.deepEqual(lookIds('www.ing.unipi.it', 'orange-business.com'), []);
+});

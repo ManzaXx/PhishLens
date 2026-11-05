@@ -62,3 +62,9 @@ test('Sender de otro dominio con firma DKIM de ese dominio no cuenta', () => {
   assert.deepEqual(ids(detect(mail('DKIM-Signature: v=1; a=rsa-sha256; d=plataforma.test; s=s1; h=from; bh=x; b=y\nFrom: Tienda <info@tienda.test>\nSender: envios@plataforma.test'))), []);
   assert.deepEqual(ids(detect(mail('From: Tienda <info@tienda.test>\nSender: otro@tienda.test'))), []);
 });
+
+test('"Ing." o "Steam Cleaning" en el nombre no son ING ni Steam', () => {
+  assert.deepEqual(ids(detect(mail('From: "Ing. Carlos López" <carlos@estudio.test>'))), []);
+  assert.deepEqual(ids(detect(mail('From: "Steam Cleaning Co" <info@limpiezas.test>'))), []);
+  assert.ok(ids(detect(mail('From: "ING Direct" <avisos@x.test>'))).some((x) => x.startsWith('sender.brand-impersonation')));
+});

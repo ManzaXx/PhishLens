@@ -88,8 +88,11 @@ export function findLookalike(domain) {
       }
     }
   }
+  // Las marcas que son palabras corrientes (ing, orange…) solo cuentan en la etiqueta que se
+  // registra: www.ing.unipi.it es la facultad de ingeniería, no ING.
+  const regTokens = new Set([reg.split('.')[0], ...reg.split('.')[0].split('-')]);
   for (const token of tokens) {
-    const hit = BRAND_KEYS.find(({ key }) => key === token);
+    const hit = BRAND_KEYS.find(({ key }) => key === token && (!NO_FUZZY.has(key) || regTokens.has(token)));
     if (hit) {
       const access = [...tokens].find((t) => ACCESS_WORDS.has(t)) ?? null;
       return { brand: hit.brand, domain: reg, kind: 'brand-in-domain', token, access };
