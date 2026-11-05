@@ -1,10 +1,10 @@
-Received: from vps-4471.hosting-barato.test (unknown [203.0.113.66]) by mx.example.com; Wed, 21 Oct 2026 07:03:04 +0200
-Received: from [10.8.0.3] (unknown [198.51.100.23]) by vps-4471.hosting-barato.test; Wed, 21 Oct 2026 07:03:01 +0200
-Return-Path: <bounce@mailer-masivo.test>
 Authentication-Results: mx.example.com;
  spf=fail smtp.mailfrom=mailer-masivo.test;
  dkim=none;
  dmarc=fail header.from=santander-seguridad.test
+Received: from vps-4471.hosting-barato.test (unknown [203.0.113.66]) by mx.example.com; Wed, 21 Oct 2026 07:03:04 +0200
+Received: from [10.8.0.3] (unknown [198.51.100.23]) by vps-4471.hosting-barato.test; Wed, 21 Oct 2026 07:03:01 +0200
+Return-Path: <bounce@mailer-masivo.test>
 From: "Banco Santander" <avisos@santander-seguridad.test>
 Reply-To: soporte.clientes@correo-rapido.test
 To: pablo@example.com

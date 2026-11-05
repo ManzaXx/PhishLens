@@ -1,9 +1,9 @@
-Received: from a10-17.smtp-out.amazonses.com (a10-17.smtp-out.amazonses.com [54.240.10.17]) by mx.example.com; Mon, 19 Oct 2026 18:40:02 +0200
-Return-Path: <envios@amazon.es>
 Authentication-Results: mx.example.com;
  spf=pass smtp.mailfrom=amazon.es;
  dkim=pass header.d=amazon.es;
  dmarc=pass header.from=amazon.es
+Received: from a10-17.smtp-out.amazonses.com (a10-17.smtp-out.amazonses.com [54.240.10.17]) by mx.example.com; Mon, 19 Oct 2026 18:40:02 +0200
+Return-Path: <envios@amazon.es>
 From: "Amazon.es" <confirmar-envio@amazon.es>
 To: pablo@example.com
 Subject: Tu pedido de Amazon.es se ha enviado

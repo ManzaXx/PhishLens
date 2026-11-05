@@ -1,5 +1,5 @@
-Received: from smtp.cloud-mailer.test (smtp.cloud-mailer.test [203.0.113.140]) by mx.example.com; Wed, 21 Oct 2026 12:30:05 +0200
 Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=cloud-mailer.test; dkim=none; dmarc=none
+Received: from smtp.cloud-mailer.test (smtp.cloud-mailer.test [203.0.113.140]) by mx.example.com; Wed, 21 Oct 2026 12:30:05 +0200
 From: =?UTF-8?B?UNCweXBhbCDCtyBTZWd1cmlkYWQ=?= <seguridad@cloud-mailer.test>
 To: pablo@example.com
 Subject: =?UTF-8?Q?Actividad_inusual_en_tu_cuenta_=E2=80=8B?=

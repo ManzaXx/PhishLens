@@ -1,9 +1,9 @@
-Received: from mail.aerovelo.example (mail.aerovelo.example [192.0.2.25]) by mx.example.com; Tue, 20 Oct 2026 09:12:03 +0200
-Return-Path: <rebotes@mail.aerovelo.example>
 Authentication-Results: mx.example.com;
  spf=pass smtp.mailfrom=mail.aerovelo.example;
  dkim=pass header.d=aerovelo.example;
  dmarc=pass header.from=aerovelo.example
+Received: from mail.aerovelo.example (mail.aerovelo.example [192.0.2.25]) by mx.example.com; Tue, 20 Oct 2026 09:12:03 +0200
+Return-Path: <rebotes@mail.aerovelo.example>
 From: AEROVELO <novedades@aerovelo.example>
 To: pablo@example.com
 Subject: =?UTF-8?Q?Nuevas_bicis_de_gravel_en_el_cat=C3=A1logo?=
