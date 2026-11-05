@@ -2,6 +2,7 @@
 // mecanismos que no necesitan consultas (ip4, ip6, all). Si antes de un acierto aparece uno
 // que sí las necesita (include, a, mx…), el resultado honesto es "no verificable".
 import { receivingHop } from './trust.js';
+import { parseIp } from '../lib/ip.js';
 
 const QUALIFIERS = { '+': 'pass', '-': 'fail', '~': 'softfail', '?': 'neutral' };
 const NEEDS_DNS = /^(include|a|mx|ptr|exists)(?=$|[:/])/;
@@ -10,32 +11,6 @@ const MAX_TERMS = 50;
 /** IP del servidor que entregó el correo al receptor, o null. */
 export function originIp(email) {
   return receivingHop(email).entry?.ip || null;
-}
-
-function ipv4(text) {
-  const parts = String(text).split('.');
-  if (parts.length !== 4 || parts.some((p) => !/^\d{1,3}$/.test(p) || Number(p) > 255)) return null;
-  return parts.reduce((n, p) => (n << 8n) | BigInt(p), 0n);
-}
-
-function ipv6(text) {
-  const value = String(text).toLowerCase();
-  if (!/^[0-9a-f:]+$/.test(value) || (value.match(/::/g) ?? []).length > 1) return null;
-  const [left, right = null] = value.split('::');
-  const l = left ? left.split(':') : [];
-  const r = right ? right.split(':') : [];
-  const missing = 8 - l.length - r.length;
-  if ((right === null && missing !== 0) || missing < 0) return null;
-  const groups = [...l, ...Array(right === null ? 0 : missing).fill('0'), ...r];
-  if (groups.some((g) => !/^[0-9a-f]{1,4}$/.test(g))) return null;
-  return groups.reduce((n, g) => (n << 16n) | BigInt(parseInt(g, 16)), 0n);
-}
-
-function parseIp(text) {
-  const v4 = ipv4(text);
-  if (v4 !== null) return { family: 4, value: v4, bits: 32 };
-  const v6 = ipv6(text);
-  return v6 !== null ? { family: 6, value: v6, bits: 128 } : null;
 }
 
 /** ¿Está la IP dentro del rango "red/prefijo"? null si el rango no es válido. */

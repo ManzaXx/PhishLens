@@ -33,6 +33,7 @@ const RULES = [
   [/^language\.credentials$/, 'T1598'],
   [/^language\./, 'T1204'],
   [/^headers\./, 'T1566'],
+  [/^route\.helo-mismatch$/, 'T1672'],
 ];
 
 /** Técnica ATT&CK asociada a un id de hallazgo, o null. */

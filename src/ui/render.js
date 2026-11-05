@@ -13,6 +13,7 @@ export const DETECTOR_LABELS = {
   auth: 'Autenticación',
   sender: 'Remitente',
   headers: 'Cabeceras técnicas',
+  route: 'Ruta del correo',
   links: 'Enlaces',
   lookalike: 'Dominios parecidos',
   attachments: 'Adjuntos',

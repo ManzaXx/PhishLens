@@ -1,0 +1,87 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { parseEml } from '../../src/parser/eml.js';
+import { detect } from '../../src/detectors/route.js';
+import { isReservedIp } from '../../src/lib/ip.js';
+
+const sample = (name) => parseEml(readFileSync(new URL(`../../samples/${name}.eml`, import.meta.url), 'utf8'));
+const mail = (...received) => parseEml(`${received.map((r) => `Received: ${r}`).join('\r\n')}\r\nFrom: a@b.test\r\n\r\nhola`);
+const ids = (email) => detect(email).map((f) => f.id);
+
+test('isReservedIp', () => {
+  for (const ip of ['10.1.2.3', '172.16.0.1', '172.31.255.255', '192.168.1.1', '100.64.0.1', '127.0.0.1', '169.254.1.1', '::1', 'fd00::1', 'fe80::1']) assert.equal(isReservedIp(ip), true, ip);
+  for (const ip of ['203.0.113.66', '172.32.0.1', '8.8.8.8', '2001:4860::1', 'no-ip', '']) assert.equal(isReservedIp(ip), false, ip);
+});
+
+test('IP privada en el salto que entra al receptor', () => {
+  const email = mail('from x.attacker.test (x.attacker.test [192.168.1.20]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000');
+  const f = detect(email).find((x) => x.id === 'route.private-ip-boundary');
+  assert.ok(f);
+  assert.equal(f.severity, 'medium');
+});
+
+test('IP privada entre servidores internos del receptor no cuenta', () => {
+  const email = mail(
+    'from mx-in.example.com (mx-in.example.com [10.0.0.5]) by store.example.com; Wed, 21 Oct 2026 07:03:06 +0000',
+    'from out.b.test (out.b.test [198.51.100.7]) by mx-in.example.com; Wed, 21 Oct 2026 07:03:05 +0000',
+  );
+  assert.deepEqual(ids(email), []);
+});
+
+test('salto anterior al previo en más de 5 minutos', () => {
+  const email = mail(
+    'from relay.b.test (relay.b.test [198.51.100.7]) by mx.example.com; Wed, 21 Oct 2026 07:00:00 +0000',
+    'from app.b.test by relay.b.test; Wed, 21 Oct 2026 07:10:00 +0000',
+  );
+  assert.ok(ids(email).includes('route.time-travel'));
+});
+
+test('zonas horarias distintas y relojes desfasados menos de 5 min no viajan en el tiempo', () => {
+  const email = mail(
+    'from relay.b.test (relay.b.test [198.51.100.7]) by mx.example.com; Wed, 21 Oct 2026 16:03:00 +0200',
+    'from app.b.test by relay.b.test; Wed, 21 Oct 2026 07:05:00 -0700',
+  );
+  assert.deepEqual(ids(email), []);
+});
+
+test('más de 24 h de entrega', () => {
+  const email = mail(
+    'from relay.b.test (relay.b.test [198.51.100.7]) by mx.example.com; Thu, 22 Oct 2026 08:00:00 +0000',
+    'from app.b.test by relay.b.test; Wed, 21 Oct 2026 07:00:00 +0000',
+  );
+  const f = detect(email).find((x) => x.id === 'route.slow-delivery');
+  assert.equal(f?.severity, 'low');
+});
+
+test('más de 25 saltos', () => {
+  const hops = Array.from({ length: 26 }, (_, i) => `from h${i + 1}.b.test by h${i}.b.test; Wed, 21 Oct 2026 07:00:00 +0000`);
+  assert.ok(ids(mail(...hops)).includes('route.too-many-hops'));
+  assert.ok(!ids(mail(...hops.slice(0, 25))).includes('route.too-many-hops'));
+});
+
+test('Received ilegibles', () => {
+  const f = detect(mail('???', '!!!')).find((x) => x.id === 'route.unparseable');
+  assert.equal(f?.severity, 'info');
+});
+
+test('HELO que dice ser PayPal desde otro servidor', () => {
+  const email = mail('from mail.paypal.com (vps.hosting.test [203.0.113.9]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000');
+  const f = detect(email).find((x) => x.id === 'route.helo-mismatch');
+  assert.equal(f?.severity, 'high');
+  assert.equal(f.mitre.id, 'T1672');
+});
+
+test('HELO de PayPal con rDNS de PayPal, o HELO no oficial, no da helo-mismatch', () => {
+  assert.deepEqual(ids(mail('from mail.paypal.com (mx1.paypal.com [64.4.250.33]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000')), []);
+  assert.deepEqual(ids(mail('from vps.hosting.test (vps.hosting.test [203.0.113.9]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000')), []);
+});
+
+test('las muestras legítimas no dan ningún route.*', () => {
+  assert.deepEqual(ids(sample('01-legitimo-newsletter')), []);
+  assert.deepEqual(ids(sample('02-legitimo-pedido')), []);
+});
+
+test('sin cabeceras no opina', () => {
+  assert.deepEqual(detect(parseEml('solo texto')), []);
+});
