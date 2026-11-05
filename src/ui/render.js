@@ -448,7 +448,7 @@ export function renderReport(container, report, options = {}) {
 
 /** Informe serializado para descargar. */
 export function reportToJson(report) {
-  return JSON.stringify({ tool: 'PhishLens', version: '2.2.0-dev', generatedAt: new Date().toISOString(), ...report }, null, 2);
+  return JSON.stringify({ tool: 'PhishLens', version: '2.2.0', generatedAt: new Date().toISOString(), ...report }, null, 2);
 }
 
 export { iocsToText };

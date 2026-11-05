@@ -1,6 +1,6 @@
 {
   "name": "phishlens",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Analizador de phishing 100 % en el navegador",
   "type": "module",
   "private": true,
@@ -10,7 +10,8 @@
     "fuzz": "FUZZ_ITER=20000 node --test tests/fuzz/fuzz.test.js",
     "bench": "node --expose-gc tools/bench.mjs",
     "samples": "node tools/gen-samples.mjs",
-    "test:e2e": "node --test tests/e2e/*.e2e.js"
+    "test:e2e": "node --test tests/e2e/*.e2e.js",
+    "coverage": "node tools/gen-coverage.mjs"
   },
   "license": "MIT",
   "devDependencies": {

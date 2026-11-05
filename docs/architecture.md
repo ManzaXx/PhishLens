@@ -57,7 +57,7 @@ Además de `from`, `replyTo`, `returnPath`, `subject`, `text`, `html`, `links` y
 
 ## Límites
 
-Todos en `src/lib/limits.js`: profundidad MIME 20, 500 partes, 200 enlaces, 100 adjuntos, 10 MB por adjunto y 25 MB de cuerpo crudo. Alcanzar uno nunca rompe el análisis: se anota en `parseNotes`.
+Todos en `src/lib/limits.js`: entrada de 25 MB, 1.000 cabeceras de hasta 64 KB, profundidad MIME 20, 500 partes, 200 enlaces, 100 adjuntos, 10 MB decodificados por adjunto y 25 MB de cuerpo crudo. Alcanzar uno nunca rompe el análisis: se anota en `parseNotes`.
 
 ## Decisiones
 

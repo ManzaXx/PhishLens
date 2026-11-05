@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.2.0 · en desarrollo · Motor fiable
+## 2.2.0 · 2026-11-05 · Motor fiable
 
 Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/2026-11-05-phishlens-2.2-design.md).
 
@@ -23,6 +23,13 @@ Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/20
 - **MITRE ATT&CK 20.1** fijado y comprobado contra el bundle STIX oficial (`tools/check-mitre.mjs`): varias técnicas por señal, con su táctica y el motivo.
 - [ADR 0002](docs/adr/0002-autenticacion-offline.md) y primera versión de [limitaciones](docs/limitations.md).
 - Documentación de [arquitectura](docs/architecture.md) y primer ADR.
+- **Límites de 2.2**: entrada de 25 MB, 1.000 cabeceras y 64 KB por cabecera, sin lanzar nunca; los adjuntos enormes no se decodifican enteros.
+- **Detector `mime`**: cabecera sin `:`, `Content-Type` repetido, boundary reutilizado o dentro del contenido, `message/rfc822` anidado y charset contradictorio, con tests diferenciales que documentan qué decide PhishLens en cada caso ambiguo.
+- **Fuzzing con semilla** (2.000 casos en CI, `npm run fuzz` para 20.000), test de rendimiento hasta 25 MB y [benchmark](docs/benchmark.md).
+- **Privacidad en un Chromium real** (`npm run test:e2e`): las 10 muestras y un correo lleno de contenido remoto, por todas las pestañas y en los dos temas, sin una sola petición fuera del origen; con control negativo.
+- **Accesibilidad comprobada** con axe-core (cero problemas serios o críticos) y con teclado.
+- [Modelo de amenazas](docs/threat-model.md), [auditoría de seguridad](docs/security-audit.md), [ADR 0003](docs/adr/0003-sin-web-worker.md) y [matriz de cobertura](docs/coverage-matrix.md) generada (`npm run coverage`).
+- CI con job de navegador, `npm audit` y Dependabot para npm y Actions.
 - Tests nuevos: golden de las 7 muestras (demuestra que la reestructura no cambia ningún veredicto), SHA-256 con vectores de NIST y regla de dependencias entre capas.
 
 ### Cambiado
@@ -30,6 +37,10 @@ Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/20
 - ATT&CK 20 revocó T1656 y T1672: las señales de suplantación pasan a **T1684.001** y las de cabeceras falseadas a **T1684.002**. Las cabeceras técnicas genéricas ya no se asocian a ninguna técnica.
 - `links.punycode` es leve salvo que el dominio imite letras latinas: un dominio internacional normal (`españa.es`) ya no se marca como grave.
 - Código reorganizado en `core/`, `parser/`, `intel/` y `lib/`; tests en `tests/unit/`.
+- `connect-src` baja de `'self'` a `'none'`: las muestras van dentro de `samples/data.js` (`npm run samples`) en lugar de pedirse por red. Se añade `x-dns-prefetch-control: off`.
+- Al imprimir, los «¿Por qué?» se abren y el informe sale en claro aunque la pantalla esté en oscuro. La cifra de cada categoría se lee «18 de 20» con lector de pantalla y su nombre ya no se corta.
+- «Una señal grave o media» en singular, y con nota 0 el informe ya no repite que no hay señales.
+- `auth.missing` (no hay cabeceras de autenticación) ya no se asocia a T1684.002: no tenerlas no es falsificarlas.
 - `proyectoCiber/` es autónomo, con sus propios workflows, para poder publicarlo como repositorio independiente.
 
 ### Seguridad

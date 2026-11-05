@@ -1,0 +1,60 @@
+# Modelo de amenazas
+
+PhishLens analiza correos escritos por un atacante dentro del navegador de la víctima. Este documento dice qué se protege, de quién y con qué prueba. El resumen para usuarios está en [SECURITY.md](../SECURITY.md) y el estado punto por punto en [security-audit.md](security-audit.md).
+
+## Activos
+
+1. **El correo del usuario y su privacidad.** Nada de lo que se pega o arrastra puede salir del navegador: ni el texto, ni los dominios que contiene, ni el hecho de que se está analizando.
+2. **La integridad de la pestaña.** El correo no puede ejecutar código ni cambiar lo que el informe dice.
+3. **La honestidad del veredicto.** El informe no puede decir «verificado» de algo que solo declara una cabecera.
+
+## Adversarios
+
+| Adversario | Qué controla | Qué quiere |
+| --- | --- | --- |
+| **Remitente malicioso** | Todo el `.eml`: cabeceras, MIME, HTML, nombres y tamaño de adjuntos, codificaciones | Que el correo salga como legítimo, colgar o romper el análisis, ejecutar código o saber que lo están analizando (píxel, precarga DNS) |
+| **Página comprometida** | Una web que incrusta PhishLens o un fallo futuro en su propio código | Leer el correo y enviarlo fuera, o engañar al usuario con un marco |
+
+**Fuera de alcance:** un navegador o un sistema operativo comprometidos, extensiones del navegador y alguien con permiso de escritura en el repositorio.
+
+## Superficies y mitigaciones
+
+### Parser (`src/parser/`)
+
+| Riesgo | Mitigación | Prueba |
+| --- | --- | --- |
+| Entrada enorme o con miles de cabeceras | Límites en `src/lib/limits.js` (25 MB, 1.000 cabeceras, 64 KB por cabecera, 500 partes, 20 niveles). Nunca lanzan: anotan y bajan la confianza | `tests/unit/limits.test.js`, `tests/perf/perf.test.js` |
+| ReDoS y entradas patológicas | Regex acotadas, textos recortados antes de buscar | `tests/unit/security.test.js` |
+| Entradas aleatorias que rompen el parser | Cada detector aislado; el motor nunca lanza | `tests/fuzz/fuzz.test.js` (semilla fija, 2.000 casos; `npm run fuzz` para 20.000) |
+| MIME ambiguo: el filtro ve una cosa y el cliente otra | Las ambigüedades se convierten en hallazgos `mime.*` en vez de pasar en silencio | `tests/differential/differential.test.js` |
+| Contaminación de prototipos | `Object.hasOwn` y `Object.create(null)` | `tests/unit/security.test.js` |
+
+### Render (`src/ui/`)
+
+| Riesgo | Mitigación | Prueba |
+| --- | --- | --- |
+| XSS con el HTML del correo | Solo `textContent`; el HTML se recorre sin crear nodos; ningún `innerHTML`, `document.write` ni `eval` en `src/` | `tests/unit/security.test.js` |
+| Trojan Source, RLO, invisibles | Se muestran como `⟦U+202E⟧` | `tests/unit/security.test.js` |
+| Clickjacking | La página no se ejecuta dentro de un iframe | Revisión manual (`src/ui/app.js`) |
+| Veredicto engañoso | Estados de autenticación separados y nunca «verificado» sin comprobarlo | `tests/unit/auth-evaluate.test.js` |
+
+### CSP y red (`index.html`)
+
+| Riesgo | Mitigación | Prueba |
+| --- | --- | --- |
+| Fuga por `fetch`, píxel, CSS o precarga | `default-src 'none'`, `connect-src 'none'`, `img-src 'self' data:`, `x-dns-prefetch-control: off`, `no-referrer`; las muestras van dentro de `samples/data.js` | `tests/e2e/privacy.e2e.js` en Chromium real, con control negativo que sí filtra |
+| Un fallo futuro que inserte HTML | Trusted Types (`require-trusted-types-for 'script'; trusted-types 'none'`) | `tests/unit/security.test.js` |
+| Worker sin CSP | `worker-src 'none'`, ver [ADR 0003](adr/0003-sin-web-worker.md) | `tests/unit/security.test.js` |
+
+### Cadena de suministro
+
+| Riesgo | Mitigación | Prueba |
+| --- | --- | --- |
+| Dependencia maliciosa en la web | Cero dependencias en ejecución ([ADR 0001](adr/0001-sin-dependencias-en-ejecucion.md)); Playwright y axe-core solo en tests, fijados en `package-lock.json` | `tests/unit/security.test.js` (sin `dependencies` ni imports externos) |
+| Actions o paquetes comprometidos | Actions fijadas por SHA, `persist-credentials: false`, `npm ci --ignore-scripts`, `npm audit` y Dependabot | CI (`.github/workflows/phishlens-tests.yml`) |
+
+## Riesgos aceptados
+
+- La CSP va en un `<meta>`: no hay `frame-ancestors` ni cabeceras de respuesta (GitHub Pages no lo permite).
+- El análisis corre en el hilo principal: con 25 MB la pestaña puede quedarse quieta unas décimas de segundo.
+- El test de privacidad solo usa Chromium. Firefox y Safari aplican la misma CSP, pero no se prueban en CI.

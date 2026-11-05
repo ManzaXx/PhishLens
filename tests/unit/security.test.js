@@ -1,7 +1,9 @@
 // Pruebas de seguridad: entradas hostiles que intentan romper, bloquear o engañar a PhishLens.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseEml, parseAddress } from '../../src/parser/eml.js';
 import { decodeEntities, htmlToText } from '../../src/parser/html.js';
 import { analyzeInput } from '../../src/core/engine.js';
@@ -105,4 +107,21 @@ test('la CSP de index.html prohíbe toda conexión y la precarga de DNS está ap
   assert.match(csp, /(^|;)\s*connect-src 'none'\s*(;|$)/);
   assert.match(csp, /(^|;)\s*default-src 'none'\s*(;|$)/);
   assert.match(html, /<meta http-equiv="x-dns-prefetch-control" content="off">/);
+  for (const d of ["worker-src 'none'", "script-src 'self'", "require-trusted-types-for 'script'", "trusted-types 'none'", "object-src 'none'", "base-uri 'none'", "form-action 'none'"]) {
+    assert.ok(csp.split(';').map((x) => x.trim()).includes(d), `falta ${d}`);
+  }
+  assert.doesNotMatch(csp, /unsafe-(inline|eval)/);
+});
+
+test('el código de la web no escribe HTML ni evalúa texto, y no tiene dependencias', () => {
+  const walk = (dir) => readdirSync(dir, { withFileTypes: true })
+    .flatMap((d) => (d.isDirectory() ? walk(join(dir, d.name)) : d.name.endsWith('.js') ? [join(dir, d.name)] : []));
+  const src = fileURLToPath(new URL('../../src', import.meta.url));
+  for (const file of walk(src)) {
+    const code = readFileSync(file, 'utf8');
+    assert.doesNotMatch(code, /\.(innerHTML|outerHTML)\s*=|insertAdjacentHTML|document\.write|\beval\(|new Function\(/, file);
+    for (const [, spec] of code.matchAll(/^\s*(?:import|export)[^'"]*from\s+['"]([^'"]+)['"]/gm)) assert.ok(spec.startsWith('.'), `${file} importa ${spec}`);
+  }
+  const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
+  assert.equal(pkg.dependencies, undefined, 'la web no tiene dependencias en ejecución');
 });

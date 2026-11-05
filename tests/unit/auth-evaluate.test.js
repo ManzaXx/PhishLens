@@ -159,3 +159,18 @@ test('solo una firma verificada con la clave y alineada es señal a favor; un bh
   assert.equal(t?.polarity, 'trust');
   assert.equal(t.provenance, 'verified');
 });
+
+test('receptor de confianza dice dmarc=pass sin nada alineado: auth.dmarc-declared-mismatch', () => {
+  const email = parseEml([
+    'Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=envios.otro.test; dkim=pass header.d=otro.test; dmarc=pass header.from=banco.test',
+    'Received: from mail.otro.test (mail.otro.test [192.0.2.25]) by mx.example.com; Tue, 20 Oct 2026 09:12:03 +0200',
+    'From: Banco <avisos@banco.test>',
+    '',
+    'hola',
+  ].join('\r\n'));
+  const found = detect(email);
+  const f = byId(found, 'auth.dmarc-declared-mismatch');
+  assert.ok(f, ids(found).join(', '));
+  assert.equal(f.severity, 'high');
+  assert.ok(!ids(found).includes('auth.dmarc-unaligned'), 'no se repite como dmarc-unaligned');
+});

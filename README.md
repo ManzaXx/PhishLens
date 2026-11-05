@@ -136,10 +136,13 @@ proyectoCiber/
 
 ```bash
 cd proyectoCiber
-node --test
+node --test                 # unitarios, golden, fuzzing (2.000 casos), diferenciales y rendimiento
+npm run fuzz                # 20.000 casos de fuzzing
+npm run bench               # reescribe docs/benchmark.md
+npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
 ```
 
-GitHub Actions ejecuta todos los tests en cada push (`.github/workflows/phishlens-tests.yml`). Cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, los 7 ejemplos de principio a fin y la resistencia a entradas maliciosas.
+GitHub Actions ejecuta todo en cada push (`.github/workflows/phishlens-tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 10 muestras de principio a fin y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
 
 ## 🌐 Publicar la demo
 

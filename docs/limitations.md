@@ -23,6 +23,13 @@ PhishLens trabaja sin red y en el navegador. Estas son las consecuencias, para q
 
 - La ruta se lee de las cabeceras `Received`, que el remitente puede inventar por debajo del salto de entrada. Las horas solo se comparan si se pueden interpretar, con 5 minutos de margen.
 
+## Tamaño y rendimiento
+
+- **Los límites cuentan caracteres, no bytes.** El navegador entrega el archivo como texto, así que los 25 MB son 25 millones de unidades UTF-16: un `.eml` con mucho texto no ASCII puede ocupar en disco hasta el doble.
+- **Sin Web Worker.** El análisis corre en el hilo principal ([ADR 0003](adr/0003-sin-web-worker.md)): con un correo enorme la página puede quedarse quieta unas décimas de segundo.
+- **Adjuntos de más de 10 MB.** No se decodifican enteros: su tamaño sale de la longitud del base64 y su SHA-256 no se calcula.
+- **Navegadores.** La privacidad y la accesibilidad se prueban en Chromium; Firefox y Safari aplican la misma CSP, pero no se prueban en CI.
+
 ## General
 
 - Son heurísticas: una nota baja no garantiza que un correo sea seguro.
