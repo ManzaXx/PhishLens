@@ -68,3 +68,9 @@ test('"Ing." o "Steam Cleaning" en el nombre no son ING ni Steam', () => {
   assert.deepEqual(ids(detect(mail('From: "Steam Cleaning Co" <info@limpiezas.test>'))), []);
   assert.ok(ids(detect(mail('From: "ING Direct" <avisos@x.test>'))).some((x) => x.startsWith('sender.brand-impersonation')));
 });
+
+test('dirección camuflada en el nombre con letras cirílicas o de ancho completo', () => {
+  for (const from of ['From: "seguridad@bbvа.es" <x@evil.test>', 'From: "soporte＠paypal.com" <x@evil.test>']) {
+    assert.ok(ids(detect(mail(from))).includes('sender.display-name-address:high'), from);
+  }
+});

@@ -60,10 +60,12 @@ function unicodeChecks(email) {
 }
 
 // Dirección dentro del nombre visible. Clases sin solapamiento para que sea lineal.
-const ADDRESS_IN_NAME = /[a-z0-9._%+-]+@([a-z0-9-]+(?:\.[a-z0-9-]+)+)/gi;
+// Letras de cualquier alfabeto: "seguridad@bbvа.es" con a cirílica también es una dirección.
+const ADDRESS_IN_NAME = /[\p{L}\p{N}._%+-]+@([\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+)/gu;
 
 function displayNameAddress(from, fromReg) {
-  const display = (from.name ?? '').slice(0, 1000);
+  // NFKC convierte "＠" y las letras de ancho completo en sus equivalentes normales.
+  const display = (from.name ?? '').slice(0, 1000).normalize('NFKC');
   for (const m of display.matchAll(ADDRESS_IN_NAME)) {
     if (registrableDomain(m[1]) === fromReg) continue;
     return [finding({
