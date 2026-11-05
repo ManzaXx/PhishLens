@@ -7,7 +7,7 @@
 **¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
 
 [![Tests](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml/badge.svg)](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml)
-![Tests](https://img.shields.io/badge/tests-142%20pasando-15803d)
+![Tests](https://img.shields.io/badge/tests-172%20pasando-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
@@ -80,13 +80,15 @@ Los ejemplos son ficticios: los dominios de los atacantes usan el TLD reservado 
 
 ## 🏗️ Arquitectura
 
+Detalle de capas, modelos de datos y límites en [docs/architecture.md](docs/architecture.md); decisiones en [docs/adr/](docs/adr/).
+
 ```mermaid
 flowchart LR
   A[".eml · texto · URL"] --> B["parser/eml.js<br/>parser/url.js"]
   B --> C{{"Objeto Email"}}
   C --> D1[auth] & D2[sender] & D3[headers] & D4[links] & D5[lookalike] & D6[attachments] & D7[html] & D8[language]
-  D1 & D2 & D3 & D4 & D5 & D6 & D7 & D8 --> E["engine.js<br/>puntuación + ATT&CK"]
-  C --> F["ioc.js<br/>IOCs defanged"]
+  D1 & D2 & D3 & D4 & D5 & D6 & D7 & D8 --> E["core/engine.js<br/>puntuación + ATT&CK"]
+  C --> F["intel/ioc.js<br/>IOCs defanged"]
   E & F --> G["ui/render.js<br/>(solo textContent)"]
 ```
 
@@ -95,18 +97,17 @@ proyectoCiber/
 ├── index.html               # Página única con CSP estricta
 ├── assets/                  # CSS (tema claro/oscuro), favicon e imagen para compartir
 ├── src/
-│   ├── parser/
-│   │   ├── eml.js           # RFC 5322 + MIME: cabeceras plegadas, multipart, base64, QP, RFC 2047/2231
-│   │   └── url.js           # URLs, dominio registrable y desenvoltura de Safe Links
-│   ├── detectors/           # 8 detectores con la misma interfaz: detect(email) -> Finding[]
+│   ├── lib/                 # Utilidades puras: SHA-256, límites, texto seguro
 │   ├── data/                # Marcas, listas de referencia, patrones y mapa MITRE ATT&CK
-│   ├── engine.js            # Ejecuta los detectores, puntúa y arma el informe
-│   ├── ioc.js               # Extracción y "defang" de indicadores
-│   ├── advice.js            # Recomendaciones según el veredicto
+│   ├── parser/              # eml.js (RFC 5322 + MIME), received.js, html.js (sin DOM), url.js
+│   ├── detectors/           # 8 detectores con la misma interfaz: detect(email) -> Finding[]
+│   ├── intel/               # Extracción y "defang" de indicadores, hashes de adjuntos
+│   ├── core/                # Modelo de hallazgo, motor y recomendaciones
 │   └── ui/                  # Render del informe, resaltado y controlador de la página
+├── docs/                    # Arquitectura, ADRs, especificaciones y planes
 ├── SECURITY.md              # Modelo de amenazas y mitigaciones
 ├── samples/                 # 7 emails .eml de ejemplo
-└── tests/                   # 142 tests con node:test
+└── tests/                   # unit/ y helpers/ con node:test
 ```
 
 ### Decisiones técnicas
@@ -126,7 +127,7 @@ cd proyectoCiber
 node --test
 ```
 
-GitHub Actions ejecuta los 142 tests en cada push (`.github/workflows/phishlens-tests.yml`). Cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, los 7 ejemplos de principio a fin y la resistencia a entradas maliciosas.
+GitHub Actions ejecuta todos los tests en cada push (`.github/workflows/phishlens-tests.yml`). Cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, los 7 ejemplos de principio a fin y la resistencia a entradas maliciosas.
 
 ## 🌐 Publicar la demo
 

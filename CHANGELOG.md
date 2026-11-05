@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.2.0 · en desarrollo · Motor fiable
+
+Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/2026-11-05-phishlens-2.2-design.md).
+
+### Añadido
+- **SHA-256 de cada adjunto**, calculado en local sin abrir el fichero, y exportado como IOC.
+- El parser conserva las cabeceras en orden con su texto crudo, el cuerpo sin decodificar y anota en `parseNotes` cada límite alcanzado o multipart sin cerrar.
+- Cada hallazgo indica su **categoría**, su **fiabilidad** y su **procedencia** (verificado, declarado, deducido o no verificable).
+- Documentación de [arquitectura](docs/architecture.md) y primer ADR.
+- Tests nuevos: golden de las 7 muestras (demuestra que la reestructura no cambia ningún veredicto), SHA-256 con vectores de NIST y regla de dependencias entre capas.
+
+### Cambiado
+- Código reorganizado en `core/`, `parser/`, `intel/` y `lib/`; tests en `tests/unit/`.
+- `proyectoCiber/` es autónomo, con sus propios workflows, para poder publicarlo como repositorio independiente.
+
+### Seguridad
+- `finding()` ya no acepta severidades heredadas del prototipo como `constructor`.
+- El informe exportado en JSON no incluye los bytes de los adjuntos.
+
 ## 2.1.0 · 2026-10-21 · Seguridad
 
 Auditoría de seguridad completa. Detalles en [SECURITY.md](SECURITY.md).
