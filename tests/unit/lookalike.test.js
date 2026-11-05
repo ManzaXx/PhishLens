@@ -124,3 +124,8 @@ test('marcas genéricas solo como etiqueta completa: sin falsos positivos por pa
   assert.deepEqual(lookIds('orange-factura.test'), ['lookalike.brand-in-domain:medium']);
   assert.deepEqual(lookIds('ing-acceso.test'), ['lookalike.brand-in-domain:high']);
 });
+
+test('la evidencia nombra las letras de otro alfabeto', () => {
+  const f = detectLookalike(linkMail(host('pаypal.com'))).find((x) => x.id === 'lookalike.mixed-script-domain');
+  assert.match(f.evidence, /U\+0430/);
+});

@@ -4,7 +4,7 @@ import { parseUrl, registrableDomain } from '../parser/url.js';
 import { BRANDS } from '../data/brands.js';
 import { isOfficialDomain } from './sender.js';
 import { toUnicode } from '../parser/punycode.js';
-import { sameShape, scriptsOf } from '../parser/skeleton.js';
+import { sameShape, scriptsOf, foreignLookalikes } from '../parser/skeleton.js';
 
 export const name = 'lookalike';
 
@@ -147,7 +147,8 @@ function lookalikeFinding(domain, hit) {
 }
 
 function scriptFinding(domain, hit) {
-  const shown = `${hit.unicode} (${domain})`;
+  const letters = foreignLookalikes(hit.label);
+  const shown = `${hit.unicode} (${domain})${letters.length ? ` · ${letters.slice(0, 6).join(' ')}` : ''}`;
   if (hit.kind === 'mixed-script-domain') {
     return finding({
       id: 'lookalike.mixed-script-domain', detector: name, severity: 'high',

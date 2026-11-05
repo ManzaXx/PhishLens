@@ -12,6 +12,24 @@ const SKEW_MS = 5 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_NORMAL_HOPS = 25;
 
+/**
+ * Avisos en texto para cada salto de la ruta del informe (en orden de llegada), con los
+ * mismos criterios que el detector. La interfaz nunca depende solo del color.
+ */
+export function hopWarnings(route) {
+  let previous = null;
+  return route.map((hop) => {
+    const out = [];
+    if (hop.entry) out.push('Entrada al servidor receptor');
+    if (hop.entry && hop.ip && isReservedIp(hop.ip)) out.push('IP privada en la frontera');
+    if (hop.time !== null && hop.time !== undefined) {
+      if (previous !== null && hop.time < previous - SKEW_MS) out.push('Hora anterior al salto previo');
+      previous = hop.time;
+    }
+    return out;
+  });
+}
+
 const hostsOf = (hop) => `${hop.helo || '¿?'} → ${hop.by || '¿?'}`;
 
 function timeFindings(hops) {

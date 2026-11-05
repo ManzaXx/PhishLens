@@ -12,6 +12,17 @@ PhishLens trabaja sin red y en el navegador. Estas son las consecuencias, para q
 - **Zona de confianza.** Se basa en el orden de las cabeceras `Received` y en el nombre inverso (rDNS) que escribe el receptor entre paréntesis: un salto solo cuenta como interno si ese nombre es de la organización receptora. Las `Authentication-Results` sin authserv-id (formato de Exchange Online) solo se aceptan si el receptor es un proveedor conocido. Un correo reenviado o retocado por un sistema intermedio puede romper la frontera; en ese caso las cabeceras quedan «sin confirmar», nunca «de confianza» por error.
 - **Alineación incompleta.** Si `Authentication-Results` da un `pass` sin `smtp.mailfrom` ni `header.d`, no se puede saber si estaba alineado y no se emite `auth.dmarc-unaligned`.
 
+## Dominios
+
+- **Confusables limitados a ASCII.** La tabla de Unicode 16 solo incluye caracteres que se confunden con `a–z` o `0–9`. Imitaciones entre dos alfabetos no latinos no se detectan.
+- **Palochka y ambigüedades ASCII.** Unicode 16 asigna `ӏ` a `i`, pero en pantalla se lee como `l`; por eso la comparación pliega también `i/l/1`, `0/o`, `rn/m` y `vv/w` en ambos lados.
+- **Lista de marcas manual.** Solo se protege a las marcas de `src/data/brands.js`. Los dominios oficiales que no se pudieron confirmar no están, y un correo legítimo desde uno de ellos puede salir como suplantación.
+- **Marcas que son palabras corrientes** (Orange, ING, SEUR, GLS, DGT, Steam) solo cuentan como etiqueta exacta, nunca por parecido.
+
+## Ruta
+
+- La ruta se lee de las cabeceras `Received`, que el remitente puede inventar por debajo del salto de entrada. Las horas solo se comparan si se pueden interpretar, con 5 minutos de margen.
+
 ## General
 
 - Son heurísticas: una nota baja no garantiza que un correo sea seguro.

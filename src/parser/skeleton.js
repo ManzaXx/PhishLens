@@ -22,6 +22,16 @@ export function sameShape(a, b) {
   return fold(skeleton(a)) === fold(skeleton(b));
 }
 
+/** Letras de un texto que imitan a una ASCII: "⟦U+0430 а→a⟧". */
+export function foreignLookalikes(text) {
+  const out = [];
+  for (const ch of new Set(String(text ?? '').slice(0, MAX_LENGTH))) {
+    const ascii = CONFUSABLES.get(ch.codePointAt(0));
+    if (ascii) out.push(`⟦U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')} ${ch}→${ascii}⟧`);
+  }
+  return out;
+}
+
 const SCRIPTS = [
   ['Latin', /\p{Script=Latin}/u],
   ['Cyrillic', /\p{Script=Cyrillic}/u],

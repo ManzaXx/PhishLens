@@ -85,3 +85,12 @@ test('las muestras legítimas no dan ningún route.*', () => {
 test('sin cabeceras no opina', () => {
   assert.deepEqual(detect(parseEml('solo texto')), []);
 });
+
+test('hopWarnings: avisos en texto por salto para la interfaz', async () => {
+  const { hopWarnings } = await import('../../src/detectors/route.js');
+  const route = [
+    { helo: 'app.b.test', by: 'relay.b.test', ip: '', time: Date.UTC(2026, 9, 21, 7, 10) },
+    { helo: 'relay.b.test', by: 'mx.example.com', ip: '192.168.1.2', time: Date.UTC(2026, 9, 21, 7, 0), entry: true },
+  ];
+  assert.deepEqual(hopWarnings(route), [[], ['Entrada al servidor receptor', 'IP privada en la frontera', 'Hora anterior al salto previo']]);
+});

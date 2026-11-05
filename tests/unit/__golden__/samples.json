@@ -1606,7 +1606,7 @@
         "points": 30,
         "title": "Dominio con letras de varios alfabetos",
         "detail": "La parte «pаypal» mezcla letras latinas con otras cirílicas, griegas o armenias que se ven iguales. Ningún dominio legítimo necesita mezclarlas.",
-        "evidence": "pаypal.com (xn--pypal-4ve.com)",
+        "evidence": "pаypal.com (xn--pypal-4ve.com) · ⟦U+0430 а→a⟧",
         "mitre": {
           "id": "T1583.001",
           "name": "Acquire Infrastructure: Domains",
@@ -1620,7 +1620,7 @@
         "points": 30,
         "title": "Dominio en otro alfabeto que imita a Apple",
         "detail": "«аррӏе» está escrito entero con letras de otro alfabeto, pero se lee como apple.com.",
-        "evidence": "аррӏе.com (xn--80ak6aa92e.com)",
+        "evidence": "аррӏе.com (xn--80ak6aa92e.com) · ⟦U+0430 а→a⟧ ⟦U+0440 р→p⟧ ⟦U+04CF ӏ→i⟧ ⟦U+0435 е→e⟧",
         "mitre": {
           "id": "T1583.001",
           "name": "Acquire Infrastructure: Domains",
