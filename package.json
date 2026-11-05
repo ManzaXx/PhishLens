@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "test": "node --test",
-    "golden:update": "node tests/helpers/golden.js --write"
+    "golden:update": "node tests/helpers/golden.js --write",
+    "fuzz": "FUZZ_ITER=20000 node --test tests/fuzz/fuzz.test.js"
   },
   "license": "MIT"
 }

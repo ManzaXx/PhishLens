@@ -2,19 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { finding } from '../../src/core/finding.js';
+import { rng } from '../helpers/rng.js';
 import { scoreFindings, levelFor, CATEGORY_MAX, SCALE } from '../../src/core/scoring.js';
-
-// Generador con semilla fija (mulberry32): los casos aleatorios son siempre los mismos.
-function rng(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 // Ids reales, sacados de los informes de las muestras.
 const golden = JSON.parse(readFileSync(new URL('./__golden__/samples.json', import.meta.url), 'utf8'));
