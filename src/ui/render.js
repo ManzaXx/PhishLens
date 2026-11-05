@@ -20,6 +20,7 @@ export const DETECTOR_LABELS = {
   lookalike: 'Dominios parecidos',
   attachments: 'Adjuntos',
   html: 'Contenido HTML',
+  mime: 'Estructura MIME',
   language: 'Lenguaje',
 };
 

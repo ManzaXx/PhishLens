@@ -129,6 +129,7 @@ function parseHeaders(head, list = null, acc = null) {
     // Se mira solo el principio de la línea: el nombre nunca es largo y el valor se recorta.
     const m = /^([!-9;-~]{1,200}):[ \t]?/.exec(line);
     if (!m) {
+      if (acc && line.trim()) note(acc, 'mime.header-without-colon', 'Hay una línea en las cabeceras sin «:». PhishLens la ignora y sigue leyendo; otros programas darían las cabeceras por terminadas ahí.');
       current = null;
       continue;
     }
@@ -243,13 +244,30 @@ function walkPart(headers, body, acc, depth = 0) {
     note(acc, 'limit.parts', `Más de ${LIMITS.parts} partes MIME; el resto no se ha analizado.`);
     return;
   }
+  if ((headers.get('content-type')?.length ?? 0) > 1) {
+    note(acc, 'mime.duplicate-content-type', 'Una parte tiene dos Content-Type. PhishLens usa el primero; otro programa podría usar el otro y mostrar un contenido distinto.');
+  }
   const type = parseParams(headers.get('content-type')?.[0] ?? 'text/plain');
   const disposition = parseParams(headers.get('content-disposition')?.[0] ?? '');
   const filename = disposition.params.filename || type.params.name || '';
 
   if (type.value.startsWith('multipart/') && type.params.boundary) {
-    const delimiter = `--${type.params.boundary}`;
-    const chunks = body.split(delimiter).slice(1);
+    const boundary = type.params.boundary;
+    if (acc.boundaries.has(boundary)) note(acc, 'mime.boundary-reuse', `El boundary "${boundary.slice(0, 70)}" se repite en dos niveles. Cada programa puede cortar las partes por un sitio distinto.`);
+    acc.boundaries.add(boundary);
+    const delimiter = `--${boundary}`;
+    // RFC 2046: el delimitador solo cuenta al principio de una línea.
+    const pieces = body.split(delimiter);
+    const chunks = [];
+    for (let i = 1; i < pieces.length; i++) {
+      const before = pieces[i - 1];
+      const atLineStart = i === 1 ? before === '' || before.endsWith('\n') : before.endsWith('\n');
+      if (atLineStart || chunks.length === 0) chunks.push(pieces[i]);
+      else {
+        note(acc, 'mime.boundary-in-content', `El texto "${delimiter.slice(0, 70)}" aparece en mitad de una línea. PhishLens no corta ahí; otro programa podría hacerlo.`);
+        chunks[chunks.length - 1] += delimiter + pieces[i];
+      }
+    }
     let closed = false;
     for (const chunk of chunks) {
       if (chunk.startsWith('--')) {
@@ -258,7 +276,7 @@ function walkPart(headers, body, acc, depth = 0) {
       }
       const part = chunk.replace(/^\r?\n/, '');
       const { head, body: partBody } = splitHeaderBody(part);
-      walkPart(parseHeaders(head), partBody.replace(/\r?\n$/, ''), acc, depth + 1);
+      walkPart(parseHeaders(head, null, acc), partBody.replace(/\r?\n$/, ''), acc, depth + 1);
     }
     if (!closed) note(acc, 'mime.unterminated-multipart', `La parte multipart con boundary "${type.params.boundary.slice(0, 70)}" no tiene delimitador de cierre.`);
     return;
@@ -290,7 +308,17 @@ function walkPart(headers, body, acc, depth = 0) {
     return;
   }
 
+  if (type.value === 'message/rfc822') {
+    note(acc, 'mime.nested-message', 'Hay un correo dentro de otro (message/rfc822). PhishLens no lo analiza por separado: guárdalo y analízalo aparte.');
+    return;
+  }
   const content = decodeBody(body, headers.get('content-transfer-encoding')?.[0], type.params.charset);
+  if (type.value === 'text/html' && type.params.charset) {
+    const meta = /<meta[^>]{0,200}charset=["']?([\w-]{1,40})/i.exec(content.slice(0, 4096))?.[1];
+    if (meta && meta.toLowerCase() !== type.params.charset.toLowerCase()) {
+      note(acc, 'mime.charset-conflict', `La cabecera dice ${type.params.charset} pero el HTML dice ${meta}. PhishLens usa el de la cabecera; un navegador podría usar el otro.`);
+    }
+  }
   if (type.value === 'text/html') acc.html += content;
   else if (type.value.startsWith('text/') || !headers.has('content-type')) acc.text += content;
 }
@@ -337,7 +365,7 @@ export function parseEml(raw) {
     return email;
   }
 
-  const acc = { text: '', html: '', attachments: [], parts: 0, notes: [], noted: new Set() };
+  const acc = { text: '', html: '', attachments: [], parts: 0, notes: [], noted: new Set(), boundaries: new Set() };
   if (source !== full) note(acc, 'limit.input-bytes', `La entrada supera ${LIMITS.inputBytes} caracteres; solo se ha analizado el principio.`);
   const headerList = [];
   const headers = parseHeaders(head, headerList, acc);

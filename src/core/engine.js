@@ -17,13 +17,14 @@ import * as language from '../detectors/language.js';
 import * as headers from '../detectors/headers.js';
 import * as route from '../detectors/route.js';
 import * as html from '../detectors/html.js';
+import * as mime from '../detectors/mime.js';
 
-export const DEFAULT_DETECTORS = [auth, sender, headers, route, links, lookalike, attachments, html, language];
+export const DEFAULT_DETECTORS = [auth, sender, headers, route, mime, links, lookalike, attachments, html, language];
 
 export { LEVELS, levelFor } from './scoring.js';
 
 // Para el resumen se priorizan las señales más fáciles de entender.
-const SUMMARY_PRIORITY = ['sender', 'links', 'attachments', 'html', 'lookalike', 'language', 'auth', 'route', 'headers', 'input'];
+const SUMMARY_PRIORITY = ['sender', 'links', 'attachments', 'html', 'lookalike', 'language', 'auth', 'route', 'headers', 'mime', 'input'];
 
 function summarize(level, findings) {
   if (level === 'safe') {

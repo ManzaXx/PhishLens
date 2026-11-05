@@ -26,6 +26,7 @@ export const DETECTOR_DEFAULTS = Object.freeze({
   language: { category: 'language', reliability: 'low', provenance: 'inferred' },
   headers: { category: 'infrastructure', reliability: 'low', provenance: 'inferred' },
   route: { category: 'infrastructure', reliability: 'medium', provenance: 'inferred' },
+  mime: { category: 'infrastructure', reliability: 'medium', provenance: 'inferred' },
   input: { ...FALLBACK },
 });
 

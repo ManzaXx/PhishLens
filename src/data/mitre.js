@@ -45,6 +45,8 @@ const RULES = [
   [/^language\.credentials$/, ['T1598']],
   [/^language\./, ['T1204']],
   [/^headers\.duplicate-from$/, ['T1684.002']],
+  // Ambigüedades MIME que hacen que el filtro y el usuario vean cosas distintas.
+  [/^mime\.(duplicate-content-type|boundary-reuse|boundary-in-content|charset-conflict)$/, ['T1027']],
   // Received inventados para fingir otro origen.
   [/^route\.(helo-mismatch|private-ip-boundary|time-travel)$/, ['T1684.002']],
 ];
