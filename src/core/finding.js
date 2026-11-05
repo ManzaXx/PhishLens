@@ -1,14 +1,50 @@
 // Estructura común de un hallazgo.
 import { techniqueFor } from '../data/mitre.js';
+import { own } from '../lib/text.js';
 
 export const SEVERITY_POINTS = { info: 0, low: 5, medium: 15, high: 30 };
 export const SEVERITY_ORDER = ['high', 'medium', 'low', 'info'];
 
-/** Crea un hallazgo con sus puntos calculados a partir de la severidad. */
-export function finding({ id, detector, severity, title, detail, evidence = '' }) {
-  if (!(severity in SEVERITY_POINTS)) throw new Error(`Severidad desconocida: ${severity}`);
+/** Categorías de riesgo (spec 2.2, §7.1). */
+export const CATEGORIES = ['authentication', 'sender', 'links', 'attachments', 'language', 'infrastructure'];
+/** Probabilidad de que la señal no sea un falso positivo. */
+export const RELIABILITY = ['high', 'medium', 'low'];
+/** De dónde sale la señal: comprobada por PhishLens, leída en una cabecera, deducida o imposible de comprobar sin red. */
+export const PROVENANCE = ['verified', 'declared', 'inferred', 'unverifiable'];
+/** 'trust' = evidencia a favor de que el correo es legítimo. */
+export const POLARITY = ['risk', 'trust'];
+
+const FALLBACK = Object.freeze({ category: 'infrastructure', reliability: 'low', provenance: 'inferred' });
+
+export const DETECTOR_DEFAULTS = Object.freeze({
+  auth: { category: 'authentication', reliability: 'medium', provenance: 'declared' },
+  sender: { category: 'sender', reliability: 'high', provenance: 'inferred' },
+  lookalike: { category: 'sender', reliability: 'high', provenance: 'inferred' },
+  links: { category: 'links', reliability: 'medium', provenance: 'inferred' },
+  html: { category: 'links', reliability: 'medium', provenance: 'inferred' },
+  attachments: { category: 'attachments', reliability: 'high', provenance: 'inferred' },
+  language: { category: 'language', reliability: 'low', provenance: 'inferred' },
+  headers: { category: 'infrastructure', reliability: 'low', provenance: 'inferred' },
+  input: { ...FALLBACK },
+});
+
+function oneOf(list, value, label) {
+  if (!list.includes(value)) throw new Error(`${label} desconocida: ${value}`);
+  return value;
+}
+
+/** Crea un hallazgo. Los campos que no se indican toman el valor por defecto de su detector. */
+export function finding({ id, detector, severity, title, detail, evidence = '', category, reliability, provenance, polarity }) {
+  if (own(SEVERITY_POINTS, severity) === undefined) throw new Error(`Severidad desconocida: ${severity}`);
+  const defaults = own(DETECTOR_DEFAULTS, detector) ?? FALLBACK;
+  const mitre = techniqueFor(id);
   return {
     id, detector, severity, points: SEVERITY_POINTS[severity], title, detail,
-    evidence: String(evidence), mitre: techniqueFor(id),
+    evidence: String(evidence), mitre,
+    category: oneOf(CATEGORIES, category ?? defaults.category, 'Categoría'),
+    reliability: oneOf(RELIABILITY, reliability ?? defaults.reliability, 'Fiabilidad'),
+    provenance: oneOf(PROVENANCE, provenance ?? defaults.provenance, 'Procedencia'),
+    polarity: oneOf(POLARITY, polarity ?? 'risk', 'Polaridad'),
+    techniques: mitre ? [mitre] : [],
   };
 }
