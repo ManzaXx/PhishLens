@@ -65,3 +65,41 @@ test('un authserv-id con sufijo engañoso no pasa por Google', () => {
   ));
   assert.equal(c.headers[0].trusted, false);
 });
+
+test('un Received inventado de la organización receptora no amplía la zona de confianza', () => {
+  const c = classifyAuthResults(mail(
+    'Received: from vps.attacker.test (vps.attacker.test [203.0.113.9]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000',
+    'Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=paypal.com; dmarc=pass header.from=paypal.com',
+    'Received: from out.paypal.com (out.paypal.com [64.4.250.33]) by mx2.example.com; Wed, 21 Oct 2026 07:03:01 +0000',
+  ));
+  assert.deepEqual(c.headers.map((h) => [h.trusted, h.forged]), [[false, true]]);
+});
+
+test('un HELO que finge ser del receptor sin rDNS no cuenta como salto interno', () => {
+  const c = classifyAuthResults(mail(
+    'Received: from mx2.example.com (unknown [203.0.113.9]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000',
+    'Authentication-Results: mx.example.com; dmarc=pass header.from=b.test',
+    'Received: from x.b.test by mx2.example.com; Wed, 21 Oct 2026 07:03:01 +0000',
+  ));
+  assert.deepEqual(c.headers.map((h) => [h.trusted, h.forged]), [[false, true]]);
+});
+
+test('los saltos internos legítimos del receptor siguen dentro de la zona de confianza', () => {
+  const c = classifyAuthResults(mail(
+    'Received: from mx-in.example.com (mx-in.example.com [10.0.0.5]) by store.example.com; Wed, 21 Oct 2026 07:03:06 +0000',
+    'Authentication-Results: mx-in.example.com; dmarc=pass header.from=b.test',
+    'Received: from out.b.test (out.b.test [198.51.100.7]) by mx-in.example.com; Wed, 21 Oct 2026 07:03:05 +0000',
+  ));
+  assert.deepEqual(c.headers.map((h) => [h.trusted, h.forged]), [[true, false]]);
+});
+
+test('reenvío Gmail → Outlook: la cabecera de Google por debajo no es falsificación', () => {
+  const c = classifyAuthResults(mail(
+    'Authentication-Results: spf=pass (sender IP is 209.85.220.41) smtp.mailfrom=gmail.com; dkim=pass header.d=gmail.com; dmarc=pass header.from=gmail.com',
+    'Received: from mail-sor-f41.google.com (mail-sor-f41.google.com [209.85.220.41]) by AM0EUR02FT010.mail.protection.outlook.com; Wed, 21 Oct 2026 07:03:05 +0000',
+    'Received: by mx.google.com with SMTP id x; Wed, 21 Oct 2026 07:03:01 +0000',
+    'Authentication-Results: mx.google.com; spf=pass smtp.mailfrom=origen.test; dkim=pass header.d=origen.test',
+  ));
+  assert.equal(c.headers[0].trusted, true);
+  assert.equal(c.headers[1].forged, false);
+});

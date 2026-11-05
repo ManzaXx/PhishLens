@@ -7,6 +7,8 @@ export function parseHop(raw) {
   return {
     from: /\bfrom\s+(\S+)/i.exec(value)?.[1] ?? '',
     by: /\bby\s+([^\s;]+)/i.exec(value)?.[1] ?? '',
+    // Nombre inverso que escribió el servidor receptor: "from helo (rdns [IP])". El HELO lo elige el remitente.
+    rdns: /\bfrom\s+\S+\s+\(\s*([^\s()[\]]+)\s*\[/i.exec(value)?.[1]?.toLowerCase() ?? '',
     // La IP que vio el servidor receptor va entre paréntesis: "from x (host [IP])".
     ip: (/\([^)]*\[([0-9a-f.:]+)\][^)]*\)/i.exec(value) ?? /\[(\d{1,3}(?:\.\d{1,3}){3}|[0-9a-f:]+:[0-9a-f:]*)\]/i.exec(value))?.[1] ?? '',
     date: value.includes(';') ? value.slice(value.lastIndexOf(';') + 1).trim() : '',

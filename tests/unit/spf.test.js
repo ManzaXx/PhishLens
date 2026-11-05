@@ -42,3 +42,15 @@ test('IP de origen: la que vio el receptor (muestra 01)', () => {
   assert.equal(originIp(email), '192.0.2.25');
   assert.equal(originIp(parseEml('From: a@b.test\r\n\r\nx')), null);
 });
+
+test('prefijos CIDR mal escritos son permerror, nunca /0', () => {
+  for (const range of ['1.2.3.4/', '1.2.3.4/1e1', '1.2.3.4/+24', '1.2.3.4/0x10', '1.2.3.4/ 8']) {
+    assert.equal(evaluateSpfRecord(`v=spf1 ip4:${range} -all`, '9.9.9.9').result, 'permerror', range);
+  }
+  assert.equal(evaluateSpfRecord('v=spf1 ip6:2001:db8::/ -all', '2001:db8::1').result, 'permerror');
+});
+
+test('los modificadores desconocidos se ignoran (RFC 7208 §6)', () => {
+  assert.equal(evaluateSpfRecord('v=spf1 ip4:10.0.0.1 ra=pm -all', '10.0.0.1').result, 'pass');
+  assert.equal(evaluateSpfRecord('v=spf1 rp=100 -all', '10.0.0.1').result, 'fail');
+});

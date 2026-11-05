@@ -133,3 +133,18 @@ test('verifyDkimForInput verifica con la clave pegada y el informe lo refleja', 
   assert.equal(report.auth.dkim.state, 'verified');
   assert.equal(report.auth.dmarc.state, 'verified');
 });
+
+test('un smtp.mailfrom de una cabecera no fiable nunca produce DMARC verificado', () => {
+  const value = [
+    'Received: from relay.attacker.test (relay.attacker.test [203.0.113.10]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000',
+    'Return-Path: <x@attacker.test>',
+    'Authentication-Results: relay.attacker.test; spf=pass smtp.mailfrom=paypal.com',
+    'From: PayPal <service@paypal.com>',
+    '',
+    'hola',
+  ].join('\r\n');
+  const report = analyzeInput({ kind: 'eml', value, spfRecord: 'v=spf1 ip4:203.0.113.0/24 -all' });
+  assert.equal(report.auth.spf.state, 'verified');
+  assert.equal(report.auth.spf.result, 'pass');
+  assert.notEqual(report.auth.dmarc.state, 'verified');
+});

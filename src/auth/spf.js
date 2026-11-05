@@ -43,8 +43,9 @@ function inRange(ip, range, family) {
   const [net, prefixText] = range.split('/');
   const network = parseIp(net);
   if (!network || network.family !== family) return null;
+  if (prefixText !== undefined && !/^\d{1,3}$/.test(prefixText)) return null;
   const prefix = prefixText === undefined ? network.bits : Number(prefixText);
-  if (!Number.isInteger(prefix) || prefix < 0 || prefix > network.bits) return null;
+  if (prefix > network.bits) return null;
   if (ip.family !== family) return false;
   const shift = BigInt(network.bits - prefix);
   return (ip.value >> shift) === (network.value >> shift);
@@ -66,6 +67,8 @@ export function evaluateSpfRecord(record, ipText) {
       if (lower.startsWith('redirect=')) needs.push(term);
       continue;
     }
+    // RFC 7208 §6: los modificadores desconocidos (nombre=valor) se ignoran.
+    if (/^[a-z][a-z0-9_.-]*=/.test(lower)) continue;
     const qualifier = QUALIFIERS[term[0]] ? term[0] : '+';
     const mechanism = (QUALIFIERS[term[0]] ? term.slice(1) : term).toLowerCase();
     let match = false;

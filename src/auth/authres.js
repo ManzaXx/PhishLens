@@ -45,7 +45,10 @@ function tokenize(value) {
 
 /** { authservId, results: [{ method, result, reason, props }] } */
 export function parseAuthResults(value) {
-  const [head = [], ...rest] = tokenize(String(value ?? '').slice(0, MAX_LENGTH));
+  const statements = tokenize(String(value ?? '').slice(0, MAX_LENGTH));
+  // Microsoft omite el authserv-id: si la primera palabra ya es "metodo=resultado", es un resultado.
+  const anonymous = (statements[0]?.[0] ?? '').includes('=');
+  const [head = [], ...rest] = anonymous ? [[], ...statements] : statements;
   const authservId = (head[0] ?? '').toLowerCase();
   const results = [];
   for (const tokens of rest) {

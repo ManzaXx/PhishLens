@@ -48,7 +48,9 @@ function evaluateSpf(email, header) {
     const offline = { ip, ...evaluateSpfRecord(record, ip) };
     if (DEFINITIVE_SPF.has(offline.result)) {
       const detail = `PhishLens evaluó el registro pegado contra ${ip}${offline.mechanism ? ` (${offline.mechanism})` : ''}.`;
-      return { state: 'verified', result: offline.result, detail, source: 'PhishLens', offline, props: fromHeader?.props };
+      // La identidad SPF verificada es la del sobre (Return-Path), nunca la que diga una cabecera.
+      const props = { 'smtp.mailfrom': email.returnPath ?? '' };
+      return { state: 'verified', result: offline.result, detail, source: 'PhishLens', offline, props };
     }
     const need = `Para decidir hace falta consultar DNS: ${offline.needs.join(', ')}.`;
     if (fromHeader) return { ...fromHeader, detail: `${fromHeader.detail}. ${need}`, offline };

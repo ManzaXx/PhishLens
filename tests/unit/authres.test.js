@@ -49,3 +49,10 @@ test('entrada vacía o sin punto y coma', () => {
   assert.deepEqual(parseAuthResults(''), { authservId: '', results: [] });
   assert.deepEqual(parseAuthResults('mx.test').results, []);
 });
+
+test('Authentication-Results de Microsoft sin authserv-id', () => {
+  const r = parseAuthResults('spf=pass (sender IP is 209.85.220.41) smtp.mailfrom=gmail.com; dkim=pass header.d=gmail.com');
+  assert.equal(r.authservId, '');
+  assert.deepEqual(r.results.map((x) => [x.method, x.result]), [['spf', 'pass'], ['dkim', 'pass']]);
+  assert.equal(r.results[0].props['smtp.mailfrom'], 'gmail.com');
+});

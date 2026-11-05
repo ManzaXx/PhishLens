@@ -222,11 +222,15 @@ function reanalyze(status) {
 async function verifyDkim() {
   const key = $('#dkim-key')?.value.trim();
   if (!key) return reanalyze('Pega primero la clave pública DKIM.');
+  const input = state.lastInput;
   try {
-    const dkim = await verifyDkimForInput(state.lastInput, key);
+    const dkim = await verifyDkimForInput(input, key);
+    // Si mientras tanto se analizó otro correo, este resultado ya no es suyo.
+    if (state.lastInput !== input) return;
     state.analyst = { ...state.analyst, dkim };
     reanalyze(`DKIM: ${dkim.reason}.`);
   } catch {
+    if (state.lastInput !== input) return;
     reanalyze('DKIM: no se pudo comprobar la firma con esa clave.');
   }
 }

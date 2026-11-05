@@ -55,3 +55,15 @@ test('parseDkimKeyRecord', () => {
 test('correo sin firma', async () => {
   assert.deepEqual(await verifyDkimSignature(parseEml('From: a@b.test\r\n\r\nhola'), RSA), { ok: false, reason: 'no hay firma DKIM', domain: '', selector: '' });
 });
+
+test('canonicalización simple con un .eml en LF', async () => {
+  const lf = readFileSync(new URL('../fixtures/dkim/rsa-simple.eml', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const r = await verifyDkimSignature(parseEml(lf), RSA);
+  assert.equal(r.reason, 'firma válida');
+});
+
+test('clave de otro tipo que la firma es un problema de clave, no una firma no válida', async () => {
+  const r = await verifyDkimSignature(fixture('rsa-relaxed'), ED);
+  assert.equal(r.ok, false);
+  assert.equal(r.reason, 'algoritmo no compatible');
+});

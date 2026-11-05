@@ -9,7 +9,7 @@ PhishLens trabaja sin red y en el navegador. Estas son las consecuencias, para q
 - **DMARC sin política.** No se conoce `p=`, `adkim=` ni `aspf=`: se asume alineación relaxed y no se puede decir qué haría el receptor.
 - **Dominio organizativo sin PSL.** La alineación usa una aproximación del dominio registrable (con los sufijos más comunes), no la Public Suffix List completa. En sufijos raros puede considerar alineados dominios que no lo están, o al revés.
 - **Cuerpo tras decodificar.** El navegador lee el `.eml` como UTF-8, así que en correos con cuerpo `8bit` que no sea UTF-8 los bytes pueden cambiar y el hash de cuerpo dar `bodyHashOk: false` aunque el correo esté intacto.
-- **Zona de confianza.** Se basa en el orden de las cabeceras `Received`. Un correo reenviado o retocado por un sistema intermedio puede romper la frontera; en ese caso las cabeceras quedan «sin confirmar», nunca «de confianza» por error.
+- **Zona de confianza.** Se basa en el orden de las cabeceras `Received` y en el nombre inverso (rDNS) que escribe el receptor entre paréntesis: un salto solo cuenta como interno si ese nombre es de la organización receptora. Las `Authentication-Results` sin authserv-id (formato de Exchange Online) solo se aceptan si el receptor es un proveedor conocido. Un correo reenviado o retocado por un sistema intermedio puede romper la frontera; en ese caso las cabeceras quedan «sin confirmar», nunca «de confianza» por error.
 - **Alineación incompleta.** Si `Authentication-Results` da un `pass` sin `smtp.mailfrom` ni `header.d`, no se puede saber si estaba alineado y no se emite `auth.dmarc-unaligned`.
 
 ## General

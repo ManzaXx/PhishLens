@@ -29,6 +29,10 @@ export function receivingHop(email) {
   for (const hop of received) {
     if (!receiver || !hop.by || org(hop.by) !== receiverOrg) break;
     entry = hop;
+    // El salto solo es interno si el receptor resolvió al emisor (rDNS) dentro de su organización.
+    // Un HELO o un Received escrito por el remitente no puede alargar la zona de confianza.
+    const sender = hop.rdns && hop.rdns !== 'unknown' ? hop.rdns : '';
+    if (!sender || org(sender) !== receiverOrg) break;
   }
   const boundary = entry ? received.find((hop) => hop.index > entry.index) ?? null : null;
   return { receiver, receiverOrg, entry, boundary };
@@ -50,12 +54,18 @@ export function classifyAuthResults(email) {
     .map((h) => {
       const parsed = parseAuthResults(h.value);
       const id = parsed.authservId;
+
       const claimsPass = parsed.results.some((r) => r.result === 'pass');
-      const imitates = (receiverOrg && org(id) === receiverOrg) || inTrustedList(id);
+      const sameOrg = Boolean(receiverOrg) && org(id) === receiverOrg;
       if (!receiver) return { index: h.index, raw: h.raw, parsed, trusted: false, forged: false, why: 'sin ruta Received' };
       const aboveBoundary = boundaryIndex !== null && h.index < boundaryIndex;
-      const trusted = aboveBoundary && Boolean(imitates);
-      const forged = !trusted && claimsPass && Boolean(imitates);
+      // Exchange Online escribe Authentication-Results sin authserv-id: vale si el receptor es Microsoft.
+      const anonymousFromProvider = !id && inTrustedList(receiver);
+      if (anonymousFromProvider) parsed.authservId = receiver;
+      const trusted = aboveBoundary && (sameOrg || inTrustedList(id) || anonymousFromProvider);
+      // Falsa: imita al propio receptor por debajo de la frontera. Una cabecera de otro proveedor
+      // por debajo es normal en un reenvío (Gmail → Outlook): solo queda sin confirmar.
+      const forged = !trusted && claimsPass && sameOrg;
       const why = trusted
         ? `añadida por ${id}, el servidor que recibió el correo`
         : forged

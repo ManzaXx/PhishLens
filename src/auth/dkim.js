@@ -50,7 +50,8 @@ export function canonicalizeBody(rawBody, mode) {
 
 /** Canonicalización de una cabecera cruda sin el CRLF final (RFC 6376 §3.4.1 y §3.4.2). */
 export function canonicalizeHeader(raw, mode) {
-  if (mode !== 'relaxed') return raw;
+  // simple: tal cual, pero con los pliegues en CRLF aunque el .eml llegue con LF.
+  if (mode !== 'relaxed') return raw.replace(/\r?\n/g, '\r\n');
   const colon = raw.indexOf(':');
   const name = raw.slice(0, colon).replace(/[ \t]+$/, '').toLowerCase();
   const value = raw.slice(colon + 1).replace(/\r?\n/g, '').replace(/[ \t]+/g, ' ').trim();
@@ -140,7 +141,7 @@ export async function verifyDkimSignature(email, keyTxt, index = 0) {
   if (entry.bodyHashOk === false) return result(false, 'el cuerpo no coincide con bh=');
   const key = parseDkimKeyRecord(keyTxt);
   if (key.error) return result(false, KEY_ERRORS[key.error]);
-  if ((key.k === 'ed25519') !== (sig.a === 'ed25519-sha256')) return result(false, 'firma no válida');
+  if ((key.k === 'ed25519') !== (sig.a === 'ed25519-sha256')) return result(false, 'algoritmo no compatible');
   const signature = base64ToBytes(sig.b);
   if (!signature) return result(false, 'firma mal formada');
   const data = ENCODER.encode(signedHeaderData(email, sig, entry.raw));
