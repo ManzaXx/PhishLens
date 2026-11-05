@@ -115,6 +115,13 @@ export function findScriptSpoof(domain) {
       if (hit) return { kind: 'whole-script', brand: hit.brand, label, unicode };
     }
   }
+  // Homógrafos con letras latinas poco comunes (ɑ, ᴏ) o de alfabetos que no son cirílico, griego
+  // ni armenio (cherokee, copto…): cualquier etiqueta no ASCII que se ve como una marca.
+  for (const label of labels) {
+    if (!/[^\x00-\x7f]/.test(label)) continue;
+    const hit = BRAND_KEYS.find(({ key }) => label.split('-').some((part) => sameShape(part, key)));
+    if (hit) return { kind: 'homoglyph', brand: hit.brand, label, unicode };
+  }
   return null;
 }
 
@@ -154,6 +161,14 @@ function scriptFinding(domain, hit) {
       id: 'lookalike.mixed-script-domain', detector: name, severity: 'high',
       title: 'Dominio con letras de varios alfabetos',
       detail: `La parte «${hit.label}» mezcla letras latinas con otras cirílicas, griegas o armenias que se ven iguales. Ningún dominio legítimo necesita mezclarlas.`,
+      evidence: shown,
+    });
+  }
+  if (hit.kind === 'homoglyph') {
+    return finding({
+      id: 'lookalike.homoglyph', detector: name, severity: 'high',
+      title: `Dominio con letras que imitan a ${hit.brand.name}`,
+      detail: `«${hit.label}» usa caracteres que no son letras latinas normales, pero en pantalla se lee como ${hit.brand.domains[0]}.`,
       evidence: shown,
     });
   }

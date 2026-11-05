@@ -15,7 +15,7 @@ Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/20
 - **SPF offline**: pegando el registro, evalúa `ip4`, `ip6` y `all` contra la IP de origen (`auth.spf-offline`); `include`, `a`, `mx` y similares quedan como no verificables.
 - **Ruta `Received`**: detector nuevo con IP privada en el salto de entrada, horas que retroceden, entregas de más de 24 h, rutas de más de 25 saltos y HELO que dice ser una marca sin serlo. La pestaña de cabeceras marca cada salto con su aviso.
 - **Cabeceras trampa**: varios `From`, cabeceras únicas repetidas, nombre visible con la dirección de otro dominio y `Sender` ajeno sin firma DKIM.
-- **Dominios con otros alfabetos**: decodificador punycode propio (RFC 3492), tabla de confusables de Unicode 16 (UTS #39), dominios que mezclan alfabetos o están enteros en cirílico, subdominios engañosos y combosquatting. Los dominios `xn--` se enseñan también en Unicode y la evidencia nombra cada letra extranjera (`⟦U+0430 а→a⟧`).
+- **Dominios con otros alfabetos**: decodificador punycode propio (RFC 3492), tabla de confusables de Unicode 16 (UTS #39), dominios que mezclan alfabetos o están enteros en cirílico, homógrafos de marca con cualquier alfabeto (`ɑpple.com`, cherokee, copto), subdominios engañosos y combosquatting. Los dominios `xn--` se enseñan también en Unicode y la evidencia nombra cada letra extranjera (`⟦U+0430 а→a⟧`).
 - **22 marcas españolas** con sus dominios oficiales comprobados y fechados.
 - Tres muestras nuevas: ruta falsificada, cabeceras trampa y dominios Unicode.
 - [ADR 0002](docs/adr/0002-autenticacion-offline.md) y primera versión de [limitaciones](docs/limitations.md).

@@ -129,3 +129,16 @@ test('la evidencia nombra las letras de otro alfabeto', () => {
   const f = detectLookalike(linkMail(host('pаypal.com'))).find((x) => x.id === 'lookalike.mixed-script-domain');
   assert.match(f.evidence, /U\+0430/);
 });
+
+test('homógrafos de marca con letras latinas raras u otros alfabetos (ɑpple, Cherokee, copto)', () => {
+  for (const unicode of ['ɑpple.com', 'gᴏᴏgle.com']) {
+    assert.ok(lookIds(host(unicode)).includes('lookalike.homoglyph:high'), unicode);
+  }
+  // Ꭺ (Cherokee) y ⲣ (copto) dibujan letras latinas sin ser cirílicas ni griegas.
+  assert.ok(lookIds(host('Ꭺpple.com')).some((x) => x.startsWith('lookalike.')), 'cherokee');
+  assert.ok(lookIds(host('aⲣple.com')).includes('lookalike.homoglyph:high'), 'coptic');
+});
+
+test('una etiqueta Unicode que no dibuja ninguna marca no es homógrafo', () => {
+  assert.deepEqual(lookIds(host('café.es'), host('zürich.ch')), []);
+});
