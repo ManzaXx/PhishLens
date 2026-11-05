@@ -52,24 +52,40 @@ const noisyOr = (ps) => 1 - [...ps].sort((a, b) => a - b).reduce((acc, p) => acc
 
 const IMPERSONATION = /^sender\.(brand-impersonation|display-name-address|mixed-script)$/;
 const isImpersonation = (f) => IMPERSONATION.test(f.id) || (f.id.startsWith('lookalike.') && f.category === 'sender');
-// Para pedir credenciales o servir la marca desde una IP basta con que el enlace la nombre.
-const namesBrand = (f) => isImpersonation(f) || f.id === 'links.brand-in-path';
+const lookalikeLink = (f) => f.id.startsWith('lookalike.') && f.category === 'links';
+// Una marca nombrada en la ruta de un enlace solo cuenta si el enlace ya es raro (IP o login sin HTTPS):
+// medium.com/paypal-tech no suplanta a nadie.
+function brandSignals(risk) {
+  const odd = risk.some((f) => f.id === 'links.ip' || f.id === 'links.insecure-login');
+  return risk.filter((f) => isImpersonation(f) || lookalikeLink(f) || (odd && f.id === 'links.brand-in-path'));
+}
+// Fallos reales de autenticación: no tener cabecera o una firma débil no es «fallida».
+const authFailure = (f) => f.id.startsWith('auth.') && (f.severity === 'medium' || f.severity === 'high') && f.id !== 'auth.dkim-weak';
+const CREDENTIALS = ['html.form', 'language.credentials', 'links.insecure-login'];
 
 const CORRELATIONS = [
   {
     id: 'brand-auth',
     label: 'Suplantación de marca con autenticación fallida',
-    match: (risk) => [risk.filter(isImpersonation), risk.filter((f) => f.id.startsWith('auth.'))],
+    match: (risk) => [risk.filter(isImpersonation), risk.filter(authFailure)],
   },
   {
     id: 'brand-credentials',
     label: 'Suplantación de marca que pide credenciales',
-    match: (risk) => [risk.filter(namesBrand), risk.filter((f) => ['html.form', 'language.credentials', 'links.insecure-login'].includes(f.id))],
+    match: (risk) => [brandSignals(risk), risk.filter((f) => CREDENTIALS.includes(f.id))],
   },
   {
     id: 'brand-raw-ip',
     label: 'Marca suplantada con enlaces a una dirección IP',
-    match: (risk) => [risk.filter(namesBrand), risk.filter((f) => f.id === 'links.ip')],
+    match: (risk) => [brandSignals(risk), risk.filter((f) => f.id === 'links.ip')],
+  },
+  {
+    id: 'credentials-link',
+    label: 'Pide credenciales y da un enlace sospechoso para ello',
+    match: (risk) => [
+      risk.filter((f) => f.id === 'language.credentials' || f.id === 'html.form'),
+      risk.filter((f) => f.id.startsWith('links.') && f.id !== 'links.insecure-login' && f.id !== 'links.brand-in-path'),
+    ],
   },
   {
     id: 'attachment-pressure',

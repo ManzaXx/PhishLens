@@ -30,7 +30,7 @@ test('la nota sale de scoring y los hallazgos van ordenados por severidad', () =
 });
 
 test('el informe trae categorías, confianza, motivo principal y correlaciones', () => {
-  const r = analyzeInput({ kind: 'eml', value: 'From: "PayPal" <x@pay.test>\nSubject: x\n\nhola' });
+  const r = analyzeInput({ kind: 'eml', value: 'From: "PayPal" <x@pay.test>\nAuthentication-Results: mx.example.com; dmarc=fail header.from=pay.test\nSubject: x\n\nhola' });
   assert.equal(r.categories.length, 6);
   assert.ok(['high', 'medium', 'low'].includes(r.confidence.level));
   assert.equal(typeof r.mainReason, 'string');

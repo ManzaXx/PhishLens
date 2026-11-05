@@ -12,7 +12,7 @@ const expected = {
   '05-phishing-microsoft365': 'critical',
   '06-phishing-factura-adjunto': 'phishing',
   '07-phishing-avanzado': 'critical',
-  '08-ruta-falsificada': 'phishing',
+  '08-ruta-falsificada': 'critical',
   '09-cabeceras-trampa': 'phishing',
   '10-dominio-unicode': 'phishing',
 };

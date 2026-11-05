@@ -198,14 +198,15 @@ export function detect(email) {
     if (seen.size >= 10) break;
     const spoof = findScriptSpoof(domain);
     if (spoof) {
-      const reg = registrableDomain(domain);
-      if (!seen.has(reg)) out.push(scriptFinding(domain, spoof, { category, brand: spoof.brand?.name ?? null }));
-      seen.add(reg);
+      // Se deduplica por origen: el mismo dominio en el From y en un enlace son dos señales.
+      const key = `${category}:${registrableDomain(domain)}`;
+      if (!seen.has(key)) out.push(scriptFinding(domain, spoof, { category, brand: spoof.brand?.name ?? null }));
+      seen.add(key);
       continue;
     }
     const hit = findLookalike(domain);
-    if (!hit || seen.has(hit.domain)) continue;
-    seen.add(hit.domain);
+    if (!hit || seen.has(`${category}:${hit.domain}`)) continue;
+    seen.add(`${category}:${hit.domain}`);
     out.push(lookalikeFinding(domain, hit, { category, brand: hit.brand.name }));
   }
   return out;

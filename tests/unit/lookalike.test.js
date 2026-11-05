@@ -44,7 +44,8 @@ test('detect revisa remitente y enlaces sin duplicar', () => {
   };
   const out = detect(email).map((f) => `${f.id}:${f.severity}`).sort();
   // bbva-seguridad.com es combosquatting (marca + «seguridad»): grave desde el PR3.
-  assert.deepEqual(out, ['lookalike.brand-in-domain:high', 'lookalike.typosquat:high']);
+  // paypa1.com sale dos veces desde el PR4: una por el From y otra por el enlace.
+  assert.deepEqual(out, ['lookalike.brand-in-domain:high', 'lookalike.typosquat:high', 'lookalike.typosquat:high']);
 });
 
 test('dominios regionales oficiales no son sospechosos', () => {
@@ -151,4 +152,9 @@ test('el lookalike del From va a remitente y el de un enlace a enlaces, con su m
   const email = parse('From: a@paypa1.com\nContent-Type: text/plain\n\nhttp://paypa1-login.test/x');
   const found = detectLookalike(email);
   assert.deepEqual(found.map((f) => [f.category, f.brand]), [['sender', 'PayPal'], ['links', 'PayPal']]);
+});
+
+test('From y enlace en el mismo dominio parecido dan un hallazgo por origen', () => {
+  const email = parse('From: seguridad@paypa1.com\nContent-Type: text/plain\n\nhttps://www.paypa1.com/activity');
+  assert.deepEqual(detectLookalike(email).map((f) => f.category), ['sender', 'links']);
 });

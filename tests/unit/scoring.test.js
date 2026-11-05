@@ -102,7 +102,7 @@ test('solo señales a favor: nota 0 y sin correlaciones', () => {
 });
 
 const PAIRS = {
-  'brand-auth': [make('sender.brand-impersonation'), make('auth.missing', 'low')],
+  'brand-auth': [make('sender.brand-impersonation'), make('auth.dmarc-unaligned', 'medium')],
   'brand-credentials': [make('sender.display-name-address'), make('html.form', 'medium')],
   'attachment-pressure': [make('attachments.double-extension'), make('language.urgency', 'low')],
   'lookalike-same-brand': [make('sender.brand-impersonation', 'high', { brand: 'PayPal' }), make('lookalike.typosquat', 'high', { category: 'links', brand: 'PayPal' })],
@@ -126,7 +126,7 @@ test('lookalike en enlaces de otra marca no correlaciona con el remitente', () =
 
 test('como mucho dos correlaciones cuentan para la nota', () => {
   const findings = [
-    make('sender.brand-impersonation', 'low', { reliability: 'low' }), make('auth.missing', 'low', { reliability: 'low' }),
+    make('sender.brand-impersonation', 'low', { reliability: 'low' }), make('auth.dmarc-unaligned', 'medium', { reliability: 'low' }),
     make('html.form', 'low', { reliability: 'low' }), make('attachments.macro', 'low', { reliability: 'low' }),
     make('language.threat', 'low', { reliability: 'low' }),
   ];
@@ -155,4 +155,25 @@ test('marca en la ruta de un enlace a una IP que pide acceso: dos correlaciones'
   const result = scoreFindings([make('links.ip', 'high'), make('links.brand-in-path', 'medium'), make('links.insecure-login', 'medium')]);
   assert.deepEqual(result.correlations.map((c) => c.id), ['brand-credentials', 'brand-raw-ip']);
   assert.equal(result.level, 'phishing');
+});
+
+test('sin cabecera de autenticación no es «autenticación fallida»', () => {
+  const result = scoreFindings([make('sender.brand-impersonation'), make('auth.missing', 'low'), make('auth.dkim-weak', 'low')]);
+  assert.ok(!result.correlations.some((c) => c.id === 'brand-auth'));
+});
+
+test('un dominio parecido en un enlace cuenta como marca suplantada para pedir credenciales', () => {
+  const result = scoreFindings([make('lookalike.brand-in-domain', 'high', { category: 'links', brand: 'BBVA' }), make('language.credentials', 'high', { reliability: 'low' })]);
+  assert.ok(result.correlations.some((c) => c.id === 'brand-credentials'));
+});
+
+test('marca en la ruta de un enlace normal + texto de inicio de sesión no es suplantación', () => {
+  const result = scoreFindings([make('links.brand-in-path', 'medium'), make('language.credentials', 'high', { reliability: 'low' })]);
+  assert.ok(!result.correlations.some((c) => c.id === 'brand-credentials'));
+});
+
+test('pide credenciales y da un enlace sospechoso para ello', () => {
+  const result = scoreFindings([make('language.credentials', 'high', { reliability: 'low' }), make('links.shortener', 'medium')]);
+  assert.ok(result.correlations.some((c) => c.id === 'credentials-link'));
+  assert.ok(result.level !== 'safe');
 });

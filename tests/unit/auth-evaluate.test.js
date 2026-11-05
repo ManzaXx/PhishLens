@@ -49,11 +49,11 @@ test('cuerpo alterado tras firmar da auth.dkim-body-modified verificado', () => 
   assert.equal(f.provenance, 'verified');
 });
 
-test('hash de cuerpo correcto da auth.dkim-body-verified a favor y sin puntos', () => {
+test('hash de cuerpo correcto da auth.dkim-body-verified informativo, sin puntos y sin ser señal a favor', () => {
   const f = byId(detect(fixture('rsa-relaxed')), 'auth.dkim-body-verified');
   assert.ok(f);
   assert.equal(f.points, 0);
-  assert.equal(f.polarity, 'trust');
+  assert.equal(f.polarity, 'risk');
   assert.equal(f.mitre, null);
 });
 
@@ -147,4 +147,15 @@ test('un smtp.mailfrom de una cabecera no fiable nunca produce DMARC verificado'
   assert.equal(report.auth.spf.state, 'verified');
   assert.equal(report.auth.spf.result, 'pass');
   assert.notEqual(report.auth.dmarc.state, 'verified');
+});
+
+test('solo una firma verificada con la clave y alineada es señal a favor; un bh= que cuadra no', () => {
+  const value = read('../fixtures/dkim/rsa-relaxed.eml');
+  const plain = analyzeInput({ kind: 'eml', value });
+  assert.ok(!plain.findings.some((f) => f.polarity === 'trust'), 'bh= sin clave no es señal a favor');
+  assert.deepEqual(plain.trust, []);
+  const verified = analyzeInput({ kind: 'eml', value, dkim: { ok: true, reason: 'firma válida', domain: 'banco-ficticio.test', selector: 'rsa2026' } });
+  const t = verified.findings.find((f) => f.id === 'auth.dkim-verified-aligned');
+  assert.equal(t?.polarity, 'trust');
+  assert.equal(t.provenance, 'verified');
 });

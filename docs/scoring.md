@@ -71,15 +71,18 @@ Algunas señales son mucho más graves juntas que por separado. Cada combinació
 
 | Combinación | Cuándo |
 | --- | --- |
-| Suplantación de marca con autenticación fallida | Suplantación (`sender.brand-impersonation`, `display-name-address`, `mixed-script` o un lookalike en el `From`) + cualquier `auth.*` de riesgo |
-| Suplantación de marca que pide credenciales | Suplantación o marca en la ruta de un enlace + formulario, petición de credenciales o login sin HTTPS |
-| Marca suplantada con enlaces a una dirección IP | Suplantación o marca en la ruta + `links.ip` |
+| Suplantación de marca con autenticación fallida | Suplantación (`sender.brand-impersonation`, `display-name-address`, `mixed-script` o un lookalike en el `From`) + un fallo de autenticación de gravedad media o alta. No tener cabecera de autenticación no cuenta como fallo |
+| Suplantación de marca que pide credenciales | Suplantación, dominio parecido en un enlace o marca en la ruta de un enlace raro (IP o login sin HTTPS) + formulario, petición de credenciales o login sin HTTPS |
+| Marca suplantada con enlaces a una dirección IP | Lo mismo + `links.ip` |
+| Pide credenciales y da un enlace sospechoso para ello | Petición de credenciales o formulario + un enlace sospechoso (acortador, IP, texto engañoso…) |
 | Adjunto peligroso con presión para abrirlo | Adjunto ejecutable, con macros o con extensión engañosa + urgencia o amenaza |
 | Enlace que imita a la misma marca que el remitente | Lookalike en un enlace de la misma marca que suplanta el remitente |
 
 ## 5. Señales contradictorias
 
-Si PhishLens **verifica** algo a favor, como un `bh=` DKIM correcto, las categorías Lenguaje e Infraestructura valen la mitad. Las señales blandas pesan menos en un correo con firma válida.
+Si PhishLens **verifica** la firma DKIM con la clave pública pegada y el dominio firmante coincide con el del `From` (`auth.dkim-verified-aligned`), las categorías Lenguaje e Infraestructura valen la mitad. Las señales blandas pesan menos en un correo con firma válida.
+
+Un `bh=` que cuadra no basta: cualquiera puede calcular el hash de su propio cuerpo y escribir una firma falsa.
 
 Nunca se rebajan Remitente, Enlaces ni Adjuntos: un atacante puede firmar sus propios correos.
 
@@ -98,15 +101,15 @@ Nunca se rebajan Remitente, Enlaces ni Adjuntos: un atacante puede firmar sus pr
 | --- | --- |
 | Autenticación | 22,9 / 25 |
 | Remitente | 19,9 / 20 |
-| Enlaces | 15,9 / 20 |
+| Enlaces | 19,6 / 20 |
 | Adjuntos | 0 / 15 |
 | Lenguaje | 6,9 / 10 |
 | Infraestructura | 3,4 / 10 |
 
-1. La base es 90,2.
-2. Se cumplen dos combinaciones: suplantación con autenticación fallida, y suplantación que pide credenciales.
-   - 90,2 + 9,8 × 0,25 = 92,6.
-   - 92,6 + 7,4 × 0,25 = **94**, «Phishing casi seguro».
+1. La base es 91,7.
+2. Se cumplen cuatro combinaciones y cuentan las dos primeras: suplantación con autenticación fallida, y suplantación que pide credenciales.
+   - 91,7 + 8,3 × 0,25 = 93,8.
+   - 93,8 + 6,2 × 0,25 = 95,3, que redondea a **95**, «Phishing casi seguro».
 3. Motivo principal: «Suplantación de marca con autenticación fallida».
 
 ## 8. Confianza del análisis

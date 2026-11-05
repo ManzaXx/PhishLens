@@ -120,7 +120,6 @@ function dkimFindings(bodies) {
       evidence: domains(verified),
       reliability: 'high',
       provenance: 'verified',
-      polarity: 'trust',
     }));
   }
   const weak = bodies.filter((b) => b.issues.some((i) => own(WEAK, i)));
@@ -154,6 +153,23 @@ function spfOfflineFindings(offline) {
   })];
 }
 
+// Señal a favor solo si PhishLens verificó la firma con la clave y está alineada con el From:
+// un bh= que cuadra lo puede fabricar cualquiera calculando el hash de su propio cuerpo.
+function trustFindings(auth) {
+  if (auth.dkim.state !== 'verified' || auth.dkim.result !== 'pass' || !auth.dmarc.alignment?.dkimAligned) return [];
+  return [finding({
+    id: 'auth.dkim-verified-aligned',
+    detector: name,
+    severity: 'info',
+    title: 'Firma DKIM verificada y alineada con el remitente',
+    detail: `PhishLens comprobó la firma con la clave pública de ${auth.dkim.domain ?? 'su dominio'}, y ese dominio coincide con el del From.`,
+    evidence: auth.dkim.detail ?? '',
+    reliability: 'high',
+    provenance: 'verified',
+    polarity: 'trust',
+  })];
+}
+
 export function detect(email) {
   if (!email.hasHeaders) return [];
   const auth = evaluateAuth(email);
@@ -170,6 +186,6 @@ export function detect(email) {
     }));
   }
   if (header) out.push(...declaredFindings(header));
-  out.push(...dmarcFindings(auth), ...dkimFindings(bodies), ...spfOfflineFindings(spfOffline));
+  out.push(...dmarcFindings(auth), ...dkimFindings(bodies), ...spfOfflineFindings(spfOffline), ...trustFindings(auth));
   return out;
 }

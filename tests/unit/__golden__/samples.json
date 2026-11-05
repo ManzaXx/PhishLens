@@ -216,7 +216,7 @@
     }
   },
   "03-phishing-banco": {
-    "score": 94,
+    "score": 95,
     "level": "critical",
     "label": "Phishing casi seguro",
     "summary": "Combina varias señales graves, entre ellas «Se hace pasar por Santander» y «El enlace no lleva a donde dice». No pulses enlaces ni abras adjuntos y bórralo.",
@@ -237,7 +237,7 @@
       {
         "id": "links",
         "label": "Enlaces y contenido",
-        "score": 15.9,
+        "score": 19.6,
         "max": 20
       },
       {
@@ -271,7 +271,6 @@
         "id": "brand-auth",
         "label": "Suplantación de marca con autenticación fallida",
         "findings": [
-          "auth.dkim",
           "auth.dmarc",
           "auth.spf",
           "lookalike.brand-in-domain",
@@ -284,6 +283,22 @@
         "findings": [
           "language.credentials",
           "links.insecure-login",
+          "lookalike.brand-in-domain",
+          "sender.brand-impersonation"
+        ]
+      },
+      {
+        "id": "credentials-link",
+        "label": "Pide credenciales y da un enlace sospechoso para ello",
+        "findings": [
+          "language.credentials",
+          "links.mismatch"
+        ]
+      },
+      {
+        "id": "lookalike-same-brand",
+        "label": "Enlace que imita a la misma marca que el remitente",
+        "findings": [
           "lookalike.brand-in-domain",
           "sender.brand-impersonation"
         ]
@@ -493,6 +508,36 @@
           "url": "https://attack.mitre.org/techniques/T1583/001/"
         },
         "category": "sender",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": "Santander",
+        "techniques": [
+          {
+            "id": "T1583.001",
+            "name": "Acquire Infrastructure: Domains",
+            "tactic": "Resource Development",
+            "why": "El atacante registró un dominio que imita a uno legítimo.",
+            "url": "https://attack.mitre.org/techniques/T1583/001/"
+          }
+        ]
+      },
+      {
+        "id": "lookalike.brand-in-domain",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Usa el nombre de Santander en un dominio ajeno",
+        "detail": "santander-seguridad.test junta \"santander\" con \"seguridad\" para parecer una página oficial de acceso, pero no pertenece a Santander (bancosantander.es).",
+        "evidence": "santander-seguridad.test (marca + \"seguridad\")",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "tactic": "Resource Development",
+          "why": "El atacante registró un dominio que imita a uno legítimo.",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        },
+        "category": "links",
         "reliability": "high",
         "provenance": "inferred",
         "polarity": "risk",
@@ -879,8 +924,6 @@
         "id": "brand-auth",
         "label": "Suplantación de marca con autenticación fallida",
         "findings": [
-          "auth.dkim",
-          "auth.dmarc",
           "auth.dmarc-unaligned",
           "auth.spf",
           "lookalike.typosquat",
@@ -1303,7 +1346,7 @@
     }
   },
   "05-phishing-microsoft365": {
-    "score": 84,
+    "score": 91,
     "level": "critical",
     "label": "Phishing casi seguro",
     "summary": "Combina varias señales graves, entre ellas «Se hace pasar por Microsoft» y «Dominio que imita a Microsoft». No pulses enlaces ni abras adjuntos y bórralo.",
@@ -1324,7 +1367,7 @@
       {
         "id": "links",
         "label": "Enlaces y contenido",
-        "score": 0,
+        "score": 18,
         "max": 20
       },
       {
@@ -1369,6 +1412,14 @@
         "label": "Suplantación de marca que pide credenciales",
         "findings": [
           "language.credentials",
+          "lookalike.typosquat",
+          "sender.brand-impersonation"
+        ]
+      },
+      {
+        "id": "lookalike-same-brand",
+        "label": "Enlace que imita a la misma marca que el remitente",
+        "findings": [
           "lookalike.typosquat",
           "sender.brand-impersonation"
         ]
@@ -1490,6 +1541,36 @@
           "url": "https://attack.mitre.org/techniques/T1583/001/"
         },
         "category": "sender",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": "Microsoft",
+        "techniques": [
+          {
+            "id": "T1583.001",
+            "name": "Acquire Infrastructure: Domains",
+            "tactic": "Resource Development",
+            "why": "El atacante registró un dominio que imita a uno legítimo.",
+            "url": "https://attack.mitre.org/techniques/T1583/001/"
+          }
+        ]
+      },
+      {
+        "id": "lookalike.typosquat",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Dominio que imita a Microsoft",
+        "detail": "micr0soft-365.test se parece mucho a microsoft.com, pero no es el mismo dominio.",
+        "evidence": "login.micr0soft-365.test ≈ microsoft.com",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "tactic": "Resource Development",
+          "why": "El atacante registró un dominio que imita a uno legítimo.",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        },
+        "category": "links",
         "reliability": "high",
         "provenance": "inferred",
         "polarity": "risk",
@@ -1968,7 +2049,7 @@
     "level": "critical",
     "label": "Phishing casi seguro",
     "summary": "Combina varias señales graves, entre ellas «Letras de otro alfabeto camufladas» y «El enlace no lleva a donde dice». No pulses enlaces ni abras adjuntos y bórralo.",
-    "mainReason": "Motivo principal: Suplantación de marca con autenticación fallida.",
+    "mainReason": "Motivo principal: Suplantación de marca que pide credenciales.",
     "categories": [
       {
         "id": "authentication",
@@ -2016,15 +2097,6 @@
     },
     "correlations": [
       {
-        "id": "brand-auth",
-        "label": "Suplantación de marca con autenticación fallida",
-        "findings": [
-          "auth.dkim",
-          "auth.dmarc",
-          "sender.mixed-script"
-        ]
-      },
-      {
         "id": "brand-credentials",
         "label": "Suplantación de marca que pide credenciales",
         "findings": [
@@ -2042,6 +2114,16 @@
           "links.brand-in-path",
           "links.ip",
           "sender.mixed-script"
+        ]
+      },
+      {
+        "id": "credentials-link",
+        "label": "Pide credenciales y da un enlace sospechoso para ello",
+        "findings": [
+          "html.form",
+          "language.credentials",
+          "links.ip",
+          "links.mismatch"
         ]
       }
     ],
@@ -2499,11 +2581,11 @@
     }
   },
   "08-ruta-falsificada": {
-    "score": 75,
-    "level": "phishing",
-    "label": "Probable phishing",
-    "summary": "6 señales graves o medias, entre ellas «Se hace pasar por PayPal» y «El servidor de origen dice ser de PayPal y no lo es». No pulses enlaces ni abras adjuntos.",
-    "mainReason": "Motivo principal: Suplantación de marca con autenticación fallida.",
+    "score": 81,
+    "level": "critical",
+    "label": "Phishing casi seguro",
+    "summary": "Combina varias señales graves, entre ellas «Se hace pasar por PayPal» y «El servidor de origen dice ser de PayPal y no lo es». No pulses enlaces ni abras adjuntos y bórralo.",
+    "mainReason": "Motivo principal: Enlace que imita a la misma marca que el remitente.",
     "categories": [
       {
         "id": "authentication",
@@ -2520,7 +2602,7 @@
       {
         "id": "links",
         "label": "Enlaces y contenido",
-        "score": 0,
+        "score": 10,
         "max": 20
       },
       {
@@ -2552,10 +2634,9 @@
     },
     "correlations": [
       {
-        "id": "brand-auth",
-        "label": "Suplantación de marca con autenticación fallida",
+        "id": "lookalike-same-brand",
+        "label": "Enlace que imita a la misma marca que el remitente",
         "findings": [
-          "auth.missing",
           "lookalike.brand-in-domain",
           "sender.brand-impersonation"
         ]
@@ -2745,6 +2826,36 @@
         ]
       },
       {
+        "id": "lookalike.brand-in-domain",
+        "detector": "lookalike",
+        "severity": "medium",
+        "points": 15,
+        "title": "Usa el nombre de PayPal en un dominio ajeno",
+        "detail": "paypal-avisos.test contiene \"paypal\" pero no pertenece a PayPal (paypal.com).",
+        "evidence": "paypal-avisos.test",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "tactic": "Resource Development",
+          "why": "El atacante registró un dominio que imita a uno legítimo.",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        },
+        "category": "links",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": "PayPal",
+        "techniques": [
+          {
+            "id": "T1583.001",
+            "name": "Acquire Infrastructure: Domains",
+            "tactic": "Resource Development",
+            "why": "El atacante registró un dominio que imita a uno legítimo.",
+            "url": "https://attack.mitre.org/techniques/T1583/001/"
+          }
+        ]
+      },
+      {
         "id": "language.threat",
         "detector": "language",
         "severity": "medium",
@@ -2887,11 +2998,11 @@
     }
   },
   "09-cabeceras-trampa": {
-    "score": 70,
+    "score": 60,
     "level": "phishing",
     "label": "Probable phishing",
     "summary": "4 señales graves o medias, entre ellas «El nombre visible muestra otra dirección» y «Se hace pasar por DocuSign». No pulses enlaces ni abras adjuntos.",
-    "mainReason": "Motivo principal: Suplantación de marca con autenticación fallida.",
+    "mainReason": "Pesa sobre todo: Remitente y suplantación y Autenticación.",
     "categories": [
       {
         "id": "authentication",
@@ -2938,17 +3049,7 @@
         "PhishLens no ha verificado nada por sí mismo."
       ]
     },
-    "correlations": [
-      {
-        "id": "brand-auth",
-        "label": "Suplantación de marca con autenticación fallida",
-        "findings": [
-          "auth.missing",
-          "sender.brand-impersonation",
-          "sender.display-name-address"
-        ]
-      }
-    ],
+    "correlations": [],
     "trust": [],
     "errors": [],
     "techniques": [
@@ -3177,11 +3278,11 @@
     }
   },
   "10-dominio-unicode": {
-    "score": 61,
+    "score": 78,
     "level": "phishing",
     "label": "Probable phishing",
     "summary": "6 señales graves o medias, entre ellas «Dominio con caracteres internacionales (punycode) (2 enlaces)» y «Dominio con letras de varios alfabetos». No pulses enlaces ni abras adjuntos.",
-    "mainReason": "Pesa sobre todo: Enlaces y contenido y Autenticación.",
+    "mainReason": "Motivo principal: Suplantación de marca que pide credenciales.",
     "categories": [
       {
         "id": "authentication",
@@ -3228,7 +3329,27 @@
         "PhishLens no ha verificado nada por sí mismo."
       ]
     },
-    "correlations": [],
+    "correlations": [
+      {
+        "id": "brand-credentials",
+        "label": "Suplantación de marca que pide credenciales",
+        "findings": [
+          "language.credentials",
+          "lookalike.brand-in-domain",
+          "lookalike.deceptive-subdomain",
+          "lookalike.mixed-script-domain",
+          "lookalike.whole-script"
+        ]
+      },
+      {
+        "id": "credentials-link",
+        "label": "Pide credenciales y da un enlace sospechoso para ello",
+        "findings": [
+          "language.credentials",
+          "links.punycode"
+        ]
+      }
+    ],
     "trust": [],
     "errors": [],
     "techniques": [
