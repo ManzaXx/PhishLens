@@ -1,5 +1,5 @@
 // Estructura común de un hallazgo.
-import { techniqueFor } from '../data/mitre.js';
+import { techniquesFor } from '../data/mitre.js';
 import { own } from '../lib/text.js';
 
 export const SEVERITY_POINTS = { info: 0, low: 5, medium: 15, high: 30 };
@@ -38,7 +38,8 @@ function oneOf(list, value, label) {
 export function finding({ id, detector, severity, title, detail, evidence = '', category, reliability, provenance, polarity, brand = null }) {
   if (own(SEVERITY_POINTS, severity) === undefined) throw new Error(`Severidad desconocida: ${severity}`);
   const defaults = own(DETECTOR_DEFAULTS, detector) ?? FALLBACK;
-  const mitre = techniqueFor(id);
+  const techniques = techniquesFor(id);
+  const mitre = techniques[0] ?? null;
   return {
     id, detector, severity, points: SEVERITY_POINTS[severity], title, detail,
     evidence: String(evidence), mitre,
@@ -46,7 +47,7 @@ export function finding({ id, detector, severity, title, detail, evidence = '', 
     reliability: oneOf(RELIABILITY, reliability ?? defaults.reliability, 'Fiabilidad'),
     provenance: oneOf(PROVENANCE, provenance ?? defaults.provenance, 'Procedencia'),
     polarity: oneOf(POLARITY, polarity ?? 'risk', 'Polaridad'),
-    techniques: mitre ? [mitre] : [],
+    techniques,
     // Marca suplantada, si la hay: permite correlacionar remitente y enlaces de la misma marca.
     brand: brand ?? null,
   };

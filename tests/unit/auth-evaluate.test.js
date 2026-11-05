@@ -24,7 +24,7 @@ test('muestra 04 sin ningún pass alineado da auth.dmarc-unaligned', () => {
   const f = byId(detect(sample('04-phishing-correos')), 'auth.dmarc-unaligned');
   assert.ok(f);
   assert.equal(f.severity, 'medium');
-  assert.equal(f.mitre.id, 'T1672');
+  assert.equal(f.mitre.id, 'T1684.002');
 });
 
 test('Authentication-Results falsificada da auth.forged-results', () => {

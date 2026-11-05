@@ -36,7 +36,8 @@ test('points, mitre y techniques', () => {
   const f = finding({ ...base, id: 'links.mismatch', detector: 'links', severity: 'high' });
   assert.equal(f.points, 30);
   assert.equal(f.mitre.id, 'T1566.002');
-  assert.deepEqual(f.techniques, [f.mitre]);
+  assert.equal(f.techniques[0], f.mitre);
+  assert.deepEqual(f.techniques.map((t) => t.id), ['T1566.002', 'T1204.001']);
   assert.deepEqual(finding({ ...base, id: 'input.no-headers', detector: 'input', severity: 'info' }).techniques, []);
 });
 

@@ -69,7 +69,7 @@ test('HELO que dice ser PayPal desde otro servidor', () => {
   const email = mail('from mail.paypal.com (vps.hosting.test [203.0.113.9]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000');
   const f = detect(email).find((x) => x.id === 'route.helo-mismatch');
   assert.equal(f?.severity, 'high');
-  assert.equal(f.mitre.id, 'T1672');
+  assert.equal(f.mitre.id, 'T1684.002');
 });
 
 test('HELO de PayPal con rDNS de PayPal, o HELO no oficial, no da helo-mismatch', () => {
