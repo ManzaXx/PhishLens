@@ -77,7 +77,7 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
       returnPath: email.returnPath,
       subject: email.subject,
       links: email.links,
-      attachments: email.attachments,
+      attachments: email.attachments.map(({ bytes, ...meta }) => meta),
       authResults: email.headers?.get?.('authentication-results')?.[0] ?? null,
       date: email.headers?.get?.('date')?.[0] ?? null,
       route: email.hasHeaders ? parseReceived(email) : [],

@@ -63,3 +63,11 @@ test('el resumen prioriza remitente y enlaces sobre autenticación', () => {
   const r = analyzeInput({ kind: 'eml', value: 'From: "PayPal" <a@pp-help.test>\nAuthentication-Results: x; spf=fail; dkim=fail; dmarc=fail\nSubject: x\n\nhola' });
   assert.match(r.summary, /^\d+ señales graves o medias, entre ellas «Se hace pasar por PayPal»/);
 });
+
+test('el informe no arrastra los bytes de los adjuntos (exportación JSON ligera)', () => {
+  const raw = 'From: a@b.test\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Disposition: attachment; filename="a.bin"\r\nContent-Transfer-Encoding: base64\r\n\r\nYWJj\r\n--b--\r\n';
+  const [a] = analyzeInput({ kind: 'eml', value: raw }).email.attachments;
+  assert.equal(a.bytes, undefined);
+  assert.equal(a.size, 3);
+  assert.equal(a.sha256, 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+});
