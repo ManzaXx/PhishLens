@@ -93,7 +93,7 @@ test('multipart anidado con HTML y adjunto', () => {
   const e = parseEml(raw);
   assert.equal(e.text.trim(), 'Texto plano ñ');
   assert.match(e.html, /<a href/);
-  assert.deepEqual(e.attachments, [{ filename: 'factura.pdf.exe', contentType: 'application/octet-stream' }]);
+  assert.deepEqual(e.attachments.map(({ filename, contentType }) => ({ filename, contentType })), [{ filename: 'factura.pdf.exe', contentType: 'application/octet-stream' }]);
   assert.deepEqual(e.links, [{ text: 'https://paypal.com', href: 'http://evil.xyz/login' }]);
 });
 

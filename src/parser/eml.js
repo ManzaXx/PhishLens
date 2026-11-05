@@ -2,6 +2,7 @@
 import { extractUrls } from './url.js';
 import { extractAnchors } from './html.js';
 import { LIMITS } from '../lib/limits.js';
+import { sha256 } from '../lib/sha256.js';
 
 export { LIMITS };
 
@@ -72,13 +73,20 @@ function splitHeaderBody(raw) {
   return { head: raw.slice(0, match.index), body: raw.slice(match.index + match[0].length) };
 }
 
-function parseHeaders(head) {
+/**
+ * Parsea las cabeceras. Si se pasa `list`, añade cada cabecera en orden con su texto
+ * crudo (plegado y saltos de línea intactos): DKIM y la detección de duplicados lo necesitan.
+ */
+function parseHeaders(head, list = null) {
   const headers = new Map();
-  const lines = head.split(/\r?\n/);
+  const tokens = head.split(/(\r?\n)/);
+  const ordered = [];
   let current = null;
-  for (const line of lines) {
+  for (let i = 0; i < tokens.length; i += 2) {
+    const line = tokens[i];
     if (/^[ \t]/.test(line) && current) {
       current.value += ' ' + line.trim();
+      current.raw += tokens[i - 1] + line;
       continue;
     }
     const m = /^([!-9;-~]+):[ \t]?(.*)$/.exec(line);
@@ -86,12 +94,16 @@ function parseHeaders(head) {
       current = null;
       continue;
     }
-    current = { name: m[1].toLowerCase(), value: m[2].trim() };
+    current = { name: m[1].toLowerCase(), value: m[2].trim(), raw: line };
+    ordered.push(current);
     if (!headers.has(current.name)) headers.set(current.name, []);
     headers.get(current.name).push(current);
   }
   const out = new Map();
   for (const [name, entries] of headers) out.set(name, entries.map((e) => decodeWords(e.value)));
+  if (list) {
+    for (const e of ordered) list.push({ name: e.name, value: decodeWords(e.value), raw: e.raw, index: list.length });
+  }
   return out;
 }
 
@@ -146,8 +158,29 @@ export function parseAddress(value) {
 
 // ---------- MIME ----------
 
+function note(acc, code, detail) {
+  if (acc.noted.has(code)) return;
+  acc.noted.add(code);
+  acc.notes.push({ code, detail });
+}
+
+/** Bytes reales de un adjunto según su codificación de transferencia. */
+function attachmentBytes(body, encoding) {
+  const enc = (encoding || '').toLowerCase().trim();
+  if (enc === 'base64') return base64ToBytes(body);
+  if (enc === 'quoted-printable') return qpToBytes(body);
+  return Uint8Array.from(body, (c) => c.charCodeAt(0) & 0xff);
+}
+
 function walkPart(headers, body, acc, depth = 0) {
-  if (depth > LIMITS.depth || acc.parts++ > LIMITS.parts) return;
+  if (depth > LIMITS.depth) {
+    note(acc, 'limit.depth', `Más de ${LIMITS.depth} niveles de partes MIME anidadas; el resto no se ha analizado.`);
+    return;
+  }
+  if (acc.parts++ > LIMITS.parts) {
+    note(acc, 'limit.parts', `Más de ${LIMITS.parts} partes MIME; el resto no se ha analizado.`);
+    return;
+  }
   const type = parseParams(headers.get('content-type')?.[0] ?? 'text/plain');
   const disposition = parseParams(headers.get('content-disposition')?.[0] ?? '');
   const filename = disposition.params.filename || type.params.name || '';
@@ -155,17 +188,37 @@ function walkPart(headers, body, acc, depth = 0) {
   if (type.value.startsWith('multipart/') && type.params.boundary) {
     const delimiter = `--${type.params.boundary}`;
     const chunks = body.split(delimiter).slice(1);
+    let closed = false;
     for (const chunk of chunks) {
-      if (chunk.startsWith('--')) break;
+      if (chunk.startsWith('--')) {
+        closed = true;
+        break;
+      }
       const part = chunk.replace(/^\r?\n/, '');
       const { head, body: partBody } = splitHeaderBody(part);
       walkPart(parseHeaders(head), partBody.replace(/\r?\n$/, ''), acc, depth + 1);
     }
+    if (!closed) note(acc, 'mime.unterminated-multipart', `La parte multipart con boundary "${type.params.boundary.slice(0, 70)}" no tiene delimitador de cierre.`);
     return;
   }
 
   if (filename || disposition.value === 'attachment') {
-    if (acc.attachments.length < LIMITS.attachments) acc.attachments.push({ filename: filename || '(sin nombre)', contentType: type.value });
+    if (acc.attachments.length >= LIMITS.attachments) {
+      note(acc, 'limit.attachments', `Más de ${LIMITS.attachments} adjuntos; el resto no se ha analizado.`);
+      return;
+    }
+    const all = attachmentBytes(body, headers.get('content-transfer-encoding')?.[0]);
+    const truncated = all.length > LIMITS.attachmentBytes;
+    if (truncated) note(acc, 'limit.attachment-bytes', `Algún adjunto supera ${LIMITS.attachmentBytes} bytes; se ha recortado y no se calcula su hash.`);
+    const bytes = truncated ? all.slice(0, LIMITS.attachmentBytes) : all;
+    acc.attachments.push({
+      filename: filename || '(sin nombre)',
+      contentType: type.value,
+      size: all.length,
+      bytes,
+      sha256: truncated ? null : sha256(bytes),
+      truncated,
+    });
     return;
   }
 
@@ -174,11 +227,14 @@ function walkPart(headers, body, acc, depth = 0) {
   else if (type.value.startsWith('text/') || !headers.has('content-type')) acc.text += content;
 }
 
-function extractLinks(html, text) {
+function extractLinks(html, text, acc = null) {
   const links = [];
   const seen = new Set();
   const add = (link) => {
-    if (links.length >= LIMITS.links) return;
+    if (links.length >= LIMITS.links) {
+      if (acc) note(acc, 'limit.links', `Más de ${LIMITS.links} enlaces; el resto no se ha analizado.`);
+      return;
+    }
     const key = `${link.text}\u0000${link.href}`;
     if (seen.has(key)) return;
     seen.add(key);
@@ -196,6 +252,7 @@ function emptyEmail() {
   return {
     headers: new Map(), from: null, replyTo: null, returnPath: null, subject: '',
     text: '', html: '', links: [], attachments: [], hasHeaders: false,
+    headerList: [], rawBody: '', parseNotes: [],
   };
 }
 
@@ -211,8 +268,10 @@ export function parseEml(raw) {
     return email;
   }
 
-  const headers = parseHeaders(head);
-  const acc = { text: '', html: '', attachments: [], parts: 0 };
+  const headerList = [];
+  const headers = parseHeaders(head, headerList);
+  const acc = { text: '', html: '', attachments: [], parts: 0, notes: [], noted: new Set() };
+  if (body.length > LIMITS.rawBytes) note(acc, 'limit.raw-bytes', `El cuerpo supera ${LIMITS.rawBytes} bytes; solo se conserva el principio para las comprobaciones de integridad.`);
   walkPart(headers, body, acc);
 
   email.headers = headers;
@@ -224,7 +283,10 @@ export function parseEml(raw) {
   email.text = acc.text;
   email.html = acc.html;
   email.attachments = acc.attachments;
-  email.links = extractLinks(acc.html, acc.text);
+  email.links = extractLinks(acc.html, acc.text, acc);
+  email.headerList = headerList;
+  email.rawBody = body.slice(0, LIMITS.rawBytes);
+  email.parseNotes = acc.notes;
   return email;
 }
 
