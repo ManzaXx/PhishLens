@@ -122,3 +122,14 @@ test('firma DKIM verificada en local deja DKIM y DMARC como verified', () => {
   assert.equal(report.auth.dkim.state, 'verified');
   assert.equal(report.auth.dkim.result, 'pass');
 });
+
+test('verifyDkimForInput verifica con la clave pegada y el informe lo refleja', async () => {
+  const { verifyDkimForInput } = await import('../../src/core/engine.js');
+  const value = read('../fixtures/dkim/rsa-relaxed.eml');
+  const keys = JSON.parse(read('../fixtures/dkim/keys.json'));
+  const dkim = await verifyDkimForInput({ kind: 'eml', value }, keys['rsa2026._domainkey.banco-ficticio.test']);
+  assert.equal(dkim.ok, true);
+  const report = analyzeInput({ kind: 'eml', value, dkim });
+  assert.equal(report.auth.dkim.state, 'verified');
+  assert.equal(report.auth.dmarc.state, 'verified');
+});

@@ -5,6 +5,7 @@ import { finding, SEVERITY_ORDER } from './finding.js';
 import { extractIocs } from '../intel/ioc.js';
 import { parseReceived } from '../parser/received.js';
 import { authReport } from '../auth/index.js';
+import { verifyDkimSignature } from '../auth/dkim.js';
 import * as auth from '../detectors/auth.js';
 import * as sender from '../detectors/sender.js';
 import * as links from '../detectors/links.js';
@@ -123,4 +124,13 @@ export function analyzeInput({ kind, value, spfRecord, dkim }) {
     }));
   }
   return analyze(email, DEFAULT_DETECTORS, extra);
+}
+
+/**
+ * Verifica en local la primera firma DKIM del correo con la clave TXT que pega el analista.
+ * El resultado se pasa luego a analyzeInput({ …, dkim }) para que el informe lo refleje.
+ */
+export function verifyDkimForInput({ kind, value }, keyTxt) {
+  if (kind === 'url') return Promise.resolve({ ok: false, reason: 'no hay firma DKIM', domain: null, selector: null });
+  return verifyDkimSignature(parseEml(value), keyTxt);
 }

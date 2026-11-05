@@ -1,5 +1,5 @@
 // Controlador de la página: entradas, ejemplos, tema y acciones del informe.
-import { analyzeInput } from '../core/engine.js';
+import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
 import { SAMPLES } from '../../samples/index.js';
 import { renderReport, reportToJson, iocsToText } from './render.js';
 
@@ -19,7 +19,7 @@ if (window.top !== window.self) {
 }
 const $ = (sel) => document.querySelector(sel);
 
-const state = { tab: 'eml', fileText: null, lastReport: null };
+const state = { tab: 'eml', fileText: null, lastReport: null, lastInput: null, analyst: {} };
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 const dropzone = $('#dropzone');
@@ -147,6 +147,7 @@ function currentInput() {
 }
 
 function run() {
+  state.analyst = {};
   const input = currentInput();
   if (!input) {
     showError({ eml: 'Elige o arrastra un archivo .eml.', text: 'Pega el contenido del email.', url: 'Escribe una URL.' }[state.tab]);
@@ -158,6 +159,7 @@ function run() {
   }
   showError('');
   try {
+    state.lastInput = input;
     state.lastReport = analyzeInput(input);
     renderReport(reportBox, state.lastReport);
   } catch {
@@ -202,8 +204,45 @@ reportBox.addEventListener('click', (e) => {
   onReportAction(e);
 });
 
+// ---------- Comprobación local de DKIM y SPF ----------
+const authLive = $('#auth-live');
+
+/** Re-analiza con lo que ha pegado el analista y vuelve a abrir la pestaña de autenticación. */
+function reanalyze(status) {
+  state.lastReport = analyzeInput({ ...state.lastInput, ...state.analyst });
+  const dkimKey = $('#dkim-key')?.value ?? '';
+  const spfRecord = $('#spf-record')?.value ?? '';
+  renderReport(reportBox, state.lastReport, { tab: 'auth', authStatus: status, dkimKey, spfRecord });
+  authLive.textContent = '';
+  // Se vacía y se rellena para que el lector de pantalla lo anuncie aunque el texto se repita.
+  setTimeout(() => { authLive.textContent = status; }, 50);
+  $('#rtab-auth')?.focus();
+}
+
+async function verifyDkim() {
+  const key = $('#dkim-key')?.value.trim();
+  if (!key) return reanalyze('Pega primero la clave pública DKIM.');
+  try {
+    const dkim = await verifyDkimForInput(state.lastInput, key);
+    state.analyst = { ...state.analyst, dkim };
+    reanalyze(`DKIM: ${dkim.reason}.`);
+  } catch {
+    reanalyze('DKIM: no se pudo comprobar la firma con esa clave.');
+  }
+}
+
+function evalSpf() {
+  const spfRecord = $('#spf-record')?.value.trim();
+  if (!spfRecord) return reanalyze('Pega primero el registro SPF.');
+  state.analyst = { ...state.analyst, spfRecord };
+  const { spf } = analyzeInput({ ...state.lastInput, ...state.analyst }).auth;
+  reanalyze(spf.state === 'verified' ? `SPF: ${spf.result}.` : `SPF: ${spf.detail}`);
+}
+
 function onReportAction(e) {
   const action = e.target.closest('[data-action]')?.dataset.action;
+  if (action === 'verify-dkim') verifyDkim();
+  if (action === 'eval-spf') evalSpf();
   if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || 'Sin IOCs');
   if (action === 'print') window.print();
   if (action === 'export') {
