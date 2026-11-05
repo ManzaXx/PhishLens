@@ -24,7 +24,7 @@ const RULES = [
   [/^lookalike\./, 'T1583.001'],
   [/^auth\.(dkim-body-verified|dkim-weak)$/, null],
   [/^auth\./, 'T1672'],
-  [/^sender\.(brand-impersonation|mixed-script)$/, 'T1656'],
+  [/^sender\.(brand-impersonation|mixed-script|display-name-address)$/, 'T1656'],
   [/^sender\.invisible-chars$/, 'T1027'],
   [/^sender\./, 'T1566'],
   [/^html\.(form|data-uri)$/, 'T1598'],

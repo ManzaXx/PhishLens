@@ -42,3 +42,23 @@ test('la evidencia marca los caracteres no latinos', () => {
   const [f] = detect(mail('From: "Pаypal" <x@pay.test>'));
   assert.equal(f.evidence, 'Pаypal → P[U+0430]ypal');
 });
+
+test('nombre visible con la dirección de otro dominio es grave', () => {
+  const found = ids(detect(mail('From: "service@paypal.com" <x@evil.test>')));
+  assert.ok(found.includes('sender.display-name-address:high'));
+  assert.ok(ids(detect(mail('From: "PayPal <service@paypal.com>" <x@evil.test>'))).includes('sender.display-name-address:high'));
+});
+
+test('nombre visible con su propia dirección o una del mismo dominio no cuenta', () => {
+  assert.deepEqual(ids(detect(mail('From: "ana@empresa.es" <ana@empresa.es>'))), []);
+  assert.deepEqual(ids(detect(mail('From: "soporte@mail.empresa.es" <ana@empresa.es>'))), []);
+});
+
+test('Sender de otro dominio sin firma DKIM de ese dominio es leve', () => {
+  assert.deepEqual(ids(detect(mail('From: Tienda <info@tienda.test>\nSender: envios@plataforma.test'))), ['sender.sender-mismatch:low']);
+});
+
+test('Sender de otro dominio con firma DKIM de ese dominio no cuenta', () => {
+  assert.deepEqual(ids(detect(mail('DKIM-Signature: v=1; a=rsa-sha256; d=plataforma.test; s=s1; h=from; bh=x; b=y\nFrom: Tienda <info@tienda.test>\nSender: envios@plataforma.test'))), []);
+  assert.deepEqual(ids(detect(mail('From: Tienda <info@tienda.test>\nSender: otro@tienda.test'))), []);
+});

@@ -47,3 +47,18 @@ test('parseReceived prefiere la IP real de conexión entre paréntesis', () => {
   const e = parseEml('Received: from [10.8.0.3] (unknown [198.51.100.23]) by vps.test; Wed, 21 Oct 2026 07:03:01 +0200\nFrom: a@b.test\n\nx');
   assert.equal(parseReceived(e)[0].ip, '198.51.100.23');
 });
+
+test('dos From es grave', () => {
+  assert.deepEqual(ids(`${base}From: b@otra.test\n\nhola`), ['headers.duplicate-from:high']);
+});
+
+test('Subject, Date, To, Message-ID o Sender repetidos es medio, en un solo hallazgo', () => {
+  const found = detect(parseEml(`${base}Subject: y\nTo: a@b.test\nTo: c@d.test\n\nhola`));
+  assert.deepEqual(found.map((f) => `${f.id}:${f.severity}`), ['headers.duplicate:medium']);
+  assert.match(found[0].evidence, /Subject/);
+  assert.match(found[0].evidence, /To/);
+});
+
+test('Received y otras cabeceras repetibles no cuentan como duplicadas', () => {
+  assert.deepEqual(ids(`Received: from a by b\nReceived: from c by a\nX-Tag: 1\nX-Tag: 2\n${base}\nhola`), []);
+});

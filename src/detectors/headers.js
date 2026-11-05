@@ -8,9 +8,39 @@ export const name = 'headers';
 const SUSPICIOUS_MAILERS = /(phpmailer|swiftmailer|leaf ?phpmailer|microsoft cdo|the bat!|python|smtp ?blast|gammadyne|mass ?mail)/i;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// Cabeceras que deben aparecer una sola vez (RFC 5322 §3.6).
+const SINGLE = ['subject', 'date', 'to', 'message-id', 'sender'];
+const DISPLAY = { subject: 'Subject', date: 'Date', to: 'To', 'message-id': 'Message-ID', sender: 'Sender' };
+
+function duplicates(email) {
+  const count = new Map();
+  for (const h of email.headerList ?? []) count.set(h.name, (count.get(h.name) ?? 0) + 1);
+  const out = [];
+  if ((count.get('from') ?? 0) > 1) {
+    out.push(finding({
+      id: 'headers.duplicate-from', detector: name, severity: 'high',
+      title: 'El correo tiene varios remitentes (From)',
+      detail: 'Cada programa de correo puede enseñar un From distinto: tú ves uno y el filtro antispam comprobó otro. Es una técnica para burlar la autenticación.',
+      evidence: email.headers.get('from').slice(0, 5).join(' · ').slice(0, 300),
+      reliability: 'high',
+    }));
+  }
+  const repeated = SINGLE.filter((h) => (count.get(h) ?? 0) > 1);
+  if (repeated.length) {
+    out.push(finding({
+      id: 'headers.duplicate', detector: name, severity: 'medium',
+      title: 'Cabeceras que deberían ser únicas aparecen repetidas',
+      detail: 'Un correo bien formado solo lleva una de cada. Repetirlas sirve para que el cliente de correo y los filtros lean cosas distintas.',
+      evidence: repeated.map((h) => `${DISPLAY[h]} ×${count.get(h)}`).join(', '),
+      reliability: 'medium',
+    }));
+  }
+  return out;
+}
+
 export function detect(email, { now = Date.now() } = {}) {
   if (!email.hasHeaders) return [];
-  const out = [];
+  const out = duplicates(email);
   const fromDomain = email.from?.domain;
 
   const messageId = email.headers.get('message-id')?.[0];

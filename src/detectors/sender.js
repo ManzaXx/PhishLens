@@ -1,6 +1,7 @@
 // Detector de remitente: incoherencias entre From, Reply-To y Return-Path y suplantación de marca.
 import { finding } from '../core/finding.js';
 import { registrableDomain } from '../parser/url.js';
+import { parseAddress } from '../parser/eml.js';
 import { BRANDS } from '../data/brands.js';
 import { FREE_MAIL_DOMAINS } from '../data/lists.js';
 
@@ -58,6 +59,39 @@ function unicodeChecks(email) {
   return out;
 }
 
+// Dirección dentro del nombre visible. Clases sin solapamiento para que sea lineal.
+const ADDRESS_IN_NAME = /[a-z0-9._%+-]+@([a-z0-9-]+(?:\.[a-z0-9-]+)+)/gi;
+
+function displayNameAddress(from, fromReg) {
+  const display = (from.name ?? '').slice(0, 1000);
+  for (const m of display.matchAll(ADDRESS_IN_NAME)) {
+    if (registrableDomain(m[1]) === fromReg) continue;
+    return [finding({
+      id: 'sender.display-name-address', detector: name, severity: 'high',
+      title: 'El nombre visible muestra otra dirección',
+      detail: `El nombre del remitente es "${m[0]}", pero el correo viene en realidad de ${from.address}. Muchos móviles solo enseñan el nombre.`,
+      evidence: `"${from.name}" <${from.address}>`,
+    })];
+  }
+  return [];
+}
+
+function senderMismatch(email, fromReg) {
+  const sender = parseAddress(email.headers?.get('sender')?.[0]);
+  if (!sender?.domain) return [];
+  const senderReg = registrableDomain(sender.domain);
+  if (senderReg === fromReg) return [];
+  const signed = (email.headers.get('dkim-signature') ?? [])
+    .some((v) => registrableDomain(/(?:^|;)\s*d\s*=\s*([^;\s]+)/i.exec(v)?.[1] ?? '') === senderReg);
+  if (signed) return [];
+  return [finding({
+    id: 'sender.sender-mismatch', detector: name, severity: 'low',
+    title: 'Enviado en nombre de otro dominio (Sender)',
+    detail: `La cabecera Sender dice que lo envió ${sender.domain} en nombre de ${email.from.domain}, y ${sender.domain} no lo ha firmado con DKIM. Es habitual en plataformas de envío, pero también en suplantaciones.`,
+    evidence: `From: ${email.from.address} · Sender: ${sender.address}`,
+  })];
+}
+
 export function detect(email) {
   const out = unicodeChecks(email);
   const from = email.from;
@@ -86,6 +120,8 @@ export function detect(email) {
       evidence: `From: ${from.address} · Return-Path: ${email.returnPath}`,
     }));
   }
+
+  out.push(...displayNameAddress(from, fromReg), ...senderMismatch(email, fromReg));
 
   const brand = brandInText(from.name) ?? brandInText(from.address.split('@')[0]);
   if (brand && !isOfficialDomain(brand, from.domain)) {
