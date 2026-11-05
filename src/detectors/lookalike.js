@@ -1,5 +1,5 @@
 // Detector de dominios que imitan a marcas conocidas (typosquatting).
-import { finding } from './finding.js';
+import { finding } from '../core/finding.js';
 import { parseUrl, registrableDomain } from '../parser/url.js';
 import { BRANDS } from '../data/brands.js';
 import { isOfficialDomain } from './sender.js';

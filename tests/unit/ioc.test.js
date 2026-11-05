@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { defang, extractIocs, iocsToText } from '../src/ioc.js';
-import { parseEml } from '../src/parser/eml.js';
+import { defang, extractIocs, iocsToText } from '../../src/intel/ioc.js';
+import { parseEml } from '../../src/parser/eml.js';
 
 test('defang', () => {
   assert.equal(defang('http://evil.xyz/a.b'), 'hxxp://evil[.]xyz/a[.]b');

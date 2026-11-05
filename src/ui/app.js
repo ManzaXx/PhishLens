@@ -1,5 +1,5 @@
 // Controlador de la página: entradas, ejemplos, tema y acciones del informe.
-import { analyzeInput } from '../engine.js';
+import { analyzeInput } from '../core/engine.js';
 import { SAMPLES } from '../../samples/index.js';
 import { renderReport, reportToJson, iocsToText } from './render.js';
 

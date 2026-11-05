@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseEml } from '../src/parser/eml.js';
-import { detect } from '../src/detectors/auth.js';
+import { parseEml } from '../../src/parser/eml.js';
+import { detect } from '../../src/detectors/auth.js';
 
 const mail = (auth) => parseEml(`From: a@paypal.com\nSubject: x\n${auth ? `Authentication-Results: mx.example.com; ${auth}\n` : ''}\nhola`);
 const ids = (findings) => findings.map((f) => `${f.id}:${f.severity}`);

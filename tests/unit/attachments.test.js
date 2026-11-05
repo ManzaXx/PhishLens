@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { detect } from '../src/detectors/attachments.js';
+import { detect } from '../../src/detectors/attachments.js';
 
 const att = (...names) => ({ attachments: names.map((filename) => ({ filename, contentType: 'application/octet-stream' })) });
 const ids = (f) => f.map((x) => `${x.id}:${x.severity}`);

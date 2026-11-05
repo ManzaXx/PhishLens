@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseEml, parseAddress, htmlToText, emailFromUrl } from '../src/parser/eml.js';
+import { parseEml, parseAddress, emailFromUrl } from '../../src/parser/eml.js';
+import { htmlToText } from '../../src/parser/html.js';
 
 const simple = [
   'From: "PayPal" <service@paypa1.com>',

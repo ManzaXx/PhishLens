@@ -1,10 +1,10 @@
 // Pinta el informe. Todo el contenido del email se inserta con textContent:
 // nunca se interpreta como HTML ni se generan enlaces clicables a partir del email.
 import { highlight } from './highlight.js';
-import { adviceFor } from '../advice.js';
-import { defang, iocsToText } from '../ioc.js';
-import { htmlToText } from '../parser/eml.js';
-import { reveal } from '../text.js';
+import { adviceFor } from '../core/advice.js';
+import { defang, iocsToText } from '../intel/ioc.js';
+import { htmlToText } from '../parser/html.js';
+import { reveal } from '../lib/text.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 

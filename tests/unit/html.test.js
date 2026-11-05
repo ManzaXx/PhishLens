@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { detect } from '../src/detectors/html.js';
+import { detect } from '../../src/detectors/html.js';
 
 const ids = (html, text = '') => detect({ html, text }).map((f) => `${f.id}:${f.severity}`).sort();
 

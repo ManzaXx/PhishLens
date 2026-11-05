@@ -1,17 +1,17 @@
 // Motor de análisis: ejecuta los detectores, suma la puntuación y arma el informe.
-import { parseEml, emailFromUrl } from './parser/eml.js';
-import { parseUrl } from './parser/url.js';
-import { finding, SEVERITY_ORDER } from './detectors/finding.js';
-import { extractIocs } from './ioc.js';
-import { parseReceived } from './detectors/headers.js';
-import * as auth from './detectors/auth.js';
-import * as sender from './detectors/sender.js';
-import * as links from './detectors/links.js';
-import * as lookalike from './detectors/lookalike.js';
-import * as attachments from './detectors/attachments.js';
-import * as language from './detectors/language.js';
-import * as headers from './detectors/headers.js';
-import * as html from './detectors/html.js';
+import { parseEml, emailFromUrl } from '../parser/eml.js';
+import { parseUrl } from '../parser/url.js';
+import { finding, SEVERITY_ORDER } from './finding.js';
+import { extractIocs } from '../intel/ioc.js';
+import { parseReceived } from '../parser/received.js';
+import * as auth from '../detectors/auth.js';
+import * as sender from '../detectors/sender.js';
+import * as links from '../detectors/links.js';
+import * as lookalike from '../detectors/lookalike.js';
+import * as attachments from '../detectors/attachments.js';
+import * as language from '../detectors/language.js';
+import * as headers from '../detectors/headers.js';
+import * as html from '../detectors/html.js';
 
 export const DEFAULT_DETECTORS = [auth, sender, headers, links, lookalike, attachments, html, language];
 

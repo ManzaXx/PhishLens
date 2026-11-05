@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { adviceFor } from '../src/advice.js';
+import { adviceFor } from '../../src/core/advice.js';
 
 const report = (level, ids) => ({ level, findings: ids.map((id) => ({ id, points: 15 })) });
 

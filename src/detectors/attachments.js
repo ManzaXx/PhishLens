@@ -1,5 +1,5 @@
 // Detector de adjuntos peligrosos. Solo mira el nombre y el tipo: nunca abre el contenido.
-import { finding } from './finding.js';
+import { finding } from '../core/finding.js';
 import { DANGEROUS_EXTENSIONS, MACRO_EXTENSIONS, ARCHIVE_EXTENSIONS } from '../data/lists.js';
 
 export const name = 'attachments';

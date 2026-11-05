@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseEml } from '../src/parser/eml.js';
-import { detect } from '../src/detectors/sender.js';
+import { parseEml } from '../../src/parser/eml.js';
+import { detect } from '../../src/detectors/sender.js';
 
 const mail = (h) => parseEml(`${h}\nSubject: x\n\nhola`);
 const ids = (findings) => findings.map((f) => `${f.id}:${f.severity}`);

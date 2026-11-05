@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { analyze, analyzeInput, levelFor } from '../src/engine.js';
-import { parseEml } from '../src/parser/eml.js';
-import { finding } from '../src/detectors/finding.js';
+import { analyze, analyzeInput, levelFor } from '../../src/core/engine.js';
+import { parseEml } from '../../src/parser/eml.js';
+import { finding } from '../../src/core/finding.js';
 
 const fake = (name, severities) => ({
   name,

@@ -1,5 +1,5 @@
 // Detector de enlaces engañosos o sospechosos.
-import { finding } from './finding.js';
+import { finding } from '../core/finding.js';
 import { parseUrl, registrableDomain, unwrapUrl } from '../parser/url.js';
 import { URL_SHORTENERS, SUSPICIOUS_TLDS, TRACKING_DOMAINS, DANGEROUS_EXTENSIONS, ARCHIVE_EXTENSIONS, MACRO_EXTENSIONS } from '../data/lists.js';
 import { BRANDS } from '../data/brands.js';

@@ -1,6 +1,6 @@
 // Detector del contenido HTML: formularios, scripts, URIs data:, texto oculto y emails que son solo una imagen.
-import { finding } from './finding.js';
-import { scanHtml, htmlToText } from '../parser/eml.js';
+import { finding } from '../core/finding.js';
+import { scanHtml, htmlToText } from '../parser/html.js';
 
 export const name = 'html';
 

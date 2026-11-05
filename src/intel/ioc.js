@@ -1,6 +1,6 @@
 // Extracción de indicadores de compromiso (IOCs) para compartir con un equipo de seguridad.
-import { parseUrl, unwrapUrl } from './parser/url.js';
-import { parseReceived } from './detectors/headers.js';
+import { parseUrl, unwrapUrl } from '../parser/url.js';
+import { parseReceived } from '../parser/received.js';
 
 const PRIVATE_IP = /^(10\.|127\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.)/;
 

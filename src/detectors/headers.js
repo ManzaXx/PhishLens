@@ -1,5 +1,5 @@
 // Detector de cabeceras técnicas: Message-ID, Date, X-Mailer y ruta Received.
-import { finding } from './finding.js';
+import { finding } from '../core/finding.js';
 import { registrableDomain } from '../parser/url.js';
 
 export const name = 'headers';
@@ -7,20 +7,6 @@ export const name = 'headers';
 // Programas de envío masivo muy usados en kits de phishing.
 const SUSPICIOUS_MAILERS = /(phpmailer|swiftmailer|leaf ?phpmailer|microsoft cdo|the bat!|python|smtp ?blast|gammadyne|mass ?mail)/i;
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** Devuelve la ruta del email en orden de llegada: [{from, by, ip, date}] */
-export function parseReceived(email) {
-  // Se acota cada cabecera: un Received de megas con "(" sin cerrar no debe bloquear los regex.
-  const hops = (email.headers?.get('received') ?? []).slice(0, 30).map((raw) => raw.slice(0, 1000)).map((value) => ({
-    from: /\bfrom\s+(\S+)/i.exec(value)?.[1] ?? '',
-    by: /\bby\s+([^\s;]+)/i.exec(value)?.[1] ?? '',
-    // La IP que vio el servidor receptor va entre paréntesis: "from x (host [IP])".
-    ip: (/\([^)]*\[([0-9a-f.:]+)\][^)]*\)/i.exec(value) ?? /\[(\d{1,3}(?:\.\d{1,3}){3}|[0-9a-f:]+:[0-9a-f:]*)\]/i.exec(value))?.[1] ?? '',
-    date: value.includes(';') ? value.slice(value.lastIndexOf(';') + 1).trim() : '',
-  }));
-  // Cada servidor añade su Received arriba: el primero de la lista es el último salto.
-  return hops.reverse();
-}
 
 export function detect(email, { now = Date.now() } = {}) {
   if (!email.hasHeaders) return [];

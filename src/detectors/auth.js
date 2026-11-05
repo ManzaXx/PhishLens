@@ -1,6 +1,6 @@
 // Detector de autenticación del remitente: SPF, DKIM y DMARC.
-import { finding } from './finding.js';
-import { own } from '../text.js';
+import { finding } from '../core/finding.js';
+import { own } from '../lib/text.js';
 
 export const name = 'auth';
 

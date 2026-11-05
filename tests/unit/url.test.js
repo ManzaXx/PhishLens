@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseUrl, extractUrls, registrableDomain } from '../src/parser/url.js';
+import { parseUrl, extractUrls, registrableDomain } from '../../src/parser/url.js';
 
 test('parseUrl obtiene el dominio registrable', () => {
   const u = parseUrl('https://www.paypal.com/x');
@@ -62,7 +62,7 @@ test('extractUrls no se bloquea con miles de puntos', () => {
 });
 
 test('unwrapUrl desenvuelve Safe Links y redirecciones de Google', async () => {
-  const { unwrapUrl } = await import('../src/parser/url.js');
+  const { unwrapUrl } = await import('../../src/parser/url.js');
   assert.equal(unwrapUrl('https://eur01.safelinks.protection.outlook.com/?url=http%3A%2F%2Fevil.xyz%2Flogin&data=05'), 'http://evil.xyz/login');
   assert.equal(unwrapUrl('https://www.google.com/url?q=https://evil.xyz/a&sa=D'), 'https://evil.xyz/a');
   assert.equal(unwrapUrl('https://example.com/?url=http://x.test'), null);

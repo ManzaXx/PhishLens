@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { SAMPLES } from '../../samples/index.js';
-import { analyzeInput } from '../../src/engine.js';
+import { analyzeInput } from '../../src/core/engine.js';
 
 export const GOLDEN_PATH = new URL('../unit/__golden__/samples.json', import.meta.url);
 

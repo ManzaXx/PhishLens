@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { detect } from '../src/detectors/links.js';
+import { detect } from '../../src/detectors/links.js';
 
 const withLinks = (...links) => ({ links: links.map((l) => (typeof l === 'string' ? { text: l, href: l } : l)) });
 const ids = (findings) => findings.map((f) => `${f.id}:${f.severity}`).sort();

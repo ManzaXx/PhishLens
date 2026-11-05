@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseEml } from '../src/parser/eml.js';
-import { detect, parseReceived } from '../src/detectors/headers.js';
+import { parseEml } from '../../src/parser/eml.js';
+import { detect } from '../../src/detectors/headers.js';
+import { parseReceived } from '../../src/parser/received.js';
 
 const ids = (raw) => detect(parseEml(raw)).map((f) => `${f.id}:${f.severity}`).sort();
 const base = 'From: a@tienda.test\nDate: Tue, 20 Oct 2026 10:00:00 +0200\nMessage-ID: <1@tienda.test>\nSubject: x\n';

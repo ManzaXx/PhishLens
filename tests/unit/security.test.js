@@ -1,10 +1,11 @@
 // Pruebas de seguridad: entradas hostiles que intentan romper, bloquear o engañar a PhishLens.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseEml, parseAddress, decodeEntities, htmlToText } from '../src/parser/eml.js';
-import { analyzeInput } from '../src/engine.js';
-import { reveal } from '../src/text.js';
-import { detect as detectHtml } from '../src/detectors/html.js';
+import { parseEml, parseAddress } from '../../src/parser/eml.js';
+import { decodeEntities, htmlToText } from '../../src/parser/html.js';
+import { analyzeInput } from '../../src/core/engine.js';
+import { reveal } from '../../src/lib/text.js';
+import { detect as detectHtml } from '../../src/detectors/html.js';
 
 const fast = (fn, ms = 1000) => {
   const t = performance.now();

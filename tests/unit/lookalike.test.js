@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { detect, levenshtein, normalizeHomoglyphs, findLookalike } from '../src/detectors/lookalike.js';
+import { detect, levenshtein, normalizeHomoglyphs, findLookalike } from '../../src/detectors/lookalike.js';
 
 test('levenshtein', () => {
   assert.equal(levenshtein('paypal', 'paypal'), 0);

@@ -1,5 +1,5 @@
 // Detector de remitente: incoherencias entre From, Reply-To y Return-Path y suplantación de marca.
-import { finding } from './finding.js';
+import { finding } from '../core/finding.js';
 import { registrableDomain } from '../parser/url.js';
 import { BRANDS } from '../data/brands.js';
 import { FREE_MAIL_DOMAINS } from '../data/lists.js';

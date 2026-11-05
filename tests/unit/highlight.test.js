@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { highlight } from '../src/ui/highlight.js';
+import { highlight } from '../../src/ui/highlight.js';
 
 test('marca frases sospechosas y URLs', () => {
   const parts = highlight('Hola. Su cuenta será suspendida hoy mismo. Entre en http://x.test/a ya.');

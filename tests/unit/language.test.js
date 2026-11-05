@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { detect } from '../src/detectors/language.js';
+import { detect } from '../../src/detectors/language.js';
 
 const ids = (text, subject = '') => detect({ subject, text, html: '' }).map((f) => `${f.id}:${f.severity}`).sort();
 

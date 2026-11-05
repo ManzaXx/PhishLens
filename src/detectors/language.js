@@ -1,7 +1,7 @@
 // Detector de lenguaje de ingeniería social (urgencia, amenazas, credenciales, premios).
-import { finding } from './finding.js';
+import { finding } from '../core/finding.js';
 import { LANGUAGE_PATTERNS } from '../data/lists.js';
-import { htmlToText } from '../parser/eml.js';
+import { htmlToText } from '../parser/html.js';
 
 export const name = 'language';
 

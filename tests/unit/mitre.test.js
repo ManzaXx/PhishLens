@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { techniqueFor } from '../src/data/mitre.js';
-import { finding } from '../src/detectors/finding.js';
-import { analyzeInput } from '../src/engine.js';
+import { techniqueFor } from '../../src/data/mitre.js';
+import { finding } from '../../src/core/finding.js';
+import { analyzeInput } from '../../src/core/engine.js';
 
 test('cada familia de hallazgo tiene su técnica ATT&CK', () => {
   assert.equal(techniqueFor('links.mismatch').id, 'T1566.002');
