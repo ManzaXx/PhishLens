@@ -46,3 +46,22 @@ test('sin Received no hay salto de entrada', () => {
 test('receivingHop vive en parser y auth/trust lo reexporta', () => {
   assert.equal(fromTrust, receivingHop);
 });
+
+test('receivingHop salta los saltos locales (amavis/LMTP) y entra por el externo', () => {
+  const email = parseEml([
+    'Received: from mail.example.org ([10.0.0.2]) by imap.example.org with LMTP; Wed, 21 Oct 2026 07:03:07 +0000',
+    'Received: from localhost (localhost [127.0.0.1]) by mail.example.org (Postfix); Wed, 21 Oct 2026 07:03:06 +0000',
+    'Received: from out.b.test (out.b.test [198.51.100.7]) by mail.example.org (Postfix); Wed, 21 Oct 2026 07:03:05 +0000',
+    'Received: from app.b.test by out.b.test; Wed, 21 Oct 2026 07:03:00 +0000',
+    'From: a@b.test', '', 'hola'].join('\r\n'));
+  const { entry } = receivingHop(email);
+  assert.equal(entry.ip, '198.51.100.7');
+});
+
+test('un salto con IP privada sin más saltos del receptor debajo sigue siendo la entrada', () => {
+  const email = parseEml([
+    'Received: from x.attacker.test (x.attacker.test [192.168.1.20]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000',
+    'Received: from y by out.attacker.test; Wed, 21 Oct 2026 07:03:00 +0000',
+    'From: a@b.test', '', 'hola'].join('\r\n'));
+  assert.equal(receivingHop(email).entry.ip, '192.168.1.20');
+});

@@ -94,3 +94,27 @@ test('hopWarnings: avisos en texto por salto para la interfaz', async () => {
   ];
   assert.deepEqual(hopWarnings(route), [[], ['Entrada al servidor receptor', 'IP privada en la frontera', 'Hora anterior al salto previo']]);
 });
+
+test('salto interno de Office 365 (sin rDNS, mismo dominio en HELO y by) no da helo-mismatch', () => {
+  const email = mail(
+    'from SN6PR01MB1.namprd01.prod.outlook.com (2603:10b6:805:1::1) by BN6PR01MB2.namprd01.prod.outlook.com with HTTPS; Wed, 21 Oct 2026 07:03:06 +0000',
+    'from mail-eopbgr.outbound.protection.outlook.com (mail-eopbgr.outbound.protection.outlook.com [40.107.1.1]) by SN6PR01MB1.namprd01.prod.outlook.com; Wed, 21 Oct 2026 07:03:05 +0000',
+  );
+  assert.deepEqual(ids(email), []);
+});
+
+test('Postfix + amavis en localhost por encima del salto externo no da IP privada', () => {
+  const email = mail(
+    'from localhost (localhost [127.0.0.1]) by mail.example.org (Postfix) with ESMTP id A; Wed, 21 Oct 2026 07:03:06 +0000',
+    'from out.b.test (out.b.test [198.51.100.7]) by mail.example.org (Postfix) with ESMTPS id B; Wed, 21 Oct 2026 07:03:05 +0000',
+  );
+  assert.deepEqual(ids(email), []);
+});
+
+test('entrega LMTP interna con IP privada sin rDNS no da IP privada', () => {
+  const email = mail(
+    'from mail.example.org ([10.0.0.2]) by imap.example.org with LMTP; Wed, 21 Oct 2026 07:03:07 +0000',
+    'from out.b.test (out.b.test [198.51.100.7]) by mail.example.org with ESMTPS; Wed, 21 Oct 2026 07:03:05 +0000',
+  );
+  assert.deepEqual(ids(email), []);
+});

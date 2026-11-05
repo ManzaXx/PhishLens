@@ -63,6 +63,9 @@ function heloMismatch(hop) {
   const helo = hop.helo.toLowerCase().replace(/^\[|\]$/g, '');
   const brand = BRANDS.find((b) => isOfficialDomain(b, helo));
   if (!brand) return null;
+  // Saltos internos del propio proveedor (Office 365 entre sus servidores, sin rDNS): el receptor
+  // es de la misma organización que el HELO, así que no hay nada que contradecir.
+  if (hop.by && registrableDomain(hop.by.toLowerCase()) === registrableDomain(helo)) return null;
   const rdns = hop.rdns && hop.rdns !== 'unknown' ? hop.rdns : '';
   if (rdns && (isOfficialDomain(brand, rdns) || registrableDomain(rdns) === registrableDomain(helo))) return null;
   return finding({

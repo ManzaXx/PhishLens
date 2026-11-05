@@ -1,5 +1,6 @@
 // Ruta del email reconstruida a partir de las cabeceras Received.
 import { registrableDomain } from './url.js';
+import { isReservedIp } from '../lib/ip.js';
 
 const MAX_HOPS = 30;
 
@@ -47,13 +48,19 @@ export function receivingHop(email) {
   const receiver = received[0]?.by?.toLowerCase() || null;
   const receiverOrg = org(receiver);
   let entry = null;
-  for (const hop of received) {
-    if (!receiver || !hop.by || org(hop.by) !== receiverOrg) break;
+  const ownHop = (hop) => Boolean(receiver && hop?.by && org(hop.by) === receiverOrg);
+  for (let i = 0; i < received.length; i++) {
+    const hop = received[i];
+    if (!ownHop(hop)) break;
     entry = hop;
     // El salto solo es interno si el receptor resolvió al emisor (rDNS) dentro de su organización.
     // Un HELO o un Received escrito por el remitente no puede alargar la zona de confianza.
     const sender = hop.rdns && hop.rdns !== 'unknown' ? hop.rdns : '';
-    if (!sender || org(sender) !== receiverOrg) break;
+    if (sender && org(sender) === receiverOrg) continue;
+    // Entregas locales (amavis en 127.0.0.1, LMTP por la red interna): una IP privada no llega
+    // desde Internet, así que si debajo hay otro salto del receptor, la entrada está más abajo.
+    if (hop.ip && isReservedIp(hop.ip) && ownHop(received[i + 1])) continue;
+    break;
   }
   const boundary = entry ? received.find((hop) => hop.index > entry.index) ?? null : null;
   return { receiver, receiverOrg, entry, boundary };
