@@ -46,3 +46,18 @@ test('iocsToText genera un bloque listo para copiar', () => {
   assert.match(text, /# URLs\nhxxp:\/\/e\[\.\]xyz\//);
   assert.doesNotMatch(text, /# IPs/);
 });
+
+const attach = (name, b64) => `--b\r\nContent-Disposition: attachment; filename="${name}"\r\nContent-Transfer-Encoding: base64\r\n\r\n${b64}\r\n`;
+
+test('los SHA-256 de adjuntos son IOCs, sin repetir', () => {
+  const raw = `From: a@b.test\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n${attach('a.exe', 'YWJj')}${attach('b.exe', 'YWJj')}--b--\r\n`;
+  const iocs = extractIocs(parseEml(raw));
+  assert.deepEqual(iocs.hashes, ['ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad']);
+  assert.match(iocsToText(iocs), /# SHA-256\nba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad/);
+});
+
+test('un adjunto truncado no aporta hash', () => {
+  const email = parseEml('From: a@b.test\r\n\r\nx');
+  email.attachments = [{ filename: 'x', sha256: null }];
+  assert.deepEqual(extractIocs(email).hashes, []);
+});

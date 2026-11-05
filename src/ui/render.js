@@ -2,7 +2,7 @@
 // nunca se interpreta como HTML ni se generan enlaces clicables a partir del email.
 import { highlight } from './highlight.js';
 import { adviceFor } from '../core/advice.js';
-import { defang, iocsToText } from '../intel/ioc.js';
+import { defang, iocsToText, PLAIN } from '../intel/ioc.js';
 import { htmlToText } from '../parser/html.js';
 import { reveal } from '../lib/text.js';
 
@@ -221,7 +221,7 @@ function headersPanel(report) {
 
 // ---------- Pestaña: IOCs ----------
 
-const IOC_LABELS = [['urls', 'URLs'], ['domains', 'Dominios'], ['ips', 'IPs'], ['emails', 'Emails'], ['attachments', 'Adjuntos']];
+const IOC_LABELS = [['urls', 'URLs'], ['domains', 'Dominios'], ['ips', 'IPs'], ['emails', 'Emails'], ['attachments', 'Adjuntos'], ['hashes', 'SHA-256']];
 
 function iocsPanel(report) {
   const panel = el('div', { className: 'stack' });
@@ -238,7 +238,7 @@ function iocsPanel(report) {
     const values = report.iocs[key] ?? [];
     if (!values.length) continue;
     const ul = el('ul', { className: 'ioc-list' });
-    for (const v of values.slice(0, 50)) ul.append(el('li', { text: key === 'attachments' ? v : defang(v) }));
+    for (const v of values.slice(0, 50)) ul.append(el('li', { text: PLAIN.has(key) ? v : defang(v) }));
     grid.append(el('section', {}, el('h4', { className: 'group__title', text: `${label} (${values.length})` }), ul));
   }
   panel.append(grid);

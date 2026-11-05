@@ -18,6 +18,7 @@ export function extractIocs(email) {
   const ips = new Set();
   const emails = new Set();
   const attachments = new Set();
+  const hashes = new Set();
 
   const addEmail = (address) => {
     if (!address || !address.includes('@')) return;
@@ -38,7 +39,10 @@ export function extractIocs(email) {
   for (const hop of parseReceived(email)) {
     if (hop.ip && !PRIVATE_IP.test(hop.ip) && hop.ip.includes('.')) ips.add(hop.ip);
   }
-  for (const a of email.attachments ?? []) attachments.add(a.filename);
+  for (const a of email.attachments ?? []) {
+    attachments.add(a.filename);
+    if (a.sha256) hashes.add(a.sha256);
+  }
 
   return {
     urls: [...urls],
@@ -46,15 +50,19 @@ export function extractIocs(email) {
     ips: [...ips],
     emails: [...emails],
     attachments: [...attachments],
+    hashes: [...hashes],
   };
 }
 
-const SECTIONS = [['urls', 'URLs'], ['domains', 'Dominios'], ['ips', 'IPs'], ['emails', 'Emails'], ['attachments', 'Adjuntos']];
+// Nombres de fichero y hashes no son clicables: se copian tal cual.
+export const PLAIN = new Set(['attachments', 'hashes']);
+
+const SECTIONS = [['urls', 'URLs'], ['domains', 'Dominios'], ['ips', 'IPs'], ['emails', 'Emails'], ['attachments', 'Adjuntos'], ['hashes', 'SHA-256']];
 
 /** Texto plano con los IOCs "defanged", listo para pegar en un ticket. */
 export function iocsToText(iocs) {
   return SECTIONS
     .filter(([key]) => iocs[key]?.length)
-    .map(([key, label]) => `# ${label}\n${iocs[key].map((v) => (key === 'attachments' ? v : defang(v))).join('\n')}`)
+    .map(([key, label]) => `# ${label}\n${iocs[key].map((v) => (PLAIN.has(key) ? v : defang(v))).join('\n')}`)
     .join('\n\n');
 }
