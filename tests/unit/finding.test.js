@@ -55,3 +55,8 @@ test('las listas exportadas cubren los defectos', () => {
   }
   assert.deepEqual(POLARITY, ['risk', 'trust']);
 });
+
+test('brand es opcional y por defecto null', () => {
+  assert.equal(finding({ ...base, detector: 'sender', brand: 'PayPal' }).brand, 'PayPal');
+  assert.equal(finding({ ...base, detector: 'sender' }).brand, null);
+});

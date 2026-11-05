@@ -23,6 +23,7 @@ function duplicates(email) {
       detail: 'Cada programa de correo puede enseñar un From distinto: tú ves uno y el filtro antispam comprobó otro. Es una técnica para burlar la autenticación.',
       evidence: email.headers.get('from').slice(0, 5).join(' · ').slice(0, 300),
       reliability: 'high',
+      category: 'sender',
     }));
   }
   const repeated = SINGLE.filter((h) => (count.get(h) ?? 0) > 1);

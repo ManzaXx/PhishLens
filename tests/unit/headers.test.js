@@ -62,3 +62,8 @@ test('Subject, Date, To, Message-ID o Sender repetidos es medio, en un solo hall
 test('Received y otras cabeceras repetibles no cuentan como duplicadas', () => {
   assert.deepEqual(ids(`Received: from a by b\nReceived: from c by a\nX-Tag: 1\nX-Tag: 2\n${base}\nhola`), []);
 });
+
+test('From duplicado cuenta como suplantación del remitente', () => {
+  const f = detect(parseEml('From: a@b.test\nFrom: c@d.test\nSubject: x\n\nhola')).find((x) => x.id === 'headers.duplicate-from');
+  assert.equal(f.category, 'sender');
+});

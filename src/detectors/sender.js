@@ -137,6 +137,7 @@ export function detect(email) {
         ? `Dice ser ${brand.name} pero escribe desde un correo gratuito (${from.domain}).`
         : `Dice ser ${brand.name} pero ${from.domain} no es un dominio oficial de ${brand.name} (${brand.domains[0]}).`,
       evidence: from.name ? `"${from.name}" <${from.address}>` : from.address,
+      brand: brand.name,
     }));
   }
   return out;

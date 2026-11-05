@@ -146,3 +146,9 @@ test('una etiqueta Unicode que no dibuja ninguna marca no es homógrafo', () => 
 test('marcas que son palabras corrientes no cuentan en subdominios ajenos (www.ing.unipi.it)', () => {
   assert.deepEqual(lookIds('www.ing.unipi.it', 'orange-business.com'), []);
 });
+
+test('el lookalike del From va a remitente y el de un enlace a enlaces, con su marca', () => {
+  const email = parse('From: a@paypa1.com\nContent-Type: text/plain\n\nhttp://paypa1-login.test/x');
+  const found = detectLookalike(email);
+  assert.deepEqual(found.map((f) => [f.category, f.brand]), [['sender', 'PayPal'], ['links', 'PayPal']]);
+});

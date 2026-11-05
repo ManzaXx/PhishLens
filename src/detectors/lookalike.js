@@ -128,11 +128,11 @@ export function findScriptSpoof(domain) {
   return null;
 }
 
-function lookalikeFinding(domain, hit) {
+function lookalikeFinding(domain, hit, ctx) {
   const official = hit.brand.domains[0];
   if (hit.kind === 'deceptive-subdomain') {
     return finding({
-      id: 'lookalike.deceptive-subdomain', detector: name, severity: 'high',
+      id: 'lookalike.deceptive-subdomain', detector: name, severity: 'high', ...ctx,
       title: `Subdominio que finge ser ${hit.brand.name}`,
       detail: `La dirección empieza por ${hit.token}, pero el dominio real es ${hit.domain}. Lo que cuenta es lo que hay justo antes del final, no al principio.`,
       evidence: domain,
@@ -140,14 +140,14 @@ function lookalikeFinding(domain, hit) {
   }
   if (hit.kind === 'typosquat') {
     return finding({
-      id: 'lookalike.typosquat', detector: name, severity: 'high',
+      id: 'lookalike.typosquat', detector: name, severity: 'high', ...ctx,
       title: `Dominio que imita a ${hit.brand.name}`,
       detail: `${hit.domain} se parece mucho a ${official}, pero no es el mismo dominio.`,
       evidence: `${domain} ≈ ${official}`,
     });
   }
   return finding({
-    id: 'lookalike.brand-in-domain', detector: name, severity: hit.access ? 'high' : 'medium',
+    id: 'lookalike.brand-in-domain', detector: name, severity: hit.access ? 'high' : 'medium', ...ctx,
     title: `Usa el nombre de ${hit.brand.name} en un dominio ajeno`,
     detail: hit.access
       ? `${hit.domain} junta "${hit.token}" con "${hit.access}" para parecer una página oficial de acceso, pero no pertenece a ${hit.brand.name} (${official}).`
@@ -156,12 +156,12 @@ function lookalikeFinding(domain, hit) {
   });
 }
 
-function scriptFinding(domain, hit) {
+function scriptFinding(domain, hit, ctx) {
   const letters = foreignLookalikes(hit.label);
   const shown = `${hit.unicode} (${domain})${letters.length ? ` · ${letters.slice(0, 6).join(' ')}` : ''}`;
   if (hit.kind === 'mixed-script-domain') {
     return finding({
-      id: 'lookalike.mixed-script-domain', detector: name, severity: 'high',
+      id: 'lookalike.mixed-script-domain', detector: name, severity: 'high', ...ctx,
       title: 'Dominio con letras de varios alfabetos',
       detail: `La parte «${hit.label}» mezcla letras latinas con otras cirílicas, griegas o armenias que se ven iguales. Ningún dominio legítimo necesita mezclarlas.`,
       evidence: shown,
@@ -169,14 +169,14 @@ function scriptFinding(domain, hit) {
   }
   if (hit.kind === 'homoglyph') {
     return finding({
-      id: 'lookalike.homoglyph', detector: name, severity: 'high',
+      id: 'lookalike.homoglyph', detector: name, severity: 'high', ...ctx,
       title: `Dominio con letras que imitan a ${hit.brand.name}`,
       detail: `«${hit.label}» usa caracteres que no son letras latinas normales, pero en pantalla se lee como ${hit.brand.domains[0]}.`,
       evidence: shown,
     });
   }
   return finding({
-    id: 'lookalike.whole-script', detector: name, severity: 'high',
+    id: 'lookalike.whole-script', detector: name, severity: 'high', ...ctx,
     title: `Dominio en otro alfabeto que imita a ${hit.brand.name}`,
     detail: `«${hit.label}» está escrito entero con letras de otro alfabeto, pero se lee como ${hit.brand.domains[0]}.`,
     evidence: shown,
@@ -184,28 +184,29 @@ function scriptFinding(domain, hit) {
 }
 
 export function detect(email) {
+  // Un dominio parecido en el From es suplantación del remitente; en un enlace, contenido.
   const domains = [];
-  if (email.from?.domain) domains.push(email.from.domain);
+  if (email.from?.domain) domains.push({ domain: email.from.domain, category: 'sender' });
   for (const link of email.links ?? []) {
     const url = parseUrl(link.href);
-    if (url && !url.isIp) domains.push(url.hostname);
+    if (url && !url.isIp) domains.push({ domain: url.hostname, category: 'links' });
   }
 
   const out = [];
   const seen = new Set();
-  for (const domain of domains) {
+  for (const { domain, category } of domains) {
     if (seen.size >= 10) break;
     const spoof = findScriptSpoof(domain);
     if (spoof) {
       const reg = registrableDomain(domain);
-      if (!seen.has(reg)) out.push(scriptFinding(domain, spoof));
+      if (!seen.has(reg)) out.push(scriptFinding(domain, spoof, { category, brand: spoof.brand?.name ?? null }));
       seen.add(reg);
       continue;
     }
     const hit = findLookalike(domain);
     if (!hit || seen.has(hit.domain)) continue;
     seen.add(hit.domain);
-    out.push(lookalikeFinding(domain, hit));
+    out.push(lookalikeFinding(domain, hit, { category, brand: hit.brand.name }));
   }
   return out;
 }

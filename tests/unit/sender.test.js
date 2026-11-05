@@ -74,3 +74,8 @@ test('dirección camuflada en el nombre con letras cirílicas o de ancho complet
     assert.ok(ids(detect(mail(from))).includes('sender.display-name-address:high'), from);
   }
 });
+
+test('la suplantación de marca lleva el nombre de la marca', () => {
+  const f = detect(mail('From: "PayPal" <x@pay.test>')).find((x) => x.id === 'sender.brand-impersonation');
+  assert.equal(f.brand, 'PayPal');
+});
