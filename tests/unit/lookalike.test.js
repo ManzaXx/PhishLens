@@ -43,7 +43,8 @@ test('detect revisa remitente y enlaces sin duplicar', () => {
     links: [{ text: 'x', href: 'https://paypa1.com/a' }, { text: 'y', href: 'https://bbva-seguridad.com' }, { text: 'z', href: 'https://www.paypal.com' }],
   };
   const out = detect(email).map((f) => `${f.id}:${f.severity}`).sort();
-  assert.deepEqual(out, ['lookalike.brand-in-domain:medium', 'lookalike.typosquat:high']);
+  // bbva-seguridad.com es combosquatting (marca + «seguridad»): grave desde el PR3.
+  assert.deepEqual(out, ['lookalike.brand-in-domain:high', 'lookalike.typosquat:high']);
 });
 
 test('dominios regionales oficiales no son sospechosos', () => {
@@ -84,4 +85,23 @@ test('dominio entero en cirílico que dibuja una marca (аррӏе.com)', () => 
 
 test('dominios internacionales legítimos no son imitaciones', () => {
   assert.deepEqual(lookIds(host('españa.es'), host('münchen.de'), host('пример.рф')), []);
+});
+
+// ---- PR3: subdominios engañosos y combosquatting ----
+test('el dominio oficial completo a la izquierda de otro dominio es un subdominio engañoso', () => {
+  for (const h of ['paypal.com.cuenta-segura.test', 'login-paypal-com.test', 'paypal-com.evil.test', 'www.bancosantander.es.acceso.test']) {
+    assert.deepEqual(lookIds(h), ['lookalike.deceptive-subdomain:high'], h);
+  }
+});
+
+test('combosquatting: marca más palabra de acceso es grave; sin ella, media', () => {
+  assert.deepEqual(lookIds('paypal-login.test'), ['lookalike.brand-in-domain:high']);
+  assert.deepEqual(lookIds('secure.paypal-cuenta.test'), ['lookalike.brand-in-domain:high']);
+  assert.deepEqual(lookIds('paypal-fans.test'), ['lookalike.brand-in-domain:medium']);
+  const f = detectLookalike(linkMail('paypal-login.test')).find((x) => x.id === 'lookalike.brand-in-domain');
+  assert.match(f.evidence, /login/);
+});
+
+test('los dominios oficiales y sus subdominios no dan nada', () => {
+  assert.deepEqual(lookIds('paypal.com', 'www.paypal.com', 'login.paypal.com'), []);
 });

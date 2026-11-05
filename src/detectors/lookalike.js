@@ -48,12 +48,30 @@ function maxDistance(key) {
   return 0;
 }
 
+// Palabras de acceso que convierten "marca + palabra" en combosquatting.
+const ACCESS_WORDS = new Set(['secure', 'login', 'signin', 'verify', 'account', 'update', 'support', 'cuenta', 'soporte', 'seguridad', 'acceso', 'verificar', 'cliente', 'clientes', 'pago', 'pagos']);
+
+const OFFICIAL = BRANDS.flatMap((brand) => brand.domains.map((domain) => ({ brand, domain, hyphen: domain.replace(/\./g, '-') })));
+
+/** El dominio oficial completo escrito a la izquierda de otro: paypal.com.evil.test, paypal-com.evil.test. */
+function deceptiveSubdomain(host, reg) {
+  const left = host.slice(0, host.length - reg.length);
+  const dotted = `.${left}`;
+  for (const o of OFFICIAL) {
+    if (dotted.includes(`.${o.domain}.`)) return o;
+    if (host.split('.').slice(0, -1).some((label) => `-${label}-`.includes(`-${o.hyphen}-`))) return o;
+  }
+  return null;
+}
+
 /** Devuelve {brand, domain, kind} si el dominio imita a una marca, o null. */
 export function findLookalike(domain) {
   const host = String(domain ?? '').toLowerCase();
   if (!host || BRANDS.some((b) => isOfficialDomain(b, host))) return null;
 
   const reg = registrableDomain(host);
+  const deceptive = deceptiveSubdomain(host, reg);
+  if (deceptive) return { brand: deceptive.brand, domain: reg, kind: 'deceptive-subdomain', token: deceptive.domain };
   const labels = host.split('.').slice(0, -1);
   const tokens = new Set(labels.flatMap((l) => [l, ...l.split('-')]).filter(Boolean));
 
@@ -69,7 +87,10 @@ export function findLookalike(domain) {
   }
   for (const token of tokens) {
     const hit = BRAND_KEYS.find(({ key }) => key === token);
-    if (hit) return { brand: hit.brand, domain: reg, kind: 'brand-in-domain', token };
+    if (hit) {
+      const access = [...tokens].find((t) => ACCESS_WORDS.has(t)) ?? null;
+      return { brand: hit.brand, domain: reg, kind: 'brand-in-domain', token, access };
+    }
   }
   return null;
 }
@@ -92,6 +113,34 @@ export function findScriptSpoof(domain) {
     }
   }
   return null;
+}
+
+function lookalikeFinding(domain, hit) {
+  const official = hit.brand.domains[0];
+  if (hit.kind === 'deceptive-subdomain') {
+    return finding({
+      id: 'lookalike.deceptive-subdomain', detector: name, severity: 'high',
+      title: `Subdominio que finge ser ${hit.brand.name}`,
+      detail: `La dirección empieza por ${hit.token}, pero el dominio real es ${hit.domain}. Lo que cuenta es lo que hay justo antes del final, no al principio.`,
+      evidence: domain,
+    });
+  }
+  if (hit.kind === 'typosquat') {
+    return finding({
+      id: 'lookalike.typosquat', detector: name, severity: 'high',
+      title: `Dominio que imita a ${hit.brand.name}`,
+      detail: `${hit.domain} se parece mucho a ${official}, pero no es el mismo dominio.`,
+      evidence: `${domain} ≈ ${official}`,
+    });
+  }
+  return finding({
+    id: 'lookalike.brand-in-domain', detector: name, severity: hit.access ? 'high' : 'medium',
+    title: `Usa el nombre de ${hit.brand.name} en un dominio ajeno`,
+    detail: hit.access
+      ? `${hit.domain} junta "${hit.token}" con "${hit.access}" para parecer una página oficial de acceso, pero no pertenece a ${hit.brand.name} (${official}).`
+      : `${hit.domain} contiene "${hit.token}" pero no pertenece a ${hit.brand.name} (${official}).`,
+    evidence: hit.access ? `${domain} (marca + "${hit.access}")` : domain,
+  });
 }
 
 function scriptFinding(domain, hit) {
@@ -134,24 +183,7 @@ export function detect(email) {
     const hit = findLookalike(domain);
     if (!hit || seen.has(hit.domain)) continue;
     seen.add(hit.domain);
-    const official = hit.brand.domains[0];
-    out.push(hit.kind === 'typosquat'
-      ? finding({
-        id: 'lookalike.typosquat',
-        detector: name,
-        severity: 'high',
-        title: `Dominio que imita a ${hit.brand.name}`,
-        detail: `${hit.domain} se parece mucho a ${official}, pero no es el mismo dominio.`,
-        evidence: `${domain} ≈ ${official}`,
-      })
-      : finding({
-        id: 'lookalike.brand-in-domain',
-        detector: name,
-        severity: 'medium',
-        title: `Usa el nombre de ${hit.brand.name} en un dominio ajeno`,
-        detail: `${hit.domain} contiene "${hit.token}" pero no pertenece a ${hit.brand.name} (${official}).`,
-        evidence: domain,
-      }));
+    out.push(lookalikeFinding(domain, hit));
   }
   return out;
 }

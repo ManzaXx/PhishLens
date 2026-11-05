@@ -142,6 +142,11 @@
         "url": "https://attack.mitre.org/techniques/T1566/002/"
       },
       {
+        "id": "T1583.001",
+        "name": "Acquire Infrastructure: Domains",
+        "url": "https://attack.mitre.org/techniques/T1583/001/"
+      },
+      {
         "id": "T1598",
         "name": "Phishing for Information",
         "url": "https://attack.mitre.org/techniques/T1598/"
@@ -150,11 +155,6 @@
         "id": "T1566",
         "name": "Phishing",
         "url": "https://attack.mitre.org/techniques/T1566/"
-      },
-      {
-        "id": "T1583.001",
-        "name": "Acquire Infrastructure: Domains",
-        "url": "https://attack.mitre.org/techniques/T1583/001/"
       },
       {
         "id": "T1204",
@@ -220,6 +220,20 @@
         }
       },
       {
+        "id": "lookalike.brand-in-domain",
+        "detector": "lookalike",
+        "severity": "high",
+        "points": 30,
+        "title": "Usa el nombre de Santander en un dominio ajeno",
+        "detail": "santander-seguridad.test junta \"santander\" con \"seguridad\" para parecer una página oficial de acceso, pero no pertenece a Santander (bancosantander.es).",
+        "evidence": "santander-seguridad.test (marca + \"seguridad\")",
+        "mitre": {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        }
+      },
+      {
         "id": "language.credentials",
         "detector": "language",
         "severity": "high",
@@ -273,20 +287,6 @@
           "id": "T1566.002",
           "name": "Phishing: Spearphishing Link",
           "url": "https://attack.mitre.org/techniques/T1566/002/"
-        }
-      },
-      {
-        "id": "lookalike.brand-in-domain",
-        "detector": "lookalike",
-        "severity": "medium",
-        "points": 15,
-        "title": "Usa el nombre de Santander en un dominio ajeno",
-        "detail": "santander-seguridad.test contiene \"santander\" pero no pertenece a Santander (bancosantander.es).",
-        "evidence": "santander-seguridad.test",
-        "mitre": {
-          "id": "T1583.001",
-          "name": "Acquire Infrastructure: Domains",
-          "url": "https://attack.mitre.org/techniques/T1583/001/"
         }
       },
       {
