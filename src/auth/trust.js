@@ -17,24 +17,31 @@ function inTrustedList(id) {
 }
 
 /**
+ * El salto en el que el receptor aceptó el correo desde fuera: el Received más bajo del bloque
+ * superior de saltos de la organización receptora. Todo lo que hay debajo lo escribió otro.
+ */
+export function receivingHop(email) {
+  const list = email.headerList ?? [];
+  const received = list.filter((h) => h.name === 'received').map((h) => ({ index: h.index, ...parseHop(h.value) }));
+  const receiver = received[0]?.by?.toLowerCase() || null;
+  const receiverOrg = org(receiver);
+  let entry = null;
+  for (const hop of received) {
+    if (!receiver || !hop.by || org(hop.by) !== receiverOrg) break;
+    entry = hop;
+  }
+  const boundary = entry ? received.find((hop) => hop.index > entry.index) ?? null : null;
+  return { receiver, receiverOrg, entry, boundary };
+}
+
+/**
  * Clasifica cada Authentication-Results del correo.
  * @returns {{ receiver: string|null, boundaryIndex: number|null,
  *   headers: Array<{index, raw, parsed, trusted, forged, why}> }}
  */
 export function classifyAuthResults(email) {
   const list = email.headerList ?? [];
-  const received = list.filter((h) => h.name === 'received').map((h) => ({ index: h.index, ...parseHop(h.value) }));
-  const receiver = received[0]?.by?.toLowerCase() || null;
-  const receiverOrg = org(receiver);
-  // Frontera: el Received más bajo del bloque superior de saltos de la organización receptora,
-  // es decir, el momento en que el receptor aceptó el correo desde fuera. Todo lo que hay
-  // por debajo ya venía escrito por el remitente (o por servidores intermedios).
-  let entry = null;
-  for (const hop of received) {
-    if (!hop.by || org(hop.by) !== receiverOrg) break;
-    entry = hop;
-  }
-  const boundary = entry ? received.find((hop) => hop.index > entry.index) ?? null : null;
+  const { receiver, receiverOrg, entry, boundary } = receivingHop(email);
   const boundaryIndex = entry ? entry.index : null;
 
   const headers = list
