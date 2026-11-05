@@ -46,7 +46,7 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 
 | Detector | Señales | ATT&CK |
 |---|---|---|
-| **Autenticación** | SPF, DKIM y DMARC en `fail`, `softfail` o `none`; falta `Authentication-Results` | T1672 |
+| **Autenticación** | SPF, DKIM y DMARC con su **estado** (verificado por PhishLens, declarado por el receptor, declarado sin confirmar, no verificable sin DNS); `Authentication-Results` **falsificadas**; DMARC sin alineación; cuerpo modificado tras la firma DKIM (hash `bh=` comprobado en local); firma DKIM y SPF verificables pegando la clave o el registro | T1672 |
 | **Remitente** | `Reply-To` y `Return-Path` de otro dominio, marca suplantada desde un dominio ajeno o un correo gratuito, letras cirílicas o griegas camufladas (`Pаypal`), caracteres invisibles | T1656, T1027 |
 | **Cabeceras técnicas** | `Message-ID` de otro dominio, falta `Date` o `Message-ID`, fecha futura, `X-Mailer` de kits de phishing (PHPMailer…) | T1566 |
 | **Enlaces** | Texto que muestra otro dominio, IPs, acortadores, `@` que oculta el host, punycode, TLD baratos, login sin HTTPS, marca en la ruta, descarga directa de ejecutables, enlaces de seguimiento | T1566.002 |
@@ -142,12 +142,12 @@ GitHub Pages en un repositorio privado requiere GitHub Pro. Sin Pro, puedes hace
 
 - Son heurísticas: una nota baja **no garantiza** que un email sea seguro, y un email legítimo mal configurado puede salir sospechoso.
 - No consulta servicios externos (listas negras, WHOIS, VirusTotal), porque eso exigiría enviar datos fuera del navegador.
-- No verifica criptográficamente las firmas DKIM: se fía de lo que dice `Authentication-Results`.
+- Sin red no consulta DNS: la firma DKIM y el SPF solo se verifican si pegas la clave o el registro. Detalles en [docs/limitations.md](docs/limitations.md).
 - No analiza el contenido de los adjuntos, solo su nombre y tipo, ni el formato `.msg` de Outlook.
 
 ## 🗺️ Próximos pasos
 
-- [ ] Verificación de firmas DKIM con WebCrypto
+- [x] Verificación de firmas DKIM con WebCrypto (2.2)
 - [ ] Extensión de navegador para analizar el email abierto en Gmail u Outlook
 - [ ] Modo por lotes para analizar varios `.eml` a la vez
 - [ ] Exportar IOCs en formato STIX 2.1

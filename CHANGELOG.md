@@ -8,6 +8,12 @@ Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/20
 - **SHA-256 de cada adjunto**, calculado en local sin abrir el fichero, y exportado como IOC.
 - El parser conserva las cabeceras en orden con su texto crudo, el cuerpo sin decodificar y anota en `parseNotes` cada límite alcanzado o multipart sin cerrar.
 - Cada hallazgo indica su **categoría**, su **fiabilidad** y su **procedencia** (verificado, declarado, deducido o no verificable).
+- **Autenticación en estados**: cada resultado de SPF, DKIM y DMARC dice si lo ha comprobado PhishLens, si lo declara el servidor receptor o si lo declara una cabecera sin confirmar. Nueva pestaña «Autenticación» y `report.auth` en el JSON.
+- **Cabeceras `Authentication-Results` falsificadas**: se detectan las que imitan al receptor o a un proveedor conocido pero ya estaban escritas cuando el correo llegó (`auth.forged-results`).
+- **DMARC sin alineación** (`auth.dmarc-unaligned`) y DMARC declarado como pass sin ningún resultado alineado (`auth.dmarc-declared-mismatch`).
+- **DKIM sin red**: canonicalización RFC 6376 y comprobación del hash de cuerpo `bh=` (`auth.dkim-body-modified`, `auth.dkim-body-verified`, `auth.dkim-weak`). Con la clave pegada, verificación de la firma RSA-SHA256 o Ed25519 con WebCrypto, probada contra firmas de dkimpy.
+- **SPF offline**: pegando el registro, evalúa `ip4`, `ip6` y `all` contra la IP de origen (`auth.spf-offline`); `include`, `a`, `mx` y similares quedan como no verificables.
+- [ADR 0002](docs/adr/0002-autenticacion-offline.md) y primera versión de [limitaciones](docs/limitations.md).
 - Documentación de [arquitectura](docs/architecture.md) y primer ADR.
 - Tests nuevos: golden de las 7 muestras (demuestra que la reestructura no cambia ningún veredicto), SHA-256 con vectores de NIST y regla de dependencias entre capas.
 
