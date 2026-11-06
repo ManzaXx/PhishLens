@@ -3,6 +3,7 @@ import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
 import { SAMPLES } from '../../samples/index.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { renderReport, reportToJson, iocsToText } from './render.js';
+import { parseRoute, formatRoute, initialMode, resolveView, isAnalystHash, MODE_KEY } from './route.js';
 
 import { LIMITS } from '../lib/limits.js';
 
@@ -23,7 +24,7 @@ if (window.top !== window.self) {
 }
 const $ = (sel) => document.querySelector(sel);
 
-const state = { tab: 'eml', fileText: null, lastReport: null, lastInput: null, analyst: {} };
+const state = { tab: 'eml', fileText: null, lastReport: null, lastInput: null, analyst: {}, route: { mode: 'simple', view: 'resumen' } };
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 const dropzone = $('#dropzone');
@@ -41,6 +42,8 @@ function storage(fn) {
     return null;
   }
 }
+
+state.route = { mode: initialMode(storage((s) => s), location.hash), view: parseRoute(location.hash).view };
 
 const savedTheme = storage((s) => s.getItem('phishlens-theme'));
 if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
@@ -165,7 +168,7 @@ function run() {
   try {
     state.lastInput = input;
     state.lastReport = analyzeInput(input);
-    renderReport(reportBox, state.lastReport);
+    paint();
   } catch {
     // Un email malformado nunca debe dejar la página rota.
     reportBox.hidden = true;
@@ -198,15 +201,49 @@ async function copyText(text) {
   }
 }
 
-const reportTabsOf = () => [...reportBox.querySelectorAll('[role="tab"]')];
-reportBox.addEventListener('keydown', (e) => {
-  if (e.target.getAttribute('role') === 'tab') tabKeydown(e, reportTabsOf(), (t, f) => activateTab(reportTabsOf(), t, f));
-});
-reportBox.addEventListener('click', (e) => {
-  const tab = e.target.closest('[role="tab"]');
-  if (tab) activateTab(reportTabsOf(), tab);
-  onReportAction(e);
-});
+// ---------- Modo y vista del informe (la URL manda: '' sencillo, #analista/<vista> analista) ----------
+function paint(options = {}) {
+  if (!state.lastReport) return;
+  const { mode } = state.route;
+  const view = resolveView(state.route.view, state.lastReport);
+  renderReport(reportBox, state.lastReport, { mode, view, ...options });
+}
+
+/** Lleva el foco al título de la vista nueva, para que teclado y lector de pantalla sepan dónde están. */
+function focusView() {
+  const heading = reportBox.querySelector('.view__title, .verdict-card__headline');
+  if (!heading) return;
+  if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+  heading.focus({ preventScroll: true });
+  heading.scrollIntoView({ block: 'nearest' });
+}
+
+function onRoute() {
+  const hash = location.hash;
+  // Un enlace de la página (#como-funciona, #privacidad) no cambia el informe.
+  if (hash && hash !== '#' && !isAnalystHash(hash)) return;
+  state.route = parseRoute(hash);
+  storage((s) => s.setItem(MODE_KEY, state.route.mode));
+  if (!state.lastReport || reportBox.hidden) return;
+  paint();
+  focusView();
+}
+window.addEventListener('hashchange', onRoute);
+
+/** Cambia de modo: el modo analista vuelve a la última vista abierta. */
+function goTo(mode) {
+  if (mode === state.route.mode) return;
+  const next = formatRoute({ mode, view: state.route.view });
+  if (next) {
+    location.hash = next;
+  } else {
+    // Volver al sencillo sin '#': pushState no dispara hashchange, así que se avisa a mano.
+    history.pushState(null, '', location.pathname + location.search);
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+  }
+}
+
+reportBox.addEventListener('click', onReportAction);
 
 // Al imprimir se abren los «¿Por qué?» del informe (no el formulario de DKIM/SPF) y luego se dejan como estaban.
 let openedForPrint = [];
@@ -227,11 +264,12 @@ function reanalyze(status) {
   state.lastReport = analyzeInput({ ...state.lastInput, ...state.analyst });
   const dkimKey = $('#dkim-key')?.value ?? '';
   const spfRecord = $('#spf-record')?.value ?? '';
-  renderReport(reportBox, state.lastReport, { tab: 'auth', authStatus: status, dkimKey, spfRecord });
+  state.route = { mode: 'analyst', view: 'autenticacion' };
+  paint({ authStatus: status, dkimKey, spfRecord });
   authLive.textContent = '';
   // Se vacía y se rellena para que el lector de pantalla lo anuncie aunque el texto se repita.
   setTimeout(() => { authLive.textContent = status; }, 50);
-  $('#rtab-auth')?.focus();
+  focusView();
 }
 
 async function verifyDkim() {
@@ -260,6 +298,8 @@ function evalSpf() {
 
 function onReportAction(e) {
   const action = e.target.closest('[data-action]')?.dataset.action;
+  if (action === 'mode-simple') goTo('simple');
+  if (action === 'mode-analyst') goTo('analyst');
   if (action === 'verify-dkim') verifyDkim();
   if (action === 'eval-spf') evalSpf();
   if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || 'Sin IOCs');

@@ -53,27 +53,32 @@ for (const colorScheme of ['light', 'dark']) {
     const found = (await axe(page)).map((v) => `portada: ${v}`);
     for (const id of REPORTS) {
       await page.getByRole('button', { name: title(id), exact: true }).click();
-      const tabs = page.locator('#report [role="tab"]');
-      await tabs.first().waitFor();
-      for (let i = 0; i < await tabs.count(); i++) {
-        await tabs.nth(i).click();
-        const name = await tabs.nth(i).textContent();
+      await page.locator('#report .verdict-card').waitFor();
+      found.push(...(await axe(page)).map((v) => `${id} / sencillo: ${v}`));
+      await page.locator('#report [data-action="mode-analyst"]').first().click();
+      const links = page.locator('#report nav a');
+      await links.first().waitFor();
+      for (let i = 0; i < await links.count(); i++) {
+        await links.nth(i).click();
+        await page.locator('#report nav a[aria-current="page"]').nth(0).waitFor();
+        const name = await links.nth(i).textContent();
         found.push(...(await axe(page)).map((v) => `${id} / ${name}: ${v}`));
       }
+      await page.locator('#report [data-action="mode-simple"]').click();
     }
     assert.deepEqual([...new Set(found)], []);
     await context.close();
   });
 }
 
-test('teclado: cargar una muestra, cambiar de pestaña y abrir «¿Por qué?»', { skip }, async () => {
+test('teclado: cargar una muestra, pasar al modo analista, cambiar de vista y abrir «¿Por qué?»', { skip }, async () => {
   const context = await browser.newContext();
   const page = await context.newPage();
   page.setDefaultTimeout(5000);
   await page.goto(`${server.url}/index.html`);
   const active = () => page.evaluate(() => {
     const a = document.activeElement;
-    return { text: a?.textContent?.trim() ?? '', tag: a?.tagName, role: a?.getAttribute('role'), id: a?.id };
+    return { text: a?.textContent?.trim() ?? '', tag: a?.tagName, role: a?.getAttribute('role'), id: a?.id, href: a?.getAttribute('href') };
   });
   const tabUntil = async (pred, what, max = 80) => {
     for (let i = 0; i < max; i++) {
@@ -85,16 +90,23 @@ test('teclado: cargar una muestra, cambiar de pestaña y abrir «¿Por qué?»',
 
   await tabUntil((a) => a.text === title('03-phishing-banco'), 'la muestra 03');
   await page.keyboard.press('Enter');
-  await page.locator('#report [role="tab"]').first().waitFor();
+  await page.locator('#report .verdict-card').waitFor();
 
-  await tabUntil((a) => a.role === 'tab' && a.id.startsWith('rtab-'), 'las pestañas del informe');
-  const first = (await active()).id;
-  await page.keyboard.press('ArrowRight');
-  const second = await active();
-  assert.notEqual(second.id, first, 'la flecha no mueve el foco');
-  assert.equal(await page.locator(`#${second.id}`).getAttribute('aria-selected'), 'true');
-  await page.keyboard.press('ArrowLeft');
-  assert.equal((await active()).id, first);
+  await tabUntil((a) => a.text === 'Ver todos los detalles (modo analista)', 'el botón del modo analista');
+  await page.keyboard.press('Enter');
+  await page.locator('#report nav').waitFor();
+  assert.equal(new URL(page.url()).hash, '#analista');
+  assert.equal((await active()).tag, 'H2', 'el foco no va al título de la vista');
+
+  await tabUntil((a) => a.href === '#analista/senales', 'el enlace «Señales»');
+  await page.keyboard.press('Enter');
+  await page.locator('#report .view--senales').waitFor();
+  assert.equal((await active()).text, 'Señales');
+  assert.equal(await page.locator('#report nav a[aria-current="page"]').getAttribute('href'), '#analista/senales');
+
+  // Atrás del navegador vuelve a la vista anterior.
+  await page.goBack();
+  await page.locator('#report .view--resumen').waitFor();
 
   await tabUntil((a) => a.tag === 'SUMMARY' && a.text === '¿Por qué?', '«¿Por qué?»');
   await page.keyboard.press('Enter');
@@ -106,9 +118,9 @@ async function openReport(id, { colorScheme = 'light', width = 1280 } = {}) {
   const context = await browser.newContext({ colorScheme, viewport: { width, height: 900 } });
   const page = await context.newPage();
   page.setDefaultTimeout(5000);
-  await page.goto(`${server.url}/index.html`);
+  await page.goto(`${server.url}/index.html#analista`);
   await page.getByRole('button', { name: title(id), exact: true }).click();
-  await page.locator('#report [role="tab"]').first().waitFor();
+  await page.locator('#report nav a').first().waitFor();
   return { page, context };
 }
 

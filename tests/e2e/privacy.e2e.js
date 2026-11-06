@@ -19,15 +19,20 @@ after(async () => {
   await server?.close();
 });
 
-/** Pulsa cada pestaña del informe, incluida la vista segura, y deja que pinte. */
+/** Recorre el modo sencillo y cada vista del modo analista, incluida la vista segura, y deja que pinte. */
 async function visitAllReportTabs(page) {
-  await page.locator('#report [role="tab"]').first().waitFor();
-  const count = await page.locator('#report [role="tab"]').count();
-  assert.ok(count >= 5, `solo ${count} pestañas`);
+  await page.locator('#report .verdict-card').waitFor();
+  await page.locator('#report [data-action="mode-analyst"]').first().click();
+  const links = page.locator('#report nav a');
+  await links.first().waitFor();
+  const count = await links.count();
+  assert.ok(count >= 5, `solo ${count} vistas`);
   for (let i = 0; i < count; i++) {
-    await page.locator('#report [role="tab"]').nth(i).click();
+    await links.nth(i).click();
     await page.waitForTimeout(30);
   }
+  await page.locator('#report [data-action="mode-simple"]').click();
+  await page.locator('#report .verdict-card').waitFor();
 }
 
 async function assertClean(w, what) {

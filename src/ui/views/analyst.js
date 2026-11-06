@@ -1,0 +1,68 @@
+// Modo analista: navegación agrupada, el panel de la vista elegida y el lateral de contexto.
+import { el, nextId } from '../dom.js';
+import { meter } from '../components/meter.js';
+import { navRail } from '../components/nav-rail.js';
+import { adviceFor } from '../../core/advice.js';
+import { NAV_GROUPS, VIEW_LABELS, hasView } from '../route.js';
+import { summaryPanel } from '../panels/summary.js';
+import { findingsPanel } from '../panels/findings.js';
+import { safeViewPanel } from '../panels/safe-view.js';
+import { authPanel } from '../panels/auth.js';
+import { headersPanel } from '../panels/headers.js';
+import { iocsPanel } from '../panels/iocs.js';
+import { mitrePanel } from '../panels/mitre.js';
+
+const PANELS = new Map([
+  ['resumen', summaryPanel], ['senales', findingsPanel], ['vista-segura', safeViewPanel], ['autenticacion', authPanel],
+  ['cabeceras', headersPanel], ['iocs', iocsPanel], ['attack', mitrePanel],
+]);
+
+const IOC_KEYS = ['urls', 'domains', 'ips', 'emails', 'attachments', 'hashes'];
+
+/** Riesgo por categoría: cada fila dice su número en texto; la barra solo acompaña. */
+function categoryList(report) {
+  const list = el('ul', { className: 'meter-list', attrs: { 'aria-label': 'Riesgo por categoría' } });
+  for (const c of report.categories ?? []) list.append(el('li', {}, meter({ label: c.label, value: c.score, max: c.max })));
+  return list;
+}
+
+function listCard(title, className, items) {
+  const list = el('ul', { className });
+  for (const item of items) list.append(el('li', { text: item }));
+  return el('div', { className: 'card' }, el('h3', { text: title }), list);
+}
+
+function adviceBox(report) {
+  const list = el('ul', { className: 'advice__list' });
+  for (const line of adviceFor(report)) list.append(el('li', { text: line }));
+  return el('div', { className: 'advice' }, el('h3', { text: 'Qué hacer ahora' }), list);
+}
+
+function sidebar(report) {
+  const side = el('aside', { className: 'side', attrs: { 'aria-label': 'Contexto del informe' } });
+  side.append(el('div', { className: 'card' }, el('h3', { text: 'Riesgo por categoría' }), categoryList(report)));
+  if (report.correlations?.length) side.append(listCard('Combinaciones peligrosas', 'correlations', report.correlations.map((c) => c.label)));
+  const trusted = report.findings.filter((f) => f.polarity === 'trust');
+  if (trusted.length) side.append(listCard('Señales a favor', 'trust-list', trusted.map((f) => f.title)));
+  side.append(el('div', { className: 'card' }, adviceBox(report)));
+  return side;
+}
+
+/** Vista del modo analista. `view` ya debe estar resuelta (resolveView). options pasa al panel de autenticación. */
+export function renderAnalyst(report, view, options = {}) {
+  const current = PANELS.has(view) ? view : 'resumen';
+  const groups = NAV_GROUPS.map((g) => ({
+    label: g.label,
+    views: g.views.filter((v) => hasView(v, report)).map((id) => ({ id, label: VIEW_LABELS[id] })),
+  }));
+  const counts = {
+    senales: report.findings.length,
+    iocs: IOC_KEYS.reduce((n, k) => n + (report.iocs?.[k]?.length ?? 0), 0),
+    attack: report.techniques.length,
+  };
+  const id = nextId('view');
+  const panel = el('section', { className: `view view--${current}`, attrs: { 'aria-labelledby': id } },
+    el('h2', { className: 'view__title', text: VIEW_LABELS[current], attrs: { id, tabindex: '-1' } }),
+    PANELS.get(current)(report, options));
+  return el('div', { className: 'analyst' }, navRail({ groups, current, counts }), panel, sidebar(report));
+}
