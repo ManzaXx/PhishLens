@@ -56,3 +56,10 @@ test('el informe no es una región viva entera: un aviso corto anuncia el result
   assert.doesNotMatch(report, /aria-live/);
   assert.match(html, /<p[^>]*id="report-status"[^>]*role="status"/);
 });
+
+test('ningún texto publicado dice «8 detectores»', () => {
+  const readme = readFileSync(new URL('../../README.md', import.meta.url), 'utf8');
+  for (const [name, text] of [['index.html', html], ['README.md', readme]]) {
+    assert.doesNotMatch(text, /\b8 detectores\b/, name);
+  }
+});

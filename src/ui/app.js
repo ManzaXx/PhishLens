@@ -2,7 +2,7 @@
 import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
 import { SAMPLES } from '../../samples/index.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
-import { renderReport, reportToJson, iocsToText } from './render.js';
+import { renderReport, setPrintReport, reportToJson, iocsToText } from './render.js';
 import { FACTS, levelLegend } from '../core/facts.js';
 import { menuKey } from './components/menu-button.js';
 import { parseRoute, formatRoute, initialMode, resolveView, isAnalystHash, MODE_KEY } from './route.js';
@@ -46,6 +46,10 @@ function storage(fn) {
 }
 
 state.route = { mode: initialMode(storage((s) => s), location.hash), view: parseRoute(location.hash).view };
+// El modo recordado se lleva a la URL, para que Atrás y los enlaces copiados digan lo mismo que la pantalla.
+if (state.route.mode === 'analyst' && !isAnalystHash(location.hash) && (location.hash === '' || location.hash === '#')) {
+  history.replaceState(null, '', formatRoute(state.route));
+}
 
 const savedTheme = storage((s) => s.getItem('phishlens-theme'));
 if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
@@ -325,12 +329,15 @@ document.addEventListener('keydown', (e) => {
 // Al imprimir se abren los «¿Por qué?» del informe (no el formulario de DKIM/SPF) y luego se dejan como estaban.
 let openedForPrint = [];
 window.addEventListener('beforeprint', () => {
+  // Al imprimir siempre sale el informe completo del modo analista, se esté en el modo que se esté.
+  if (state.lastReport && !reportBox.hidden) setPrintReport(reportBox, state.lastReport);
   openedForPrint = [...reportBox.querySelectorAll('details:not([open]):not(.auth-local)')];
   for (const d of openedForPrint) d.open = true;
 });
 window.addEventListener('afterprint', () => {
   for (const d of openedForPrint) d.open = false;
   openedForPrint = [];
+  setPrintReport(reportBox, null);
 });
 
 // ---------- Comprobación local de DKIM y SPF ----------

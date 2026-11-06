@@ -61,3 +61,15 @@ test('top no depende del orden de los hallazgos', () => {
     assert.deepEqual(verdictFor({ ...report, findings: shuffled }).top.map((f) => f.id), ids);
   }
 });
+
+test('los pasos no repiten la misma idea (ninguna secuencia de 4 palabras compartida)', () => {
+  const words = (t) => t.toLowerCase().replace(/[^a-záéíóúñü ]/g, ' ').split(/\s+/).filter(Boolean);
+  const grams = (t) => { const w = words(t); return new Set(w.slice(0, -3).map((_, i) => w.slice(i, i + 4).join(' '))); };
+  for (const s of SAMPLES) {
+    const { steps } = analyzeInput({ kind: 'eml', value: readFileSync(new URL(`../../samples/${s.file}`, import.meta.url), 'utf8') }).verdict;
+    for (let i = 0; i < steps.length; i++) for (let j = i + 1; j < steps.length; j++) {
+      const shared = [...grams(steps[i])].filter((g) => grams(steps[j]).has(g));
+      assert.deepEqual(shared, [], `${s.file}: pasos ${i + 1} y ${j + 1}`);
+    }
+  }
+});

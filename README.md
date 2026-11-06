@@ -113,7 +113,7 @@ proyectoCiber/
 │   ├── lib/                 # Utilidades puras: SHA-256, límites, texto seguro
 │   ├── data/                # Marcas, listas de referencia, patrones y mapa MITRE ATT&CK
 │   ├── parser/              # eml.js (RFC 5322 + MIME), received.js, html.js (sin DOM), url.js
-│   ├── detectors/           # 8 detectores con la misma interfaz: detect(email) -> Finding[]
+│   ├── detectors/           # 10 detectores con la misma interfaz: detect(email) -> Finding[]
 │   ├── intel/               # Extracción y "defang" de indicadores, hashes de adjuntos
 │   ├── core/                # Modelo de hallazgo, motor y recomendaciones
 │   └── ui/                  # Render del informe, resaltado y controlador de la página

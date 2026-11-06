@@ -34,3 +34,9 @@ test('finding() rellena plain', () => {
   assert.equal(f.plain, PLAIN['links.ip']);
   assert.equal(finding({ id: 'x.y', detector: 'links', severity: 'low', title: 'T', detail: '' }).plain, 'T');
 });
+
+test('los textos de SPF, DKIM y DMARC valen también para «none» o «neutral»: no dicen que el dominio rechace', () => {
+  for (const id of ['auth.spf', 'auth.dkim', 'auth.dmarc']) {
+    assert.doesNotMatch(PLAIN[id], /no da por bueno|rechaz|prohíbe|falla/i, id);
+  }
+});

@@ -144,7 +144,11 @@
   .analyst { grid-template-columns: 220px minmax(0, 1fr) 300px; }
   .analyst > .side { grid-column: 3; }
 }
+/* Informe completo para imprimir: solo existe entre beforeprint y afterprint, y solo se ve en papel. */
+.print-report { display: none; }
 @media print {
+  .report:has(> .print-report) > :not(.print-report) { display: none !important; }
+  .print-report { display: grid; gap: var(--space-6); }
   .report__toolbar, .nav-rail { display: none !important; }
   .analyst { grid-template-columns: 1fr !important; }
   .analyst > .side { grid-column: auto; }

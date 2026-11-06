@@ -7,7 +7,7 @@ const HEADLINES = new Map([['safe', 'Parece legítimo'], ['suspicious', 'Ten cui
 const NOTHING = 'No hemos encontrado nada que indique un engaño.';
 // Pasos de relleno cuando adviceFor da menos de tres: siempre útiles y nunca alarmistas.
 const EXTRA_STEPS = [
-  'Si te piden datos o dinero, compruébalo por otra vía: la web o el teléfono oficial.',
+  'Mira bien a dónde lleva un enlace antes de pulsarlo: pasa el ratón o mantén el dedo encima.',
   'Ante la duda, no pulses los enlaces: escribe tú la dirección de la web.',
   'Si algo no te cuadra, pregunta a alguien de confianza antes de actuar.',
 ];

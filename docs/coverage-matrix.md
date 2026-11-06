@@ -12,17 +12,17 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `attachments.double-extension` | T1036.007, T1204.002 | 06 | `unit/advice.test.js`, `unit/attachments.test.js`, `unit/limits.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
 | `attachments.macro` | T1566.001, T1204.002 | — | `unit/attachments.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
 | `attachments.rtl-override` | T1036.002, T1204.002 | — | `unit/attachments.test.js`, `unit/mitre.test.js` | ✅ |
-| `auth.dkim` | T1684.002 | 03, 04, 07 | `unit/auth.test.js` | ✅ |
+| `auth.dkim` | T1684.002 | 03, 04, 07 | `unit/auth.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.dkim-body-modified` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `auth.dkim-body-verified` | — | — | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |
 | `auth.dkim-verified-aligned` | — | — | `unit/auth-evaluate.test.js` | ✅ |
 | `auth.dkim-weak` | — | — | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |
-| `auth.dmarc` | T1684.002 | 03, 04, 05, 07 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js` | ✅ |
+| `auth.dmarc` | T1684.002 | 03, 04, 05, 07 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.dmarc-declared-mismatch` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `auth.dmarc-unaligned` | T1684.002 | 04 | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |
 | `auth.forged-results` | T1684.002 | — | `unit/auth-evaluate.test.js`, `unit/mitre.test.js` | ✅ |
 | `auth.missing` | — | 06, 08, 09, 10 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
-| `auth.spf` | T1684.002 | 03, 04 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/finding.test.js` | ✅ |
+| `auth.spf` | T1684.002 | 03, 04 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/finding.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.spf-offline` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `headers.duplicate` | — | 09 | `unit/headers.test.js`, `unit/samples.test.js` | ✅ |
 | `headers.duplicate-from` | T1684.002 | 09 | `unit/headers.test.js`, `unit/mitre.test.js`, `unit/samples.test.js` | ✅ |

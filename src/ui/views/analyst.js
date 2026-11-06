@@ -66,3 +66,14 @@ export function renderAnalyst(report, view, options = {}) {
     PANELS.get(current)(report, options));
   return el('div', { className: 'analyst' }, navRail({ groups, current, counts }), panel, sidebar(report));
 }
+
+/** Informe completo para imprimir: el resumen, todas las vistas con su título y el contexto, sin navegación. */
+export function renderPrint(report) {
+  const sections = [...PANELS.keys()].filter((v) => hasView(v, report)).map((v) => {
+    const id = nextId('print');
+    return el('section', { className: `view view--${v}`, attrs: { 'aria-labelledby': id } },
+      el('h2', { className: 'view__title', text: VIEW_LABELS[v], attrs: { id } }),
+      PANELS.get(v)(report, {}));
+  });
+  return el('div', { className: 'print-report' }, ...sections, sidebar(report));
+}

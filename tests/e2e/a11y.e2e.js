@@ -191,3 +191,41 @@ test('menú Exportar: se abre con teclado, las flechas se mueven y Escape vuelve
   assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
   await context.close();
 });
+
+test('impresión desde el modo sencillo: sale el informe completo del modo analista', { skip }, async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  page.setDefaultTimeout(5000);
+  await page.goto(`${server.url}/index.html`);
+  await page.getByRole('button', { name: title('03-phishing-banco'), exact: true }).click();
+  await page.locator('#report .verdict-card').waitFor();
+  await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+  await page.emulateMedia({ media: 'print' });
+  const visible = (sel) => page.locator(sel).evaluateAll((els) => els.filter((e) => e.offsetParent !== null || e.getClientRects().length).length);
+  assert.equal(await visible('#report .finding'), 15, 'todas las señales');
+  for (const t of ['Resumen', 'Señales', 'Vista segura', 'Autenticación', 'Cabeceras y ruta', 'IOCs', 'ATT&CK']) {
+    assert.ok(await page.locator('#report h2', { hasText: t }).count() >= 1, t);
+  }
+  await page.emulateMedia({ media: 'screen' });
+  await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  assert.equal(await page.locator('#report .print-report').count(), 0, 'tras imprimir se quita');
+  assert.ok(await page.locator('#report .verdict-card').isVisible());
+  await context.close();
+});
+
+test('modo analista recordado: la URL lo refleja y Atrás no lo pierde', { skip }, async () => {
+  const context = await browser.newContext();
+  await context.addInitScript(() => { try { localStorage.setItem('phishlens-mode', 'analyst'); } catch {} });
+  const page = await context.newPage();
+  page.setDefaultTimeout(5000);
+  await page.goto(`${server.url}/index.html`);
+  assert.equal(new URL(page.url()).hash, '#analista');
+  await page.getByRole('button', { name: title('03-phishing-banco'), exact: true }).click();
+  await page.locator('#report .view--resumen').waitFor();
+  await page.locator('#report nav a[href="#analista/senales"]').click();
+  await page.locator('#report .view--senales').waitFor();
+  await page.goBack();
+  await page.locator('#report .view--resumen').waitFor();
+  assert.equal(await page.evaluate(() => localStorage.getItem('phishlens-mode')), 'analyst');
+  await context.close();
+});

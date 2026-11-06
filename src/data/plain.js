@@ -16,7 +16,7 @@ export const PLAIN = Object.freeze({
   'auth.dkim-body-verified': 'El texto del mensaje no ha cambiado desde que se firmó.',
   'auth.dkim-verified-aligned': 'Hemos comprobado la firma del correo y coincide con el remitente.',
   'auth.dkim-weak': 'La firma del correo es débil o ha caducado, así que vale poco como garantía.',
-  'auth.dmarc': 'El dominio del remitente no da por bueno este envío.',
+  'auth.dmarc': 'El dominio del remitente no confirma este envío como suyo.',
   'auth.dmarc-declared-mismatch': 'El correo dice estar verificado, pero nada lo respalda de verdad.',
   'auth.dmarc-unaligned': 'Nada confirma que lo envíe de verdad el remitente que ves.',
   'auth.forged-results': 'El correo trae una verificación inventada para parecer de fiar.',

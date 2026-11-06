@@ -5,7 +5,7 @@ import { iocsToText } from '../intel/ioc.js';
 import { modeSwitch } from './components/mode-switch.js';
 import { menuButton } from './components/menu-button.js';
 import { renderSimple } from './views/simple.js';
-import { renderAnalyst } from './views/analyst.js';
+import { renderAnalyst, renderPrint } from './views/analyst.js';
 
 const EXPORT_ITEMS = [
   { action: 'export-json', text: 'Descargar informe (JSON)' },
@@ -34,6 +34,12 @@ export function renderReport(container, report, options = {}) {
   const body = mode === 'analyst' ? renderAnalyst(report, options.view, options) : renderSimple(report);
   container.append(toolbar(mode), body);
   container.hidden = false;
+}
+
+/** Añade (o quita, con report = null) el informe completo que sale al imprimir en cualquier modo. */
+export function setPrintReport(container, report) {
+  container.querySelector(':scope > .print-report')?.remove();
+  if (report) container.append(renderPrint(report));
 }
 
 /** Informe serializado para descargar. */
