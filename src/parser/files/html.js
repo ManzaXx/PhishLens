@@ -8,6 +8,7 @@ const MARKERS = [
   ['URL.createObjectURL', (s) => s.includes('url.createobjecturl')],
   ['msSaveOrOpenBlob', (s) => s.includes('mssaveoropenblob')],
   ['atob + download', (s) => s.includes('atob(') && /\bdownload\s{0,10}=/.test(s)],
+  ['data: + download', (s) => /["'`]data:[a-z-]{1,40}\/[a-z0-9.+-]{1,60}[;,]/.test(s) && /\bdownload\s{0,10}=/.test(s)],
 ];
 
 /** `{suspicious, markers}`: hace falta un <script> y al menos una señal. */

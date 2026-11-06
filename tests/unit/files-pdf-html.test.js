@@ -46,3 +46,8 @@ test('htmlSmuggling: las palabras sin <script> no bastan', () => {
   assert.deepEqual(htmlSmuggling(enc('<p>Usa new Blob( y URL.createObjectURL para…</p>')), { suspicious: false, markers: [] });
   assert.deepEqual(htmlSmuggling(enc('<script>console.log(1)</script>')), { suspicious: false, markers: [] });
 });
+
+test('htmlSmuggling: un enlace data: con download dentro de un script (spec §5.1)', () => {
+  const r = htmlSmuggling(enc('<script>a.href = "data:application/octet-stream;base64,TVqQ"; a.download = "f.exe"; a.click()</script>'));
+  assert.deepEqual(r, { suspicious: true, markers: ['data: + download'] });
+});
