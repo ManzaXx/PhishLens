@@ -3,6 +3,7 @@ import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
 import { SAMPLES } from '../../samples/index.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { renderReport, reportToJson, iocsToText } from './render.js';
+import { FACTS, levelLegend } from '../core/facts.js';
 import { menuKey } from './components/menu-button.js';
 import { parseRoute, formatRoute, initialMode, resolveView, isAnalystHash, MODE_KEY } from './route.js';
 
@@ -378,6 +379,21 @@ function onReportAction(e) {
     $('#analizar').scrollIntoView({ block: 'start' });
     tabs.find((t) => t.getAttribute('aria-selected') === 'true').focus();
   }
+}
+
+// ---------- Portada: cifras y escala sacadas del código ----------
+for (const node of document.querySelectorAll('[data-fact]')) {
+  const value = FACTS[node.dataset.fact];
+  if (value != null && Object.hasOwn(FACTS, node.dataset.fact)) node.textContent = String(value);
+}
+const legendBox = document.querySelector('[data-levels]');
+if (legendBox) {
+  legendBox.replaceChildren(...levelLegend().map((l) => {
+    const li = document.createElement('li');
+    li.className = `legend__item legend__item--${l.level}`;
+    li.textContent = `${l.min}–${l.max} ${l.label}`;
+    return li;
+  }));
 }
 
 // ---------- Ejemplos ----------

@@ -48,9 +48,9 @@
       <h1>¿Es phishing? <span class="accent">Compruébalo</span> antes de hacer clic.</h1>
       <p class="lead">Arrastra un email <code>.eml</code>, pega su contenido o una URL. PhishLens revisa la autenticación, el remitente, las cabeceras, los enlaces, los dominios, los adjuntos, el HTML y el lenguaje, y te explica cada señal.</p>
       <ul class="stats" aria-label="En cifras">
-        <li><strong>8</strong> detectores</li>
-        <li><strong>40+</strong> señales</li>
-        <li><strong>MITRE</strong> ATT&amp;CK</li>
+        <li><strong data-fact="detectors">10</strong> detectores</li>
+        <li><strong data-fact="rules">72</strong> reglas</li>
+        <li>MITRE ATT&amp;CK <strong data-fact="attack">20.1</strong></li>
         <li><strong>0</strong> datos enviados</li>
       </ul>
     </section>
@@ -103,22 +103,31 @@
 
     <section class="wrap how" id="como-funciona" aria-labelledby="como-titulo">
       <h2 id="como-titulo">Cómo funciona</h2>
-      <p class="lead">Ocho detectores independientes buscan señales. Cada señal suma puntos según su gravedad (leve 5, media 15, grave 30) hasta un máximo de 100.</p>
+      <p class="lead">Diez detectores revisan el correo por separado y reparten lo que encuentran en seis categorías de riesgo.</p>
+      <div class="how__explain">
+        <p><strong>Cada categoría tiene un tope.</strong> Muchas señales flojas del mismo tipo no pesan tanto como una grave, así que un boletín con muchos enlaces de seguimiento no acaba marcado como phishing.</p>
+        <p><strong>Algunas combinaciones suben la nota.</strong> Suplantar una marca y fallar la autenticación a la vez es mucho más grave que cada cosa por separado.</p>
+        <p><strong>La confianza dice cuánto fiarte del análisis.</strong> Baja si faltan cabeceras, si la autenticación no se pudo comprobar o si el correo es tan grande que una parte quedó sin revisar.</p>
+        <p><a href="https://github.com/ManzaXx/ProyectosPersonales/blob/main/proyectoCiber/docs/scoring.md" target="_blank" rel="noopener noreferrer">Cómo se calcula la nota, paso a paso</a></p>
+      </div>
       <div class="how__grid">
-        <article><h3>Autenticación</h3><p>Lee SPF, DKIM y DMARC en <code>Authentication-Results</code> para saber si el remitente está falsificado.</p></article>
-        <article><h3>Remitente</h3><p>Compara <code>From</code>, <code>Reply-To</code> y <code>Return-Path</code>, y detecta marcas suplantadas, letras cirílicas camufladas y caracteres invisibles.</p></article>
-        <article><h3>Cabeceras técnicas</h3><p>Reconstruye la ruta <code>Received</code> y revisa <code>Message-ID</code>, la fecha y el programa de envío.</p></article>
-        <article><h3>Enlaces</h3><p>Texto que no coincide con el destino, IPs, acortadores, <code>@</code> ocultos, punycode, descargas directas. Desenvuelve Safe Links.</p></article>
-        <article><h3>Dominios parecidos</h3><p>Distancia de Levenshtein y homoglifos (<code>0→o</code>, <code>rn→m</code>) frente a marcas como PayPal, Correos o BBVA.</p></article>
-        <article><h3>Adjuntos</h3><p>Ejecutables, dobles extensiones como <code>factura.pdf.exe</code>, nombres invertidos con RLO y documentos con macros.</p></article>
-        <article><h3>Contenido HTML</h3><p>Formularios dentro del email, JavaScript, enlaces <code>data:</code>, texto oculto para burlar filtros y emails que son solo una imagen.</p></article>
-        <article><h3>Lenguaje</h3><p>Urgencia, amenazas, premios y peticiones de contraseña, en español e inglés.</p></article>
+        <article data-detector="auth"><h3>Autenticación</h3><p>Lee SPF, DKIM y DMARC, distingue lo que comprobó tu servidor de lo que el correo dice de sí mismo y puede verificar la firma DKIM en local.</p></article>
+        <article data-detector="sender"><h3>Remitente</h3><p>Compara <code>From</code>, <code>Reply-To</code>, <code>Sender</code> y <code>Return-Path</code>, y detecta marcas suplantadas, letras de otro alfabeto y caracteres invisibles.</p></article>
+        <article data-detector="headers"><h3>Cabeceras técnicas</h3><p>Revisa <code>Message-ID</code>, la fecha, el programa de envío y las cabeceras repetidas que confunden a los clientes de correo.</p></article>
+        <article data-detector="route"><h3>Ruta del correo</h3><p>Reconstruye los saltos <code>Received</code> y avisa de horas imposibles, servidores que dicen ser otros y entradas desde redes internas.</p></article>
+        <article data-detector="mime"><h3>Estructura</h3><p>Busca trucos en cómo está montado el mensaje: separadores repetidos, partes sin cerrar y codificaciones contradictorias.</p></article>
+        <article data-detector="links"><h3>Enlaces</h3><p>Texto que no coincide con el destino, IPs, acortadores, <code>@</code> ocultos, punycode y descargas directas. Desenvuelve Safe Links.</p></article>
+        <article data-detector="lookalike"><h3>Dominios parecidos</h3><p>Distancia de Levenshtein, homoglifos (<code>0→o</code>, <code>rn→m</code>) y alfabetos mezclados frente a marcas como PayPal, Correos o BBVA.</p></article>
+        <article data-detector="attachments"><h3>Adjuntos</h3><p>Ejecutables, dobles extensiones como <code>factura.pdf.exe</code>, nombres invertidos y documentos con macros.</p></article>
+        <article data-detector="html"><h3>Contenido HTML</h3><p>Formularios dentro del correo, JavaScript, enlaces <code>data:</code>, texto oculto y mensajes que son solo una imagen.</p></article>
+        <article data-detector="language"><h3>Lenguaje</h3><p>Prisas, amenazas, premios y peticiones de contraseña, en español y en inglés.</p></article>
       </div>
-      <div class="legend" aria-label="Escala de riesgo">
-        <span class="legend__item legend__item--safe">0–24 Probablemente legítimo</span>
-        <span class="legend__item legend__item--suspicious">25–59 Sospechoso</span>
-        <span class="legend__item legend__item--phishing">60–100 Probable phishing</span>
-      </div>
+      <ul class="legend" aria-label="Escala de riesgo" data-levels>
+        <li class="legend__item legend__item--safe">0–24 Probablemente legítimo</li>
+        <li class="legend__item legend__item--suspicious">25–59 Sospechoso</li>
+        <li class="legend__item legend__item--phishing">60–79 Probable phishing</li>
+        <li class="legend__item legend__item--critical">80–100 Phishing casi seguro</li>
+      </ul>
     </section>
     <section class="wrap privacy" id="privacidad" aria-labelledby="privacidad-titulo">
       <h2 id="privacidad-titulo">Privacidad por diseño</h2>

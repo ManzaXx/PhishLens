@@ -141,11 +141,14 @@ textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--ac
 .how__grid article { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; }
 .how__grid h3 { font-size: var(--text-md); color: var(--accent-strong); }
 .how__grid p { margin: 0; color: var(--muted); font-size: var(--text-md); }
-.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
 .legend__item { font-size: var(--text-sm); font-weight: 700; padding: 4px 12px; border-radius: var(--radius-pill); }
 .legend__item--safe { background: var(--safe-soft); color: var(--safe); }
 .legend__item--suspicious { background: var(--suspicious-soft); color: var(--suspicious); }
 .legend__item--phishing { background: var(--phishing-soft); color: var(--phishing); }
+.legend__item--critical { background: var(--critical-soft); color: var(--critical); }
+.how__explain { display: grid; gap: var(--space-3); max-width: 72ch; margin-bottom: var(--space-6); }
+.how__explain p { margin: 0; }
 
 .footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 24px 0 40px; color: var(--muted); font-size: var(--text-sm); }
 .footer p { margin: 0 0 6px; }
