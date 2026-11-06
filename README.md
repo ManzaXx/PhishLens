@@ -7,7 +7,7 @@
 **¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
 
 [![Tests](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml/badge.svg)](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml)
-![Tests](https://img.shields.io/badge/tests-172%20pasando-15803d)
+![Tests](https://img.shields.io/badge/tests-432%20%2B%2018%20e2e-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
@@ -15,7 +15,7 @@
 
 </div>
 
-![PhishLens analizando un ataque de phishing avanzado](docs/img/informe-phishing.png)
+![PhishLens en modo sencillo: «No te fíes: es phishing», qué hacer ahora y por qué](docs/img/sencillo-claro.png)
 
 PhishLens analiza un email (archivo `.eml` o texto pegado) o una URL y devuelve una **puntuación de riesgo de 0 a 100**. Explica cada señal en lenguaje claro, la relaciona con su técnica de **MITRE ATT&CK** y extrae los **indicadores de compromiso (IOCs)** listos para compartir con un equipo de seguridad.
 
@@ -23,28 +23,29 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 
 ## ✨ Funcionalidades
 
-- **8 detectores y más de 40 señales**: autenticación, remitente, cabeceras, enlaces, dominios parecidos, adjuntos, HTML y lenguaje.
+- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, IOCs y ATT&CK, con la vista en la URL (`#analista/senales`).
+- **10 detectores y 72 reglas**: autenticación, remitente, cabeceras, ruta, estructura MIME, enlaces, dominios parecidos, adjuntos, HTML y lenguaje. Cada regla tiene su texto llano y su técnica ATT&CK.
 - **Informe explicado**: nota con semáforo, motivo principal, confianza del análisis, riesgo por categoría, combinaciones peligrosas y recomendaciones de qué hacer.
 - **Vista segura**: el email como texto plano, sin enlaces activos y con las frases de ingeniería social resaltadas.
 - **Ruta del email**: reconstruye los saltos `Received` con sus IPs.
 - **IOCs defanged** (`hxxp://evil[.]xyz`) con botón de copiar para pegarlos en un ticket.
 - **MITRE ATT&CK**: cada señal enlazada a su técnica (T1566.002, T1036.007, T1684.001…), con su táctica y el motivo, según ATT&CK 20.1.
 - **Desenvuelve enlaces** de Microsoft Safe Links, Google y LinkedIn para analizar el destino real.
-- **Exportar a JSON** e imprimir el informe.
-- **Tema claro y oscuro**, accesible con teclado y adaptado a móvil.
-- **7 emails de ejemplo** que se cargan con un clic.
+- **Exportar** (JSON, copiar IOCs, imprimir) desde un menú accesible con teclado.
+- **Sistema de diseño propio** ([docs/design-system.md](docs/design-system.md)): tokens con contraste comprobado en claro y oscuro, objetivos táctiles de 44 px y sin scroll horizontal a 360 px, comprobados en un Chromium real.
+- **10 emails de ejemplo** que se cargan con un clic.
 
-| Vista segura | IOCs | MITRE ATT&CK |
+| Modo sencillo (oscuro) | Móvil | Email legítimo |
 |---|---|---|
-| ![Vista segura con frases resaltadas](docs/img/vista-segura.png) | ![IOCs defanged](docs/img/iocs.png) | ![Técnicas ATT&CK](docs/img/attack.png) |
+| ![Modo sencillo en tema oscuro](docs/img/sencillo-oscuro.png) | ![Modo sencillo en el móvil](docs/img/movil-sencillo.png) | ![Modo sencillo con un email legítimo](docs/img/sencillo-legitimo.png) |
 
-| Cabeceras y ruta | Email legítimo | Móvil |
+| Modo analista: resumen | Señales | Autenticación |
 |---|---|---|
-| ![Cabeceras y ruta Received](docs/img/cabeceras.png) | ![Informe de un email legítimo](docs/img/informe-legitimo.png) | ![Vista móvil](docs/img/movil.png) |
+| ![Modo analista con el anillo de riesgo y las categorías](docs/img/analista-resumen.png) | ![Señales agrupadas con gravedad, fiabilidad y ATT&CK](docs/img/analista-senales.png) | ![Autenticación SPF, DKIM y DMARC con su estado](docs/img/analista-autenticacion.png) |
 
-| Ruta con avisos por salto | Dominios Unicode | Autenticación |
-|---|---|---|
-| ![Ruta Received con la entrada y una IP privada marcadas](docs/img/ruta-claro.png) | ![Dominio en cirílico mostrado en Unicode y punycode](docs/img/unicode-claro.png) | ![Pestaña de autenticación SPF, DKIM y DMARC](docs/img/autenticacion-claro.png) |
+| Vista segura | Cabeceras y ruta | IOCs | ATT&CK |
+|---|---|---|---|
+| ![Vista segura con frases resaltadas](docs/img/analista-vista-segura.png) | ![Ruta Received con avisos por salto](docs/img/analista-cabeceras.png) | ![IOCs defanged con dominios Unicode](docs/img/analista-iocs.png) | ![Técnicas ATT&CK](docs/img/analista-attack.png) |
 
 ## 🔍 Qué detecta
 

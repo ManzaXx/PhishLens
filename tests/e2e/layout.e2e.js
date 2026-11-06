@@ -72,3 +72,20 @@ for (const width of WIDTHS) {
     await context.close();
   });
 }
+
+test('a 360 px: la vista actual se ve en la barra de navegación y el veredicto no deja el icono solo', { skip }, async () => {
+  const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
+  const page = await context.newPage();
+  page.setDefaultTimeout(5000);
+  await page.goto(`${server.url}/index.html#analista/attack`);
+  await page.getByRole('button', { name: title('03-phishing-banco'), exact: true }).click();
+  const current = await page.locator('#report nav a[aria-current="page"]').boundingBox();
+  const nav = await page.locator('#report nav').boundingBox();
+  assert.ok(current.x >= nav.x - 1 && current.x + current.width <= nav.x + nav.width + 1, `ATT&CK fuera de la vista: ${JSON.stringify({ current, nav })}`);
+
+  await page.locator('#report [data-action="mode-simple"]').click();
+  const icon = await page.locator('#report .verdict-card .icon').boundingBox();
+  const headline = await page.locator('#report .verdict-card__headline').boundingBox();
+  assert.ok(icon.y < headline.y + headline.height && headline.y < icon.y + icon.height, 'el icono queda en otra fila que el titular');
+  await context.close();
+});

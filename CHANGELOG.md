@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.3.0 · en desarrollo
+
+Especificación en [docs/specs/2026-11-06-phishlens-2.3-design.md](docs/specs/2026-11-06-phishlens-2.3-design.md).
+
+### Añadido
+- **Modo sencillo** por defecto: veredicto en una frase («Parece legítimo», «Ten cuidado», «No te fíes: es phishing») con el porqué, tres pasos de qué hacer y hasta cinco señales en lenguaje llano.
+- **Modo analista** con navegación lateral agrupada (Correo e Inteligencia) que pasa a barra horizontal en el móvil, y la vista en la URL (`#analista/<vista>`); el último modo elegido se recuerda.
+- **Texto llano por regla** (`finding.plain`) para las 72 reglas, sin jerga y de 140 caracteres como mucho, y `report.verdict` en el JSON.
+- **Sistema de diseño** ([docs/design-system.md](docs/design-system.md)): `tokens.css` con contraste ≥ 4,5 comprobado en claro y oscuro, escalas de espacio, tipo y radio, y componentes (`verdictCard`, `stepList`, `signalRow`, `findingCard`, `severityTag`, `meter`, `dataTable`, `chip`, `emptyState`, `navRail`, `modeSwitch`, `menuButton`).
+- **Menú Exportar** con el patrón ARIA de menú (flechas, Inicio, Fin, Escape) y «Analizar otro» como acción principal.
+- **E2E de diseño** a 360, 768 y 1280 px: sin scroll horizontal y objetivos táctiles de 44 px; axe, teclado y privacidad recorren los dos modos y todas las vistas.
+- `tools/screenshots.mjs` para regenerar las capturas del README.
+
+### Cambiado
+- La portada saca sus cifras del código (10 detectores, 72 reglas, ATT&CK 20.1) y «Cómo funciona» explica el motor real: topes por categoría, combinaciones y confianza. Ya no habla de «leve 5, media 15, grave 30».
+- La cabecera es sólida y el informe deja de ser una región viva entera: un aviso corto anuncia el resultado al lector de pantalla y el foco va al título de cada vista nueva.
+- `render.js` se parte en `ui/dom.js`, `ui/components/`, `ui/panels/` y `ui/views/`.
+
 ## 2.2.0 · 2026-11-05 · Motor fiable
 
 Especificación en [docs/specs/2026-11-05-phishlens-2.2-design.md](docs/specs/2026-11-05-phishlens-2.2-design.md).

@@ -50,3 +50,9 @@ test('«Cómo funciona» explica topes, combinaciones y confianza y enlaza a sco
   assert.match(how, /confianza/);
   assert.match(how, /href="https:\/\/github\.com\/ManzaXx\/ProyectosPersonales\/blob\/main\/proyectoCiber\/docs\/scoring\.md"/);
 });
+
+test('el informe no es una región viva entera: un aviso corto anuncia el resultado', () => {
+  const report = html.match(/<section[^>]*id="report"[^>]*>/)[0];
+  assert.doesNotMatch(report, /aria-live/);
+  assert.match(html, /<p[^>]*id="report-status"[^>]*role="status"/);
+});

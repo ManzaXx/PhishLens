@@ -91,6 +91,8 @@ test('teclado: cargar una muestra, pasar al modo analista, cambiar de vista y ab
   await tabUntil((a) => a.text === title('03-phishing-banco'), 'la muestra 03');
   await page.keyboard.press('Enter');
   await page.locator('#report .verdict-card').waitFor();
+  // El lector de pantalla oye un aviso corto, no el informe entero.
+  await page.waitForFunction(() => document.querySelector('#report-status')?.textContent.includes('No te fíes: es phishing'));
 
   await tabUntil((a) => a.text === 'Ver todos los detalles (modo analista)', 'el botón del modo analista');
   await page.keyboard.press('Enter');

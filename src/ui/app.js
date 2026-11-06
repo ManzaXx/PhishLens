@@ -171,6 +171,7 @@ function run() {
     state.lastInput = input;
     state.lastReport = analyzeInput(input);
     paint();
+    announce(`Resultado: ${state.lastReport.verdict.headline}. ${state.lastReport.score} de 100.`);
   } catch {
     // Un email malformado nunca debe dejar la página rota.
     reportBox.hidden = true;
@@ -203,12 +204,26 @@ async function copyText(text) {
   }
 }
 
+/** Aviso corto para el lector de pantalla (se vacía antes para que repita aunque el texto coincida). */
+function announce(text) {
+  const box = $('#report-status');
+  box.textContent = '';
+  setTimeout(() => { box.textContent = text; }, 50);
+}
+
 // ---------- Modo y vista del informe (la URL manda: '' sencillo, #analista/<vista> analista) ----------
 function paint(options = {}) {
   if (!state.lastReport) return;
   const { mode } = state.route;
   const view = resolveView(state.route.view, state.lastReport);
   renderReport(reportBox, state.lastReport, { mode, view, ...options });
+  // En móvil la navegación es una fila con desplazamiento: la vista actual tiene que verse.
+  const nav = reportBox.querySelector('.nav-rail');
+  const current = nav?.querySelector('[aria-current="page"]');
+  if (nav && current && nav.scrollWidth > nav.clientWidth) {
+    const offset = current.getBoundingClientRect().left - nav.getBoundingClientRect().left;
+    nav.scrollLeft += offset - (nav.clientWidth - current.offsetWidth) / 2;
+  }
 }
 
 /** Lleva el foco al título de la vista nueva, para que teclado y lector de pantalla sepan dónde están. */

@@ -68,10 +68,10 @@
 .verdict-card { --tone: var(--suspicious); --tone-bg: var(--suspicious-soft); background: var(--tone-bg); border: 2px solid var(--tone); border-radius: var(--radius-xl); padding: var(--space-7); display: grid; gap: var(--space-3); }
 .verdict--safe { --tone: var(--safe); --tone-bg: var(--safe-soft); }
 .verdict--phishing { --tone: var(--phishing); --tone-bg: var(--phishing-soft); }
-.verdict-card__top { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.verdict-card__top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
 .verdict-card__top .icon { width: 40px; height: 40px; color: var(--tone); flex: none; }
 .verdict-card__headline { margin: 0; font-size: clamp(var(--text-2xl), 4vw, var(--text-3xl)); line-height: 1.15; color: var(--tone); }
-.verdict-card__facts { margin: 0 0 0 auto; font-weight: 700; color: var(--tone); }
+.verdict-card__facts { margin: 0; font-weight: 700; color: var(--tone); text-align: right; }
 .verdict-card__because { margin: 0; font-size: var(--text-lg); line-height: 1.5; color: var(--text-strong); }
 
 /* stepList */
@@ -97,6 +97,8 @@
 @media (max-width: 640px) {
   .simple .steps { grid-template-columns: 1fr; }
   .verdict-card { padding: var(--space-5); }
+  .verdict-card__top .icon { width: 32px; height: 32px; }
+  .verdict-card__facts { grid-column: 1 / -1; text-align: left; }
 }
 
 /* ---- Barra del informe: conmutador de modo y acciones ---- */

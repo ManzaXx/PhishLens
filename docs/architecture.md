@@ -17,7 +17,7 @@ ui ──▶ core ──▶ detectors · auth · intel ──▶ parser ──�
 | `src/auth/` | Autenticación verificada / declarada / no verificable (llega en el PR 2 de la 2.2) | `core/finding.js`, `parser`, `data`, `lib` |
 | `src/intel/` | Indicadores de compromiso; en la 2.3, grafo y campañas | `parser`, `data`, `lib` |
 | `src/core/` | Modelo de hallazgo, motor, recomendaciones; en la 2.2, puntuación contextual | todo salvo `ui` |
-| `src/ui/` | Único código que toca el DOM; todo el contenido del correo se inserta con `textContent` | todo |
+| `src/ui/` | Único código que toca el DOM; todo el contenido del correo se inserta con `textContent` (`ui/dom.js`). Dentro: `components/` (piezas sin estado que solo importan `dom.js`, otros componentes y `data/`), `panels/` (cada vista del modo analista), `views/` (modo sencillo y analista), `route.js` (rutas `#analista/<vista>`, funciones puras) y `app.js` (eventos) | todo |
 
 Nada fuera de `src/ui/` usa `document` ni `window`, así que todo el motor se prueba en Node con `node --test`.
 
