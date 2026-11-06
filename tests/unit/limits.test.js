@@ -42,6 +42,7 @@ test('un adjunto base64 de 12 MB se decodifica solo hasta el límite', () => {
   assert.equal(a.bytes.length, LIMITS.attachmentBytes);
   assert.equal(a.size, 12 * 1024 * 1024);
   assert.equal(a.truncated, true);
+  assert.deepEqual([a.sha256, a.sha1, a.md5], [null, null, null]);
   assert.ok(ms < 1500, `${Math.round(ms)} ms`);
 });
 

@@ -3,6 +3,8 @@ import { extractUrls } from './url.js';
 import { extractAnchors } from './html.js';
 import { LIMITS } from '../lib/limits.js';
 import { sha256 } from '../lib/sha256.js';
+import { sha1 } from '../lib/sha1.js';
+import { md5 } from '../lib/md5.js';
 
 export { LIMITS };
 
@@ -314,9 +316,9 @@ function walkPart(headers, body, acc, depth = 0) {
       contentType: type.value,
       size: realSize ?? all.length,
       bytes,
-      // Un hash parcial, deformado o del fichero vacío engañaría como IOC.
-      sha256: truncated || lossy || bytes.length === 0 ? null : sha256(bytes),
       truncated,
+      lossy: Boolean(lossy),
+      ...hashes(bytes, truncated || lossy || bytes.length === 0),
     });
     return;
   }
@@ -334,6 +336,12 @@ function walkPart(headers, body, acc, depth = 0) {
   }
   if (type.value === 'text/html') acc.html += content;
   else if (type.value.startsWith('text/') || !headers.has('content-type')) acc.text += content;
+}
+
+// Un hash parcial, deformado o del fichero vacío engañaría como IOC.
+function hashes(bytes, skip) {
+  if (skip) return { sha256: null, sha1: null, md5: null };
+  return { sha256: sha256(bytes), sha1: sha1(bytes), md5: md5(bytes) };
 }
 
 function extractLinks(html, text, acc = null) {

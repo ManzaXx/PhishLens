@@ -1,10 +1,8 @@
 // Panel «IOCs»: indicadores en formato defanged.
 import { el } from '../dom.js';
-import { defang, PLAIN } from '../../intel/ioc.js';
+import { defang, PLAIN, IOC_SECTIONS as IOC_LABELS } from '../../intel/ioc.js';
 import { toUnicode } from '../../parser/punycode.js';
 
-
-const IOC_LABELS = [['urls', 'URLs'], ['domains', 'Dominios'], ['ips', 'IPs'], ['emails', 'Emails'], ['attachments', 'Adjuntos'], ['hashes', 'SHA-256']];
 
 export function iocsPanel(report) {
   const panel = el('div', { className: 'stack' });

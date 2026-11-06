@@ -3,6 +3,7 @@ import { el, nextId } from '../dom.js';
 import { meter } from '../components/meter.js';
 import { navRail } from '../components/nav-rail.js';
 import { adviceFor } from '../../core/advice.js';
+import { IOC_SECTIONS } from '../../intel/ioc.js';
 import { NAV_GROUPS, VIEW_LABELS, hasView } from '../route.js';
 import { summaryPanel } from '../panels/summary.js';
 import { findingsPanel } from '../panels/findings.js';
@@ -17,7 +18,7 @@ const PANELS = new Map([
   ['cabeceras', headersPanel], ['iocs', iocsPanel], ['attack', mitrePanel],
 ]);
 
-const IOC_KEYS = ['urls', 'domains', 'ips', 'emails', 'attachments', 'hashes'];
+const IOC_KEYS = IOC_SECTIONS.map(([key]) => key);
 
 /** Riesgo por categoría: cada fila dice su número en texto; la barra solo acompaña. */
 function categoryList(report) {
