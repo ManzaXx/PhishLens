@@ -3,15 +3,23 @@
 Generada con `npm run coverage` (`tools/gen-coverage.mjs`); `tests/unit/coverage-matrix.test.js` falla si no está al día.
 Una regla cuenta como probada si su id aparece en algún test o si alguna muestra de `samples/` la produce.
 
-72 reglas, 72 probadas.
+80 reglas, 80 probadas.
 
 | Regla | ATT&CK | Muestras | Tests | |
 | --- | --- | --- | --- | --- |
 | `attachments.archive` | T1566.001, T1204.002 | — | `unit/attachments.test.js`, `unit/engine.test.js` | ✅ |
+| `attachments.archive-executable` | T1204.002, T1566.001 | — | `unit/attachments.test.js` | ✅ |
 | `attachments.dangerous` | T1566.001, T1204.002 | — | `unit/attachments.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
+| `attachments.disk-image` | T1553.005, T1204.002 | — | `unit/attachments.test.js` | ✅ |
 | `attachments.double-extension` | T1036.007, T1204.002 | 06 | `unit/advice.test.js`, `unit/attachments.test.js`, `unit/limits.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
+| `attachments.encrypted-archive` | T1027.013, T1566.001 | — | `unit/attachments.test.js` | ✅ |
+| `attachments.html-smuggling` | T1027.006, T1204.002 | — | `unit/attachments.test.js` | ✅ |
+| `attachments.lnk` | T1204.002, T1566.001 | — | `unit/attachments.test.js` | ✅ |
 | `attachments.macro` | T1566.001, T1204.002 | — | `unit/attachments.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
+| `attachments.ole-macro` | T1059.005, T1204.002 | — | `unit/attachments.test.js` | ✅ |
+| `attachments.pdf-active` | T1204.002, T1059.007 | — | `unit/attachments.test.js` | ✅ |
 | `attachments.rtl-override` | T1036.002, T1204.002 | — | `unit/attachments.test.js`, `unit/mitre.test.js` | ✅ |
+| `attachments.type-mismatch` | T1036.008, T1204.002 | — | `unit/attachments.test.js` | ✅ |
 | `auth.dkim` | T1684.002 | 03, 04, 07 | `unit/auth.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.dkim-body-modified` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `auth.dkim-body-verified` | — | — | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |

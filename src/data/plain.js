@@ -4,6 +4,14 @@
 
 export const PLAIN = Object.freeze({
   // Adjuntos
+  'attachments.archive-executable': 'El archivo comprimido lleva dentro un programa que puede instalarse en tu equipo.',
+  'attachments.disk-image': 'El adjunto es una imagen de disco, una forma de colar programas saltándose los avisos de Windows.',
+  'attachments.encrypted-archive': 'El comprimido tiene contraseña, así que nadie ha podido revisar lo que lleva dentro.',
+  'attachments.html-smuggling': 'El adjunto es una página que fabrica un archivo al abrirla, para colarlo sin que nadie lo revise.',
+  'attachments.lnk': 'El adjunto es un acceso directo de Windows que puede lanzar órdenes en tu equipo al abrirlo.',
+  'attachments.ole-macro': 'El documento lleva macros: pequeños programas que se ejecutan en tu equipo al abrirlo.',
+  'attachments.pdf-active': 'El PDF puede hacer cosas por su cuenta en cuanto lo abres.',
+  'attachments.type-mismatch': 'El adjunto dice ser un tipo de archivo, pero por dentro es otro distinto.',
   'attachments.archive': 'Trae un archivo comprimido: es una forma habitual de colar programas dañinos.',
   'attachments.dangerous': 'Trae un adjunto que puede instalar un programa en tu equipo si lo abres.',
   'attachments.double-extension': 'El adjunto finge ser un documento, pero su nombre esconde que es un programa.',
