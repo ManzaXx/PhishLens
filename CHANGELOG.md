@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.3.0 · en desarrollo
+## Sin publicar · 2.3.0 en desarrollo
 
 Especificación en [docs/specs/2026-11-06-phishlens-2.3-design.md](docs/specs/2026-11-06-phishlens-2.3-design.md).
 

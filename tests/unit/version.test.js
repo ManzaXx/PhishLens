@@ -9,5 +9,9 @@ test('versión coherente en package.json, reportToJson y CHANGELOG', () => {
   const { version } = JSON.parse(read('package.json'));
   assert.match(read('src/ui/render.js'), new RegExp(`tool: 'PhishLens', version: '${version.replaceAll('.', '\\.')}'`));
   assert.match(read('CHANGELOG.md'), new RegExp(`^## ${version.replaceAll('.', '\\.')} · \\d{4}-\\d{2}-\\d{2}`, 'm'));
-  assert.equal(read('CHANGELOG.md').match(/^## (\S+)/m)[1], version, 'la primera entrada es la versión actual');
+  // Una sección «Sin publicar» (lo que lleva main y aún no tiene versión) solo puede ir la primera.
+  const headings = [...read('CHANGELOG.md').matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+  const released = headings.filter((h) => !h.startsWith('Sin publicar'));
+  assert.equal(released[0].split(' ')[0], version, 'la primera versión publicada es la actual');
+  assert.ok(headings.slice(1).every((h) => !h.startsWith('Sin publicar')), '«Sin publicar» va arriba del todo');
 });
