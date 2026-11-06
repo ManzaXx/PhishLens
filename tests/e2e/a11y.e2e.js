@@ -12,7 +12,7 @@ const noAxe = existsSync(AXE) ? false : `axe-core no está en ${AXE} (npm ci o A
 if (noAxe && process.env.CI) throw new Error(noAxe);
 const { browser, skip: noBrowser } = noAxe ? {} : await openBrowser();
 const skip = noAxe || noBrowser || false;
-const REPORTS = ['01-legitimo-newsletter', '03-phishing-banco', '06-phishing-factura-adjunto', '12-pdf-activo-zip'];
+const REPORTS = ['01-legitimo-newsletter', '03-phishing-banco', '06-phishing-factura-adjunto', '11-adjunto-tipo-falso', '12-pdf-activo-zip'];
 let server;
 
 before(async () => {

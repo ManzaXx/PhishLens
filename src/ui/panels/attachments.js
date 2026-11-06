@@ -18,7 +18,11 @@ export function formatSize(bytes) {
 function realType(a, mismatched) {
   const i = a.inspection;
   if (!i) return chip('Sin leer');
-  return chip(i.realLabel, { tone: mismatched ? 'phishing' : 'neutral' });
+  if (!mismatched) return chip(i.realLabel);
+  // El color no es la única señal: se dice también en texto (WCAG 1.4.1).
+  return el('span', { className: 'real-type' },
+    chip(i.realLabel, { tone: 'phishing' }),
+    el('span', { className: 'real-type__note', text: i.declaredExt ? `No coincide con .${i.declaredExt}` : 'No coincide con el nombre' }));
 }
 
 function hashRows(a) {

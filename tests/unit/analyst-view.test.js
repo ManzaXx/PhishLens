@@ -102,6 +102,10 @@ test('vista adjuntos (muestra 11): el tipo real que no cuadra va en un chip de p
   const table = find(renderAnalyst(report('11-'), 'adjuntos'), tag('table'));
   const bad = find(table, (n) => n.classList.contains('chip--phishing'));
   assert.equal(bad.textContent, 'Ejecutable de Windows');
+  // El color no es la única señal (WCAG 1.4.1): también se dice en texto.
+  assert.match(bad.parentNode.textContent, /No coincide con \.pdf/);
+  const ok = find(find(renderAnalyst(report('12-'), 'adjuntos'), tag('table')), tag('tbody'));
+  assert.doesNotMatch(ok.textContent, /No coincide/);
 });
 
 test('vista cabeceras ya no repite los adjuntos', () => {
