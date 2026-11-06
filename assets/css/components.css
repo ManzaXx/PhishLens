@@ -86,3 +86,15 @@
   .verdict-card, .finding { break-inside: avoid; }
   .table-scroll { overflow: visible; }
 }
+
+/* ---- Vista sencilla (renderSimple) ---- */
+.simple { display: grid; gap: var(--space-6); max-width: 960px; margin-inline: auto; }
+.simple__section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); }
+.simple__title { margin: 0 0 var(--space-3); font-size: var(--text-lg); color: var(--text-strong); }
+.simple .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.simple .steps__item { grid-template-columns: 1fr; background: var(--surface-2); border-radius: var(--radius-md); padding: var(--space-4); }
+.simple__more { display: flex; justify-content: center; }
+@media (max-width: 640px) {
+  .simple .steps { grid-template-columns: 1fr; }
+  .verdict-card { padding: var(--space-5); }
+}
