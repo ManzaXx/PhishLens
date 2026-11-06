@@ -3,6 +3,7 @@ import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
 import { SAMPLES } from '../../samples/index.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { renderReport, reportToJson, iocsToText } from './render.js';
+import { menuKey } from './components/menu-button.js';
 import { parseRoute, formatRoute, initialMode, resolveView, isAnalystHash, MODE_KEY } from './route.js';
 
 import { LIMITS } from '../lib/limits.js';
@@ -245,6 +246,66 @@ function goTo(mode) {
 
 reportBox.addEventListener('click', onReportAction);
 
+// ---------- Menús (patrón ARIA menu button) ----------
+const menuItems = (menu) => [...menu.querySelectorAll('[role="menuitem"]')];
+
+function closeMenu(root, focusTrigger = false) {
+  const trigger = root.querySelector('[aria-haspopup="menu"]');
+  const menu = root.querySelector('[role="menu"]');
+  if (!menu || menu.hidden) return;
+  menu.hidden = true;
+  trigger.setAttribute('aria-expanded', 'false');
+  if (focusTrigger) trigger.focus();
+}
+
+function openMenu(root, last = false) {
+  const trigger = root.querySelector('[aria-haspopup="menu"]');
+  const menu = root.querySelector('[role="menu"]');
+  menu.hidden = false;
+  trigger.setAttribute('aria-expanded', 'true');
+  const items = menuItems(menu);
+  items[last ? items.length - 1 : 0]?.focus();
+}
+
+const closeAllMenus = (except) => {
+  for (const root of document.querySelectorAll('.menu-button')) if (root !== except) closeMenu(root);
+};
+
+document.addEventListener('click', (e) => {
+  const root = e.target.closest('.menu-button');
+  const trigger = e.target.closest('[aria-haspopup="menu"]');
+  closeAllMenus(root);
+  if (!root) return;
+  if (trigger) {
+    if (trigger.getAttribute('aria-expanded') === 'true') closeMenu(root);
+    else openMenu(root);
+  } else if (e.target.closest('[role="menuitem"]')) {
+    closeMenu(root, true);
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  const root = e.target.closest?.('.menu-button');
+  if (!root) return;
+  if (e.target.matches('[aria-haspopup="menu"]') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    e.preventDefault();
+    openMenu(root, e.key === 'ArrowUp');
+    return;
+  }
+  if (!e.target.matches('[role="menuitem"]')) return;
+  const items = menuItems(root);
+  const move = menuKey(items.indexOf(e.target), e.key, items.length);
+  if (!move) return;
+  if (move.close) {
+    // Tab sigue su camino natural; Escape devuelve el foco al botón.
+    if (e.key === 'Escape') e.preventDefault();
+    closeMenu(root, e.key === 'Escape');
+    return;
+  }
+  e.preventDefault();
+  items[move.index].focus();
+});
+
 // Al imprimir se abren los «¿Por qué?» del informe (no el formulario de DKIM/SPF) y luego se dejan como estaban.
 let openedForPrint = [];
 window.addEventListener('beforeprint', () => {
@@ -304,7 +365,7 @@ function onReportAction(e) {
   if (action === 'eval-spf') evalSpf();
   if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || 'Sin IOCs');
   if (action === 'print') window.print();
-  if (action === 'export') {
+  if (action === 'export-json') {
     const blob = new Blob([reportToJson(state.lastReport)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -312,7 +373,7 @@ function onReportAction(e) {
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
-  if (action === 'reset') {
+  if (action === 'new') {
     reportBox.hidden = true;
     $('#analizar').scrollIntoView({ block: 'start' });
     tabs.find((t) => t.getAttribute('aria-selected') === 'true').focus();

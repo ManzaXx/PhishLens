@@ -3,16 +3,23 @@
 import { el } from './dom.js';
 import { iocsToText } from '../intel/ioc.js';
 import { modeSwitch } from './components/mode-switch.js';
+import { menuButton } from './components/menu-button.js';
 import { renderSimple } from './views/simple.js';
 import { renderAnalyst } from './views/analyst.js';
 
+const EXPORT_ITEMS = [
+  { action: 'export-json', text: 'Descargar informe (JSON)' },
+  { action: 'copy-iocs', text: 'Copiar IOCs' },
+  { action: 'print', text: 'Imprimir' },
+];
+
+/** Barra del informe: nivel de detalle, menú Exportar y la acción principal. */
 function toolbar(mode) {
-  const actions = el('div', { className: 'report__actions' },
-    el('button', { className: 'btn', text: 'Exportar JSON', attrs: { type: 'button', 'data-action': 'export' } }),
-    el('button', { className: 'btn', text: 'Copiar IOCs', attrs: { type: 'button', 'data-action': 'copy-iocs' } }),
-    el('button', { className: 'btn', text: 'Imprimir', attrs: { type: 'button', 'data-action': 'print' } }),
-    el('button', { className: 'btn', text: 'Analizar otro', attrs: { type: 'button', 'data-action': 'reset' } }));
-  return el('div', { className: 'report__toolbar' }, modeSwitch(mode), actions);
+  return el('div', { className: 'report__toolbar' },
+    modeSwitch(mode),
+    el('div', { className: 'report__actions' },
+      menuButton({ label: 'Exportar', items: EXPORT_ITEMS }),
+      el('button', { className: 'btn btn--primary', text: 'Analizar otro', attrs: { type: 'button', 'data-action': 'new' } })));
 }
 
 /**

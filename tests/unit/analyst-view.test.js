@@ -58,7 +58,7 @@ test('vista resumen: anillo, nivel y confianza, sin botones de acción', () => {
   const panel = find(renderAnalyst(report('03'), 'resumen'), has('view'));
   assert.ok(find(panel, has('gauge')));
   assert.ok(find(panel, has('confidence')));
-  assert.equal(find(panel, (n) => n.getAttribute('data-action') === 'export'), null);
+  assert.equal(find(panel, (n) => ['export-json', 'new'].includes(n.getAttribute('data-action'))), null);
 });
 
 test('URL suelta: sin autenticación ni cabeceras en la navegación', () => {

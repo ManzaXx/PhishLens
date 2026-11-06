@@ -153,3 +153,28 @@ test('impresión: los «¿Por qué?» se abren y el informe sale en claro aunque
   assert.ok(await page.locator('#report details').evaluateAll((els) => els.some((d) => !d.open)), 'tras imprimir vuelven a cerrarse');
   await context.close();
 });
+
+test('menú Exportar: se abre con teclado, las flechas se mueven y Escape vuelve al botón', { skip }, async () => {
+  const { page, context } = await openReport('03-phishing-banco');
+  const trigger = page.locator('#report [aria-haspopup="menu"]');
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await trigger.getAttribute('aria-expanded'), 'true');
+  const focused = () => page.evaluate(() => document.activeElement?.textContent);
+  assert.equal(await focused(), 'Descargar informe (JSON)');
+  await page.keyboard.press('ArrowDown');
+  assert.equal(await focused(), 'Copiar IOCs');
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('ArrowUp');
+  assert.equal(await focused(), 'Imprimir');
+  await page.keyboard.press('Escape');
+  assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
+  assert.equal(await page.locator('#report [role="menu"]').isHidden(), true);
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-haspopup')), 'menu');
+  // Un clic fuera también lo cierra.
+  await trigger.click();
+  assert.equal(await trigger.getAttribute('aria-expanded'), 'true');
+  await page.locator('#report .view__title').click();
+  assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
+  await context.close();
+});
