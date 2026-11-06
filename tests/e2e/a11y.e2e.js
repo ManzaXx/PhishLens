@@ -115,9 +115,9 @@ async function openReport(id, { colorScheme = 'light', width = 1280 } = {}) {
 test('categorías: la etiqueta nunca se corta y la cifra se lee «x de y»', { skip }, async () => {
   for (const width of [360, 1280]) {
     const { page, context } = await openReport('03-phishing-banco', { width });
-    const labels = await page.locator('.breakdown__label').evaluateAll((els) => els.map((e) => ({ t: e.textContent, cut: e.scrollWidth > e.clientWidth })));
+    const labels = await page.locator('.meter__label').evaluateAll((els) => els.map((e) => ({ t: e.textContent, cut: e.scrollWidth > e.clientWidth })));
     assert.deepEqual(labels.filter((l) => l.cut), [], `ancho ${width}`);
-    const aria = await page.locator('.breakdown__points').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')));
+    const aria = await page.locator('.meter__value').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')));
     for (const a of aria) assert.match(a ?? '', /^\d+(,\d)? de \d+$/);
     await context.close();
   }

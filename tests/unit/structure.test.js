@@ -53,3 +53,15 @@ test('ningún import sale de proyectoCiber/', () => {
     .flatMap((f) => importsOf(f).filter((spec) => spec.startsWith('.') && relative(ROOT, join(f, '..', spec)).startsWith('..')).map((spec) => `${relative(ROOT, f)} → ${spec}`));
   assert.deepEqual(outside, []);
 });
+
+test('src/ui/components/ solo importa de ui/dom.js, de otros componentes y de data/', () => {
+  const dir = join(SRC, 'ui', 'components');
+  const allowed = (file, spec) => {
+    const target = relative(SRC, join(file, '..', spec)).replaceAll('\\', '/');
+    return target === 'ui/dom.js' || target.startsWith('ui/components/') || target.startsWith('data/');
+  };
+  const list = (() => { try { return files(dir); } catch { return []; } })();
+  assert.ok(list.length > 0, 'no hay componentes');
+  const violations = list.flatMap((f) => importsOf(f).filter((s) => !allowed(f, s)).map((s) => `${relative(ROOT, f)} → ${s}`));
+  assert.deepEqual(violations, []);
+});

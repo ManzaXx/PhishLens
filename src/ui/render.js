@@ -5,10 +5,11 @@ import { adviceFor } from '../core/advice.js';
 import { defang, iocsToText, PLAIN } from '../intel/ioc.js';
 import { htmlToText } from '../parser/html.js';
 import { reveal } from '../lib/text.js';
+import { el, svg, externalLink } from './dom.js';
+import { findingCard } from './components/finding-card.js';
+import { meter } from './components/meter.js';
 import { hopWarnings } from '../detectors/route.js';
 import { toUnicode } from '../parser/punycode.js';
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
 
 export const DETECTOR_LABELS = {
   input: 'Entrada',
@@ -24,38 +25,7 @@ export const DETECTOR_LABELS = {
   language: 'Lenguaje',
 };
 
-const SEVERITY_LABELS = { high: 'Grave', medium: 'Media', low: 'Leve', info: 'Info' };
-const RELIABILITY_LABELS = { high: 'fiabilidad alta', medium: 'fiabilidad media', low: 'fiabilidad baja' };
 const CONFIDENCE_LABELS = { high: 'alta', medium: 'media', low: 'baja' };
-const decimal = (n) => String(n).replace('.', ',');
-
-/**
- * Crea un elemento con clase, texto, atributos e hijos.
- * El texto pasa por reveal(): un carácter RLO o invisible del email se muestra como ⟦U+202E⟧
- * en lugar de reordenar o esconder lo que se ve en el informe (ataque "Trojan Source").
- */
-function el(tag, { className, text, attrs } = {}, ...children) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text != null) node.textContent = reveal(text);
-  for (const [k, v] of Object.entries(attrs ?? {})) node.setAttribute(k, v);
-  for (const child of children) if (child) node.append(child);
-  return node;
-}
-
-function svg(tag, attrs) {
-  const node = document.createElementNS(SVG_NS, tag);
-  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
-  return node;
-}
-
-const ALLOWED_LINK = /^https:\/\/attack\.mitre\.org\/techniques\/T\d{4}(\/\d{3})?\/$/;
-
-/** Enlace externo propio de la app (documentación de MITRE), nunca uno del email. */
-function externalLink(href, text, className) {
-  if (!ALLOWED_LINK.test(href)) return el('span', { className, text });
-  return el('a', { className, text, attrs: { href, target: '_blank', rel: 'noopener noreferrer' } });
-}
 
 // ---------- Cabecera del informe ----------
 
@@ -96,15 +66,8 @@ function gauge(score) {
 
 /** Riesgo por categoría: cada fila dice su número en texto; la barra solo acompaña. */
 function categoryList(report) {
-  const list = el('ul', { className: 'breakdown', attrs: { 'aria-label': 'Riesgo por categoría' } });
-  for (const c of report.categories ?? []) {
-    const bar = el('span', { className: 'breakdown__bar' });
-    bar.style.setProperty('--w', `${(c.score / c.max) * 100}%`);
-    list.append(el('li', {},
-      el('span', { className: 'breakdown__label', text: c.label }),
-      el('span', { className: 'breakdown__track', attrs: { 'aria-hidden': 'true' } }, bar),
-      el('span', { className: 'breakdown__points', text: `${decimal(c.score)} / ${c.max}`, attrs: { 'aria-label': `${decimal(c.score)} de ${c.max}` } })));
-  }
+  const list = el('ul', { className: 'meter-list', attrs: { 'aria-label': 'Riesgo por categoría' } });
+  for (const c of report.categories ?? []) list.append(el('li', {}, meter({ label: c.label, value: c.score, max: c.max })));
   return list;
 }
 
@@ -134,24 +97,6 @@ function adviceBox(report) {
 }
 
 // ---------- Pestaña: señales ----------
-
-function findingCard(f) {
-  const meta = el('div', { className: 'finding__meta' });
-  if (f.points && f.polarity !== 'trust') {
-    for (const t of f.techniques ?? []) {
-      const link = externalLink(t.url, `ATT&CK ${t.id}`, 'mitre-tag');
-      link.title = `${t.name} (${t.tactic}). ${t.why}`;
-      meta.append(link);
-    }
-  }
-  return el('article', { className: `finding sev-${f.severity}` },
-    el('div', { className: 'finding__top' },
-      el('h4', { className: 'finding__title', text: f.title }),
-      el('span', { className: 'badge', text: f.points ? `${SEVERITY_LABELS[f.severity]} · ${RELIABILITY_LABELS[f.reliability]}` : SEVERITY_LABELS[f.severity] })),
-    el('p', { className: 'finding__detail', text: f.detail }),
-    f.evidence ? el('p', { className: 'finding__evidence', text: f.evidence }) : null,
-    meta.childElementCount ? meta : null);
-}
 
 function findingsPanel(report) {
   const panel = el('div');
