@@ -19,6 +19,18 @@ PhishLens trabaja sin red y en el navegador. Estas son las consecuencias, para q
 - **Lista de marcas manual.** Solo se protege a las marcas de `src/data/brands.js`. Los dominios oficiales que no se pudieron confirmar no están, y un correo legítimo desde uno de ellos puede salir como suplantación.
 - **Marcas que son palabras corrientes** (Orange, ING, SEUR, GLS, DGT, Steam) solo cuentan como etiqueta exacta, nunca por parecido.
 
+## Adjuntos
+
+Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecuta nada. Por eso:
+
+- **Tipo real por los primeros bytes.** Se reconocen PE, ELF, ZIP, OLE2, PDF, RTF, ISO 9660, LNK, HTML y scripts con `#!`. Las imágenes y el resto de formatos salen como «Desconocido» y no se comparan con su extensión.
+- **ZIP: solo el directorio central.** Se leen nombres, tamaños y si están cifrados, pero no el contenido: un PDF dentro de un ZIP no se revisa. No se leen ZIP64, ZIP partidos ni ZIP cuyo directorio central contradiga las cabeceras locales; como mucho, 1.000 entradas.
+- **OLE2 (Office antiguo): solo el directorio.** Se buscan los nombres de un proyecto VBA. La FAT se lee de la cabecera (109 sectores); un documento que necesite la DIFAT extendida se lee hasta donde llega y se avisa.
+- **PDF: solo el texto sin comprimir.** Se buscan `/JavaScript`, `/JS`, `/OpenAction`, `/AA`, `/Launch`, `/EmbeddedFile` y `/URI`, también ofuscados con `#xx`. Lo que vaya dentro de un flujo comprimido (`/FlateDecode` y otros) o de un flujo de objetos no se ve: el informe dice cuántos flujos comprimidos se han quedado sin mirar.
+- **HTML: solo los primeros 2 MB** y solo si hay un `<script>`.
+- **ISO, IMG y VHD: no se abren.** Se avisa de que son imágenes de disco, pero no se lista lo que llevan dentro.
+- **Adjuntos recortados o ilegibles** (más de 10 MB o base64 roto): solo cuentan las reglas por nombre.
+
 ## Ruta
 
 - La ruta se lee de las cabeceras `Received`, que el remitente puede inventar por debajo del salto de entrada. Las horas solo se comparan si se pueden interpretar, con 5 minutos de margen.
@@ -27,7 +39,7 @@ PhishLens trabaja sin red y en el navegador. Estas son las consecuencias, para q
 
 - **Los límites cuentan caracteres, no bytes.** El navegador entrega el archivo como texto, así que los 25 MB son 25 millones de unidades UTF-16: un `.eml` con mucho texto no ASCII puede ocupar en disco hasta el doble.
 - **Sin Web Worker.** El análisis corre en el hilo principal ([ADR 0003](adr/0003-sin-web-worker.md)): con un correo enorme la página puede quedarse quieta unas décimas de segundo.
-- **Adjuntos de más de 10 MB.** No se decodifican enteros: su tamaño sale de la longitud del base64 y su SHA-256 no se calcula.
+- **Adjuntos de más de 10 MB.** No se decodifican enteros: su tamaño sale de la longitud del base64, no se calculan sus hashes y no se mira dentro.
 - **Navegadores.** La privacidad y la accesibilidad se prueban en Chromium; Firefox y Safari aplican la misma CSP, pero no se prueban en CI.
 
 ## General
@@ -36,4 +48,4 @@ PhishLens trabaja sin red y en el navegador. Estas son las consecuencias, para q
 - **Pesos a mano.** Los pesos, las combinaciones y la escala de la nota están calibrados con las muestras y los ejemplos de la especificación, no entrenados con datos reales.
 - **La confianza mide carencias, no aciertos.** Una confianza alta dice que se pudo revisar casi todo, no que el veredicto sea correcto.
 - No se consultan listas negras, WHOIS ni servicios de reputación.
-- No se analiza el contenido de los adjuntos (solo nombre, tipo y SHA-256), ni el formato `.msg` de Outlook.
+- No se analiza el formato `.msg` de Outlook.

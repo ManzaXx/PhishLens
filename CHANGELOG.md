@@ -7,15 +7,22 @@ Especificación en [docs/specs/2026-11-06-phishlens-2.3-design.md](docs/specs/20
 ### Añadido
 - **Modo sencillo** por defecto: veredicto en una frase («Parece legítimo», «Ten cuidado», «No te fíes: es phishing») con el porqué, tres pasos de qué hacer y hasta cinco señales en lenguaje llano.
 - **Modo analista** con navegación lateral agrupada (Correo e Inteligencia) que pasa a barra horizontal en el móvil, y la vista en la URL (`#analista/<vista>`); el último modo elegido se recuerda.
-- **Texto llano por regla** (`finding.plain`) para las 72 reglas, sin jerga y de 140 caracteres como mucho, y `report.verdict` en el JSON.
+- **Texto llano por regla** (`finding.plain`) para las 80 reglas, sin jerga y de 140 caracteres como mucho, y `report.verdict` en el JSON.
 - **Sistema de diseño** ([docs/design-system.md](docs/design-system.md)): `tokens.css` con contraste ≥ 4,5 comprobado en claro y oscuro, escalas de espacio, tipo y radio, y componentes (`verdictCard`, `stepList`, `signalRow`, `findingCard`, `severityTag`, `meter`, `dataTable`, `chip`, `emptyState`, `navRail`, `modeSwitch`, `menuButton`).
 - **Menú Exportar** con el patrón ARIA de menú (flechas, Inicio, Fin, Escape) y «Analizar otro» como acción principal.
 - **E2E de diseño** a 360, 768 y 1280 px: sin scroll horizontal y objetivos táctiles de 44 px; axe, teclado y privacidad recorren los dos modos y todas las vistas.
 - `tools/screenshots.mjs` para regenerar las capturas del README.
+- **Adjuntos por dentro, sin abrirlos**: tipo real por sus primeros bytes, lista de un ZIP leída de su directorio central, macros VBA en documentos OLE y OOXML, instrucciones activas en PDF (también ofuscadas con `#xx`) y HTML smuggling. Nada se descomprime ni se ejecuta.
+- **Ocho reglas nuevas**: `attachments.type-mismatch`, `archive-executable`, `encrypted-archive`, `pdf-active`, `ole-macro`, `html-smuggling`, `disk-image` y `lnk`, con técnicas ATT&CK T1036.008, T1027.006, T1027.013, T1553.005 y T1059.005.
+- **SHA-1 y MD5** de cada adjunto, además de SHA-256, en el informe y en los IOCs.
+- Vista **«Adjuntos»** en el modo analista y dos muestras nuevas: un `factura.pdf` que es un ejecutable y un correo con un PDF activo y un ZIP con contraseña (construidas byte a byte, sin código).
+- Fuzzing por formato de adjunto (`tests/fuzz/files.test.js`).
 
 ### Cambiado
-- La portada saca sus cifras del código (10 detectores, 72 reglas, ATT&CK 20.1) y «Cómo funciona» explica el motor real: topes por categoría, combinaciones y confianza. Ya no habla de «leve 5, media 15, grave 30».
+- La portada saca sus cifras del código (10 detectores, 80 reglas, ATT&CK 20.1) y «Cómo funciona» explica el motor real: topes por categoría, combinaciones y confianza. Ya no habla de «leve 5, media 15, grave 30».
 - La cabecera es sólida y el informe deja de ser una región viva entera: un aviso corto anuncia el resultado al lector de pantalla y el foco va al título de cada vista nueva.
+- Un nombre como `factura.exe.` o `factura.exe ` se lee como lo lee Windows, sin los puntos ni espacios del final.
+- Los adjuntos salen de «Cabeceras y ruta» y pasan a su propia vista.
 - `render.js` se parte en `ui/dom.js`, `ui/components/`, `ui/panels/` y `ui/views/`.
 
 ## 2.2.0 · 2026-11-05 · Motor fiable

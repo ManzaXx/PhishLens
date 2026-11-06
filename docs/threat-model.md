@@ -28,6 +28,9 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | Entradas aleatorias que rompen el parser | Cada detector aislado; el motor nunca lanza | `tests/fuzz/fuzz.test.js` (semilla fija, 2.000 casos; `npm run fuzz` para 20.000) |
 | MIME ambiguo: el filtro ve una cosa y el cliente otra | Las ambigüedades se convierten en hallazgos `mime.*` en vez de pasar en silencio | `tests/differential/differential.test.js` |
 | Contaminación de prototipos | `Object.hasOwn` y `Object.create(null)` | `tests/unit/security.test.js` |
+| Adjuntos construidos para colgar o engañar a los lectores (ZIP con un EOCD que promete 65.535 entradas, FAT en bucle, offsets fuera del fichero, 10 MB de `/` en un PDF) | Lectores de solo lectura en `src/parser/files/` sobre un lector acotado que devuelve `null` fuera de rango; topes de 1.000 entradas y 4.096 sectores; ciclos cortados con un conjunto de visitados; un solo recorrido lineal en el PDF | `tests/fuzz/files.test.js` (2.000 adjuntos mutados y casos fijos adversarios), `tests/unit/files-*.test.js` |
+| Un adjunto que dice ser otra cosa (`factura.pdf` que es un `.exe`, `factura.exe.`) | Tipo real por bytes mágicos y extensión leída como la lee Windows (sin puntos ni espacios finales) | `tests/unit/attachments.test.js` |
+| Nombres hostiles dentro de un ZIP (`../../x.exe`, RLO, CP437, 64 KB) | Recortados a 260 caracteres y pintados con `el()`, que revela los caracteres invisibles | `tests/unit/files-zip.test.js` |
 
 ### Render (`src/ui/`)
 

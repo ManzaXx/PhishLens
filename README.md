@@ -23,7 +23,7 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 
 ## ✨ Funcionalidades
 
-- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, IOCs y ATT&CK, con la vista en la URL (`#analista/senales`).
+- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, IOCs y ATT&CK, con la vista en la URL (`#analista/senales`).
 - **10 detectores y 80 reglas**: autenticación, remitente, cabeceras, ruta, estructura MIME, enlaces, dominios parecidos, adjuntos, HTML y lenguaje. Cada regla tiene su texto llano y su técnica ATT&CK.
 - **Informe explicado**: nota con semáforo, motivo principal, confianza del análisis, riesgo por categoría, combinaciones peligrosas y recomendaciones de qué hacer.
 - **Vista segura**: el email como texto plano, sin enlaces activos y con las frases de ingeniería social resaltadas.
@@ -43,9 +43,13 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 |---|---|---|
 | ![Modo analista con el anillo de riesgo y las categorías](docs/img/analista-resumen.png) | ![Señales agrupadas con gravedad, fiabilidad y ATT&CK](docs/img/analista-senales.png) | ![Autenticación SPF, DKIM y DMARC con su estado](docs/img/analista-autenticacion.png) |
 
-| Vista segura | Cabeceras y ruta | IOCs | ATT&CK |
-|---|---|---|---|
-| ![Vista segura con frases resaltadas](docs/img/analista-vista-segura.png) | ![Ruta Received con avisos por salto](docs/img/analista-cabeceras.png) | ![IOCs defanged con dominios Unicode](docs/img/analista-iocs.png) | ![Técnicas ATT&CK](docs/img/analista-attack.png) |
+| Vista segura | Cabeceras y ruta | Adjuntos |
+|---|---|---|
+| ![Vista segura con frases resaltadas](docs/img/analista-vista-segura.png) | ![Ruta Received con avisos por salto](docs/img/analista-cabeceras.png) | ![Adjuntos por dentro: PDF activo y ZIP con contraseña](docs/img/analista-adjuntos.png) |
+
+| IOCs | ATT&CK |
+|---|---|
+| ![IOCs defanged con dominios Unicode](docs/img/analista-iocs.png) | ![Técnicas ATT&CK](docs/img/analista-attack.png) |
 
 ## 🔍 Qué detecta
 
@@ -57,7 +61,7 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 | **Ruta del correo** | IP privada en el salto de entrada, horas que retroceden, entrega de más de 24 h, más de 25 saltos, servidor que dice ser una marca (HELO) sin serlo | T1684.002 |
 | **Enlaces** | Texto que muestra otro dominio, IPs, acortadores, `@` que oculta el host, punycode, TLD baratos, login sin HTTPS, marca en la ruta, descarga directa de ejecutables, enlaces de seguimiento | T1566.002, T1204.001 |
 | **Dominios parecidos** | Levenshtein y homoglifos (`0→o`, `1→l`, `rn→m`) frente a 37 marcas (22 españolas verificadas), confusables de Unicode UTS #39, dominios con alfabetos mezclados o enteros en cirílico (`аррӏе.com`), homógrafos con letras latinas raras o de otros alfabetos (`ɑpple.com`), subdominios engañosos (`paypal.com.cuenta-segura.test`), marca + palabra de acceso (combosquatting) | T1583.001 |
-| **Adjuntos** | Ejecutables, doble extensión (`factura.pdf.exe`), nombre invertido con RLO, macros, comprimidos | T1566.001, T1204.002, T1036.007, T1036.002 |
+| **Adjuntos** | Ejecutables, doble extensión (`factura.pdf.exe`), nombre invertido con RLO, y por dentro sin abrirlos: tipo real que no cuadra con la extensión, ZIP con programas o con contraseña, macros VBA, PDF que actúa al abrirse, HTML smuggling, imágenes de disco y accesos directos. SHA-256, SHA-1 y MD5 | T1566.001, T1204.002, T1036.007, T1036.002, T1036.008, T1027.006, T1027.013, T1553.005, T1059.005 |
 | **Contenido HTML** | Formularios dentro del email, JavaScript o iframes, enlaces `data:`, texto oculto para burlar filtros, emails que son solo una imagen | T1598, T1059.007, T1027 |
 | **Lenguaje** | Urgencia, amenazas, premios y peticiones de credenciales, en español e inglés | T1204, T1598 |
 
@@ -143,7 +147,7 @@ npm run bench               # reescribe docs/benchmark.md
 npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
 ```
 
-GitHub Actions ejecuta todo en cada push (`.github/workflows/phishlens-tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 10 muestras de principio a fin y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
+GitHub Actions ejecuta todo en cada push (`.github/workflows/phishlens-tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 12 muestras de principio a fin y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
 
 ## 🌐 Publicar la demo
 
@@ -159,7 +163,7 @@ GitHub Pages en un repositorio privado requiere GitHub Pro. Sin Pro, puedes hace
 - Son heurísticas: una nota baja **no garantiza** que un email sea seguro, y un email legítimo mal configurado puede salir sospechoso.
 - No consulta servicios externos (listas negras, WHOIS, VirusTotal), porque eso exigiría enviar datos fuera del navegador.
 - Sin red no consulta DNS: la firma DKIM y el SPF solo se verifican si pegas la clave o el registro. Detalles en [docs/limitations.md](docs/limitations.md).
-- No analiza el contenido de los adjuntos, solo su nombre y tipo, ni el formato `.msg` de Outlook.
+- Mira dentro de los adjuntos sin abrirlos, pero no descomprime nada: un PDF dentro de un ZIP o el contenido comprimido de un PDF no se revisan. Tampoco lee el formato `.msg` de Outlook.
 
 ## 🗺️ Próximos pasos
 

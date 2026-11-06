@@ -37,6 +37,19 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | Sin Web Worker sin CSP | ✅ | [ADR 0003](adr/0003-sin-web-worker.md), `tests/unit/security.test.js` |
 | Cada regla con al menos un test o una muestra | ✅ | `tests/unit/coverage-matrix.test.js`, [matriz](coverage-matrix.md) |
 
+## 2.3
+
+| Punto | Estado | Prueba |
+| --- | --- | --- |
+| Lectores de adjuntos (ZIP, OLE2, PDF, HTML) que nunca lanzan ni leen fuera de rango | ✅ | `tests/fuzz/files.test.js`, `tests/unit/files-*.test.js` |
+| Casos adversarios (FAT en ciclo, EOCD falso, 10 MB de cabeceras centrales o de `/`) en menos de 2 s | ✅ | `tests/fuzz/files.test.js` |
+| Adjunto recortado o ilegible: sin hashes ni afirmaciones sobre su interior | ✅ | `tests/unit/attachments.test.js`, `tests/unit/files-inspect.test.js` |
+| SHA-1 y MD5 probados con los vectores de FIPS 180-4 y RFC 1321 | ✅ | `tests/unit/hashes.test.js` |
+| Técnicas ATT&CK nuevas comprobadas contra el bundle oficial 20.1 | 👁️ | `node tools/check-mitre.mjs enterprise-attack-20.1.json` |
+| Ningún fuente con caracteres bidireccionales literales (Trojan Source) | ✅ | `tests/unit/structure.test.js` |
+| `src/parser/files/` solo importa de `lib/`, `data/` y otros lectores | ✅ | `tests/unit/structure.test.js` |
+| Revisión de seguridad del PR7 sin hallazgos explotables | 👁️ | skill `security-review` sobre el diff |
+
 ## Pendiente
 
 - Probar la privacidad también en Firefox y WebKit.

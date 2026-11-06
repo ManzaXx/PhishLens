@@ -21,6 +21,7 @@ const SHOTS = [
   ['analista-autenticacion', '03-phishing-banco', '#analista/autenticacion', 1280, 'light'],
   ['analista-cabeceras', '08-ruta-falsificada', '#analista/cabeceras', 1280, 'light'],
   ['analista-vista-segura', '07-phishing-avanzado', '#analista/vista-segura', 1280, 'light'],
+  ['analista-adjuntos', '12-pdf-activo-zip', '#analista/adjuntos', 1280, 'light'],
   ['analista-iocs', '10-dominio-unicode', '#analista/iocs', 1280, 'dark'],
   ['analista-attack', '03-phishing-banco', '#analista/attack', 1280, 'light'],
   ['movil-sencillo', '03-phishing-banco', '', 390, 'light'],
