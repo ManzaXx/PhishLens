@@ -11,7 +11,7 @@ test('documento con macros', () => assert.deepEqual(ids(detect(att('informe.docm
 test('comprimido', () => assert.deepEqual(ids(detect(att('fotos.zip'))), ['attachments.archive:low']));
 test('imagen normal', () => assert.deepEqual(detect(att('foto.jpg', 'Factura.PDF')), []));
 test('mayúsculas y espacios', () => assert.deepEqual(ids(detect(att('FACTURA.PDF   .EXE'))), ['attachments.double-extension:high']));
-test('carácter RTL que invierte la extensión', () => assert.deepEqual(ids(detect(att('factura‮fdp.exe'))), ['attachments.rtl-override:high']));
+test('carácter RTL que invierte la extensión', () => assert.deepEqual(ids(detect(att('factura\u202Efdp.exe'))), ['attachments.rtl-override:high']));
 
 // ---------- PR7: reglas sobre el contenido (inspection) ----------
 import { inspect } from '../../src/parser/files/index.js';
@@ -101,4 +101,11 @@ test('cada regla nueva tiene texto llano y técnica ATT&CK', () => {
   assert.equal(techniquesFor('attachments.encrypted-archive')[0].id, 'T1027.013');
   assert.equal(techniquesFor('attachments.disk-image')[0].id, 'T1553.005');
   assert.equal(techniquesFor('attachments.ole-macro')[0].id, 'T1059.005');
+});
+
+test('puntos y espacios al final del nombre no esconden la extensión (Windows los quita)', () => {
+  assert.deepEqual(ids(detect(att('factura.exe.'))), ['attachments.dangerous:high']);
+  assert.deepEqual(ids(detect(att('factura.pdf.exe . . '))), ['attachments.double-extension:high']);
+  assert.deepEqual(scan(file('docs.zip', makeZip([{ name: 'leeme.exe.' }]))), ['attachments.archive:low', 'attachments.archive-executable:high']);
+  assert.equal(inspect({ filename: 'a.PDF. ', bytes: new Uint8Array(0) }).declaredExt, 'pdf');
 });

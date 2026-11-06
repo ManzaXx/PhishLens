@@ -11,7 +11,8 @@ const VBA_PROJECT = /^(word|xl|ppt)\/vbaproject\.bin$/i;
 
 /** Extensión declarada en el nombre, en minúsculas, o null. */
 export function extensionOf(filename) {
-  const parts = String(filename ?? '').toLowerCase().split('.');
+  // Windows quita los puntos y espacios del final, así que «a.exe.» es un .exe.
+  const parts = String(filename ?? '').replace(/[.\s]+$/, '').toLowerCase().split('.');
   return parts.length > 1 && parts.at(-1).trim() ? parts.at(-1).trim() : null;
 }
 

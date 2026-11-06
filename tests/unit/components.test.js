@@ -140,7 +140,7 @@ test('el HTML de un correo nunca se convierte en elementos', () => {
 });
 
 test('el() muestra los caracteres de control bidireccionales en vez de aplicarlos', () => {
-  assert.equal(C.el('span', { text: 'factura‮fdp.exe' }).textContent.includes('‮'), false);
+  assert.equal(C.el('span', { text: 'factura\u202Efdp.exe' }).textContent.includes('\u202E'), false);
 });
 
 test('icon(): SVG decorativo, y un nombre desconocido no rompe', () => {

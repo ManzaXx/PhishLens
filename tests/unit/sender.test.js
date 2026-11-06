@@ -34,7 +34,7 @@ test('mezcla de alfabetos en el nombre (homoglifos Unicode)', () => {
 });
 
 test('caracteres invisibles en el nombre o el asunto', () => {
-  const e = mail('From: "Pay​Pal Soporte" <x@pay.test>');
+  const e = mail('From: "Pay\u200BPal Soporte" <x@pay.test>');
   assert.ok(detect(e).some((f) => f.id === 'sender.invisible-chars' && f.severity === 'medium'));
 });
 

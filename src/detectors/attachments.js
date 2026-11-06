@@ -7,7 +7,7 @@ import { DANGEROUS_EXTENSIONS, MACRO_EXTENSIONS, ARCHIVE_EXTENSIONS } from '../d
 export const name = 'attachments';
 
 const DOCUMENT_LIKE = /^(pdf|docx?|xlsx?|pptx?|txt|jpe?g|png|gif|csv|rtf|odt)$/;
-const BIDI = /[‪-‮⁦-⁩]/;
+const BIDI = /[\u202A-\u202E\u2066-\u2069]/;
 const DISK_IMAGE = new Set(['iso', 'img', 'vhd', 'vhdx']);
 // Tipos reales que ejecutan algo al abrirlos: si se disfrazan de documento, es grave.
 const EXECUTES = new Set(['pe', 'elf', 'lnk', 'script', 'html']);
@@ -26,19 +26,22 @@ const COMPATIBLE = new Map(Object.entries({
   script: 'sh bash zsh ksh py pl rb php command cgi run',
 }).map(([type, list]) => [type, new Set(list.split(' '))]));
 
+// Windows quita los puntos y espacios del final: «factura.exe.» se abre como un .exe.
+const windowsName = (n) => String(n).replace(/[.\s]+$/, '');
+
 const extOf = (n) => {
-  const parts = String(n).toLowerCase().split('.').map((p) => p.trim());
+  const parts = windowsName(n).toLowerCase().split('.').map((p) => p.trim());
   return parts.length > 1 ? parts.at(-1) : null;
 };
 
 function byName(filename, add, skip) {
   if (BIDI.test(filename)) {
     add('attachments.rtl-override', 'high', 'Nombre de adjunto invertido',
-      'El nombre contiene un carácter que invierte el sentido del texto: "factura‮fdp.exe" se ve como "facturaexe.pdf".',
-      filename.replace(/[‪-‮⁦-⁩]/g, '⟦RLO⟧'));
+      'El nombre contiene un carácter que invierte el sentido del texto: "factura\u202Efdp.exe" se ve como "facturaexe.pdf".',
+      filename.replace(/[\u202A-\u202E\u2066-\u2069]/g, '⟦RLO⟧'));
     return;
   }
-  const parts = String(filename).toLowerCase().split('.').map((p) => p.trim());
+  const parts = windowsName(filename).toLowerCase().split('.').map((p) => p.trim());
   if (parts.length < 2) return;
   const ext = parts.at(-1);
   const prev = parts.length > 2 ? parts.at(-2) : null;

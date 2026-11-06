@@ -75,3 +75,10 @@ test('src/parser/files/ solo importa de lib/, data/ y otros lectores de parser/f
   const violations = files(dir).flatMap((f) => importsOf(f).filter((s) => !allowed(f, s)).map((s) => `${relative(ROOT, f)} → ${s}`));
   assert.deepEqual(violations, []);
 });
+
+test('ningún fuente lleva caracteres bidireccionales literales (Trojan Source, CVE-2021-42574)', () => {
+  const bidi = /[\u202A-\u202E\u2066-\u2069]/;
+  const all = [...files(SRC), ...files(join(ROOT, 'tests')), ...files(join(ROOT, 'samples'))];
+  const offenders = all.filter((f) => bidi.test(readFileSync(f, 'utf8'))).map((f) => relative(ROOT, f));
+  assert.deepEqual(offenders, []);
+});

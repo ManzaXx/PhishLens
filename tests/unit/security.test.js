@@ -84,8 +84,8 @@ test('fuzzing: entradas repetitivas no tardan más de 1 s', () => {
 // ---------- Engaños visuales (Trojan Source / bidi) ----------
 
 test('reveal hace visibles los caracteres de control bidi e invisibles', () => {
-  assert.equal(reveal('factura‮fdp.exe'), 'factura⟦U+202E⟧fdp.exe');
-  assert.equal(reveal('Pay​Pal'), 'Pay⟦U+200B⟧Pal');
+  assert.equal(reveal('factura\u202Efdp.exe'), 'factura⟦U+202E⟧fdp.exe');
+  assert.equal(reveal('Pay\u200BPal'), 'Pay⟦U+200B⟧Pal');
   assert.equal(reveal('normal'), 'normal');
 });
 

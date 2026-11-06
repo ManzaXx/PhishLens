@@ -39,11 +39,11 @@ test('readZip: un comentario de 65.535 bytes tras el EOCD', () => {
 test('readZip: nombres hostiles se conservan (recortados) para que la vista los revele', () => {
   const z = readZip(makeZip([
     { name: '../../x.exe' },
-    { name: 'factura‮fdp.exe' },
+    { name: 'factura\u202Efdp.exe' },
     { name: Uint8Array.from([0x6d, 0x81, 0x6c, 0x6c, 0x65, 0x72, 0x2e, 0x74, 0x78, 0x74]) },
     { name: 'a'.repeat(65000) },
   ]));
-  assert.deepEqual(z.entries.slice(0, 3).map((e) => e.name), ['../../x.exe', 'factura‮fdp.exe', 'müller.txt']);
+  assert.deepEqual(z.entries.slice(0, 3).map((e) => e.name), ['../../x.exe', 'factura\u202Efdp.exe', 'müller.txt']);
   assert.equal(z.entries[3].name.length, 260);
 });
 
