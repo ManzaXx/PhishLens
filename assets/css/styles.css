@@ -30,12 +30,12 @@ h1, h2, h3 { line-height: 1.2; margin: 0 0 .5em; letter-spacing: -.01em; }
 /* ---------- Barra superior ---------- */
 .topbar { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--border); }
 .topbar__inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-size: var(--text-lg); }
+.brand { display: flex; align-items: center; min-height: 44px; gap: 10px; color: var(--text); text-decoration: none; font-size: var(--text-lg); }
 .brand strong { color: var(--accent); }
 .topbar__nav { display: flex; align-items: center; gap: 16px; }
-.topbar__nav a { color: var(--muted); text-decoration: none; font-size: var(--text-md); }
+.topbar__nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); text-decoration: none; font-size: var(--text-md); }
 .topbar__nav a:hover { color: var(--text); }
-.icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+.icon-btn { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
 .icon-btn:hover { border-color: var(--accent); }
 
 /* ---------- Hero ---------- */
@@ -161,7 +161,7 @@ textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--ac
 .report__panels .panel { margin-top: 16px; }
 .report__panels .panel:focus-visible { outline-offset: 4px; }
 .stack > * + * { margin-top: 22px; }
-.btn--small { font-size: var(--text-sm); padding: 6px 12px; }
+.btn--small { font-size: var(--text-sm); padding: 6px 12px; min-height: 44px; }
 .empty--muted { color: var(--muted); }
 
 .side { position: sticky; top: 76px; }

@@ -98,11 +98,22 @@ test('teclado: cargar una muestra, pasar al modo analista, cambiar de vista y ab
   assert.equal(new URL(page.url()).hash, '#analista');
   assert.equal((await active()).tag, 'H2', 'el foco no va al título de la vista');
 
-  await tabUntil((a) => a.href === '#analista/senales', 'el enlace «Señales»');
+  await tabUntil((a) => a.href === '#analista/autenticacion', 'el enlace «Autenticación»');
   await page.keyboard.press('Enter');
-  await page.locator('#report .view--senales').waitFor();
-  assert.equal((await active()).text, 'Señales');
-  assert.equal(await page.locator('#report nav a[aria-current="page"]').getAttribute('href'), '#analista/senales');
+  await page.locator('#report .view--autenticacion').waitFor();
+  assert.equal((await active()).text, 'Autenticación');
+  assert.equal(await page.locator('#report nav a[aria-current="page"]').getAttribute('href'), '#analista/autenticacion');
+
+  // Menú Exportar solo con teclado: Shift+Tab hasta el botón, Enter abre, flecha baja, Escape vuelve al botón.
+  for (let i = 0; i < 40 && (await page.evaluate(() => document.activeElement?.getAttribute('aria-haspopup'))) !== 'menu'; i++) {
+    await page.keyboard.press('Shift+Tab');
+  }
+  await page.keyboard.press('Enter');
+  assert.equal((await active()).text, 'Descargar informe (JSON)');
+  await page.keyboard.press('ArrowDown');
+  assert.equal((await active()).text, 'Copiar IOCs');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-haspopup')), 'menu');
 
   // Atrás del navegador vuelve a la vista anterior.
   await page.goBack();

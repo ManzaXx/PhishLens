@@ -53,7 +53,7 @@
 .finding__detail { margin: var(--space-1) 0 0; color: var(--muted); }
 .finding__evidence { margin: var(--space-2) 0 0; font: var(--text-xs)/1.5 var(--mono); background: var(--surface-2); border-radius: var(--radius-sm); padding: 6px var(--space-2); overflow-wrap: anywhere; white-space: pre-wrap; }
 .finding__meta { margin-top: var(--space-2); display: flex; flex-wrap: wrap; gap: var(--space-1); }
-.mitre-tag { display: inline-block; font: 600 var(--text-xs)/1.6 var(--mono); color: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 6px; text-decoration: none; }
+.mitre-tag { display: inline-flex; align-items: center; min-height: 44px; font: 600 var(--text-xs)/1.6 var(--mono); color: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 var(--space-3); text-decoration: none; }
 .mitre-tag:hover { color: var(--accent-strong); border-color: var(--accent); }
 
 /* signalRow */
@@ -112,7 +112,8 @@
 /* ---- Modo analista: navegación | vista | contexto ---- */
 .analyst { display: grid; gap: var(--space-5); grid-template-columns: minmax(0, 1fr); align-items: start; }
 .analyst > * { min-width: 0; }
-.view { display: grid; gap: var(--space-4); }
+.view { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+.view > * { min-width: 0; }
 .view__title { margin: 0; font-size: var(--text-xl); color: var(--text-strong); }
 .view__title:focus { outline: none; }
 .view__title:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }

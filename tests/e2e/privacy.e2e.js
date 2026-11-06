@@ -31,6 +31,10 @@ async function visitAllReportTabs(page) {
     await links.nth(i).click();
     await page.waitForTimeout(30);
   }
+  // El menú Exportar se abre y se cierra sin hacer nada fuera.
+  await page.locator('#report [aria-haspopup="menu"]').click();
+  await page.locator('#report [role="menu"]').waitFor();
+  await page.keyboard.press('Escape');
   await page.locator('#report [data-action="mode-simple"]').click();
   await page.locator('#report .verdict-card').waitFor();
 }
