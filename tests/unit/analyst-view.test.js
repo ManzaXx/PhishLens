@@ -78,3 +78,33 @@ test('modeSwitch: grupo con dos botones y aria-pressed', () => {
     [['Sencillo', 'mode-simple', 'false'], ['Modo analista', 'mode-analyst', 'true']]);
   assert.equal(findAll(modeSwitch('raro'), tag('button'))[0].getAttribute('aria-pressed'), 'true');
 });
+
+test('vista adjuntos (muestra 12): tabla con 5 columnas, una fila por adjunto, y hashes aparte', () => {
+  const r = report('12-');
+  const nav = find(renderAnalyst(r, 'senales'), tag('nav'));
+  assert.ok(findAll(nav, tag('a')).some((a) => a.getAttribute('href') === '#analista/adjuntos'));
+  const view = renderAnalyst(r, 'adjuntos');
+  const table = find(view, tag('table'));
+  assert.ok(table);
+  assert.equal(find(table, tag('caption')).textContent, 'Adjuntos');
+  assert.deepEqual(findAll(table, tag('th')).filter((n) => n.getAttribute('scope') === 'col').map((n) => n.textContent),
+    ['Nombre', 'Tipo declarado', 'Tipo real', 'Tamaño', 'Dentro']);
+  assert.equal(findAll(find(table, tag('tbody')), tag('tr')).length, r.email.attachments.length);
+  const hashes = find(view, (n) => n.classList.contains('hash-card'));
+  assert.match(hashes.textContent, /SHA-256/);
+  assert.match(hashes.textContent, /MD5/);
+  assert.ok(hashes.textContent.includes(r.email.attachments[0].sha1));
+  assert.match(table.textContent, /JavaScript/);
+  assert.match(table.textContent, /cifrad/);
+});
+
+test('vista adjuntos (muestra 11): el tipo real que no cuadra va en un chip de phishing', () => {
+  const table = find(renderAnalyst(report('11-'), 'adjuntos'), tag('table'));
+  const bad = find(table, (n) => n.classList.contains('chip--phishing'));
+  assert.equal(bad.textContent, 'Ejecutable de Windows');
+});
+
+test('vista cabeceras ya no repite los adjuntos', () => {
+  const view = renderAnalyst(report('06-'), 'cabeceras');
+  assert.doesNotMatch(view.textContent, /Adjuntos \(1\)/);
+});

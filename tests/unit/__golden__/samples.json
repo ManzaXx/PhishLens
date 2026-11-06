@@ -3630,5 +3630,954 @@
       ],
       "attachments": []
     }
+  },
+  "11-adjunto-tipo-falso": {
+    "score": 75,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "5 señales graves o medias, entre ellas «El adjunto no es lo que dice ser» y «SPF: fail». No pulses enlaces ni abras adjuntos.",
+    "mainReason": "Pesa sobre todo: Autenticación y Adjuntos.",
+    "categories": [
+      {
+        "id": "authentication",
+        "label": "Autenticación",
+        "score": 22.9,
+        "max": 25
+      },
+      {
+        "id": "sender",
+        "label": "Remitente y suplantación",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "links",
+        "label": "Enlaces y contenido",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "attachments",
+        "label": "Adjuntos",
+        "score": 13.5,
+        "max": 15
+      },
+      {
+        "id": "language",
+        "label": "Lenguaje",
+        "score": 4.4,
+        "max": 10
+      },
+      {
+        "id": "infrastructure",
+        "label": "Infraestructura",
+        "score": 1.3,
+        "max": 10
+      }
+    ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
+    "correlations": [],
+    "trust": [],
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1684.002",
+        "name": "Social Engineering: Email Spoofing",
+        "tactic": "Stealth",
+        "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+        "url": "https://attack.mitre.org/techniques/T1684/002/"
+      },
+      {
+        "id": "T1036.008",
+        "name": "Masquerading: Masquerade File Type",
+        "tactic": "Stealth",
+        "why": "El archivo finge ser de un tipo (su extensión) y por dentro es de otro.",
+        "url": "https://attack.mitre.org/techniques/T1036/008/"
+      },
+      {
+        "id": "T1204.002",
+        "name": "User Execution: Malicious File",
+        "tactic": "Execution",
+        "why": "El ataque necesita que la víctima abra el archivo.",
+        "url": "https://attack.mitre.org/techniques/T1204/002/"
+      },
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "tactic": "Execution",
+        "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      }
+    ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
+    "findings": [
+      {
+        "id": "auth.spf",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "SPF: fail",
+        "detail": "SPF comprueba que el servidor que envió el email está autorizado por el dominio. Si falla, el remitente puede estar falsificado.",
+        "evidence": "spf=fail (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "auth.dmarc",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "DMARC: fail",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
+        "evidence": "dmarc=fail (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "attachments.type-mismatch",
+        "detector": "attachments",
+        "severity": "high",
+        "points": 30,
+        "title": "El adjunto no es lo que dice ser",
+        "detail": "\"factura.pdf\" dice ser un .pdf, pero por dentro es: Ejecutable de Windows.",
+        "evidence": "factura.pdf",
+        "mitre": {
+          "id": "T1036.008",
+          "name": "Masquerading: Masquerade File Type",
+          "tactic": "Stealth",
+          "why": "El archivo finge ser de un tipo (su extensión) y por dentro es de otro.",
+          "url": "https://attack.mitre.org/techniques/T1036/008/"
+        },
+        "category": "attachments",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1036.008",
+            "name": "Masquerading: Masquerade File Type",
+            "tactic": "Stealth",
+            "why": "El archivo finge ser de un tipo (su extensión) y por dentro es de otro.",
+            "url": "https://attack.mitre.org/techniques/T1036/008/"
+          },
+          {
+            "id": "T1204.002",
+            "name": "User Execution: Malicious File",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima abra el archivo.",
+            "url": "https://attack.mitre.org/techniques/T1204/002/"
+          }
+        ]
+      },
+      {
+        "id": "language.threat",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Amenaza con consecuencias",
+        "detail": "Amenazar con bloquear, suspender o multar es una forma de que actúes sin pensar.",
+        "evidence": "…ar el corte del servicio y un recargo del 20 %. Es urgente. Admini…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "tactic": "Execution",
+          "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        },
+        "category": "language",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1204",
+            "name": "User Execution",
+            "tactic": "Execution",
+            "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+            "url": "https://attack.mitre.org/techniques/T1204/"
+          }
+        ]
+      },
+      {
+        "id": "language.urgency",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Mete prisa",
+        "detail": "Los plazos muy cortos buscan que no te pares a comprobar si el mensaje es real.",
+        "evidence": "…la factura pendiente. Ábrala hoy mismo para evitar el corte del serv…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "tactic": "Execution",
+          "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        },
+        "category": "language",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1204",
+            "name": "User Execution",
+            "tactic": "Execution",
+            "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+            "url": "https://attack.mitre.org/techniques/T1204/"
+          }
+        ]
+      },
+      {
+        "id": "auth.dkim",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "DKIM: none",
+        "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
+        "evidence": "dkim=none (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "headers.missing-messageid",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin Message-ID",
+        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
+        "evidence": "",
+        "mitre": null,
+        "category": "infrastructure",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Administración",
+        "address": "administracion@envios-paqueteria.test",
+        "domain": "envios-paqueteria.test"
+      },
+      "replyTo": null,
+      "returnPath": "no-reply@envios-paqueteria.test",
+      "subject": "Factura pendiente de pago - último aviso",
+      "links": [],
+      "authResults": "mx.example.com; spf=fail smtp.mailfrom=envios-paqueteria.test; dkim=none; dmarc=fail header.from=envios-paqueteria.test",
+      "date": "Thu, 05 Nov 2026 08:41:00 +0100",
+      "route": [
+        {
+          "from": "envios-paqueteria.test",
+          "helo": "envios-paqueteria.test",
+          "by": "mx.example.com",
+          "rdns": "unknown",
+          "ip": "203.0.113.77",
+          "date": "Thu, 05 Nov 2026 08:41:10 +0100",
+          "time": 1793864470000,
+          "entry": true
+        }
+      ],
+      "attachments": [
+        {
+          "filename": "factura.pdf",
+          "contentType": "application/pdf"
+        }
+      ]
+    },
+    "iocs": {
+      "urls": [],
+      "domains": [
+        "envios-paqueteria.test"
+      ],
+      "ips": [
+        "203.0.113.77"
+      ],
+      "emails": [
+        "administracion@envios-paqueteria.test",
+        "no-reply@envios-paqueteria.test"
+      ],
+      "attachments": [
+        "factura.pdf"
+      ]
+    }
+  },
+  "12-pdf-activo-zip": {
+    "score": 94,
+    "level": "critical",
+    "label": "Phishing casi seguro",
+    "summary": "Combina varias señales graves, entre ellas «Se hace pasar por Agencia Tributaria» y «Comprimido con un programa dentro». No pulses enlaces ni abras adjuntos y bórralo.",
+    "mainReason": "Motivo principal: Suplantación de marca con autenticación fallida.",
+    "categories": [
+      {
+        "id": "authentication",
+        "label": "Autenticación",
+        "score": 24.1,
+        "max": 25
+      },
+      {
+        "id": "sender",
+        "label": "Remitente y suplantación",
+        "score": 19.3,
+        "max": 20
+      },
+      {
+        "id": "links",
+        "label": "Enlaces y contenido",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "attachments",
+        "label": "Adjuntos",
+        "score": 14.7,
+        "max": 15
+      },
+      {
+        "id": "language",
+        "label": "Lenguaje",
+        "score": 5.9,
+        "max": 10
+      },
+      {
+        "id": "infrastructure",
+        "label": "Infraestructura",
+        "score": 1.3,
+        "max": 10
+      }
+    ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
+    "correlations": [
+      {
+        "id": "brand-auth",
+        "label": "Suplantación de marca con autenticación fallida",
+        "findings": [
+          "auth.dkim",
+          "auth.dmarc",
+          "auth.spf",
+          "sender.brand-impersonation"
+        ]
+      },
+      {
+        "id": "brand-credentials",
+        "label": "Suplantación de marca que pide credenciales",
+        "findings": [
+          "language.credentials",
+          "sender.brand-impersonation"
+        ]
+      }
+    ],
+    "trust": [],
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1684.002",
+        "name": "Social Engineering: Email Spoofing",
+        "tactic": "Stealth",
+        "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+        "url": "https://attack.mitre.org/techniques/T1684/002/"
+      },
+      {
+        "id": "T1684.001",
+        "name": "Social Engineering: Impersonation",
+        "tactic": "Stealth",
+        "why": "El remitente se hace pasar por una marca o persona de confianza.",
+        "url": "https://attack.mitre.org/techniques/T1684/001/"
+      },
+      {
+        "id": "T1204.002",
+        "name": "User Execution: Malicious File",
+        "tactic": "Execution",
+        "why": "El ataque necesita que la víctima abra el archivo.",
+        "url": "https://attack.mitre.org/techniques/T1204/002/"
+      },
+      {
+        "id": "T1566.001",
+        "name": "Phishing: Spearphishing Attachment",
+        "tactic": "Initial Access",
+        "why": "El ataque llega en un adjunto del correo.",
+        "url": "https://attack.mitre.org/techniques/T1566/001/"
+      },
+      {
+        "id": "T1598",
+        "name": "Phishing for Information",
+        "tactic": "Reconnaissance",
+        "why": "El correo intenta que la víctima entregue datos o contraseñas.",
+        "url": "https://attack.mitre.org/techniques/T1598/"
+      },
+      {
+        "id": "T1566",
+        "name": "Phishing",
+        "tactic": "Initial Access",
+        "why": "El correo es el vector de entrada del ataque.",
+        "url": "https://attack.mitre.org/techniques/T1566/"
+      },
+      {
+        "id": "T1059.007",
+        "name": "Command and Scripting Interpreter: JavaScript",
+        "tactic": "Execution",
+        "why": "El correo incluye código JavaScript.",
+        "url": "https://attack.mitre.org/techniques/T1059/007/"
+      },
+      {
+        "id": "T1027.013",
+        "name": "Obfuscated Files or Information: Encrypted/Encoded File",
+        "tactic": "Stealth",
+        "why": "El contenido va cifrado para que ningún filtro pueda revisarlo.",
+        "url": "https://attack.mitre.org/techniques/T1027/013/"
+      },
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "tactic": "Execution",
+        "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      }
+    ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
+    "findings": [
+      {
+        "id": "auth.spf",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "SPF: fail",
+        "detail": "SPF comprueba que el servidor que envió el email está autorizado por el dominio. Si falla, el remitente puede estar falsificado.",
+        "evidence": "spf=fail (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "auth.dkim",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "DKIM: fail",
+        "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
+        "evidence": "dkim=fail (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "auth.dmarc",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "DMARC: fail",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
+        "evidence": "dmarc=fail (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "sender.brand-impersonation",
+        "detector": "sender",
+        "severity": "high",
+        "points": 30,
+        "title": "Se hace pasar por Agencia Tributaria",
+        "detail": "Dice ser Agencia Tributaria pero notificaciones-hacienda.test no es un dominio oficial de Agencia Tributaria (agenciatributaria.gob.es).",
+        "evidence": "\"Agencia Tributaria\" <avisos@notificaciones-hacienda.test>",
+        "mitre": {
+          "id": "T1684.001",
+          "name": "Social Engineering: Impersonation",
+          "tactic": "Stealth",
+          "why": "El remitente se hace pasar por una marca o persona de confianza.",
+          "url": "https://attack.mitre.org/techniques/T1684/001/"
+        },
+        "category": "sender",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": "Agencia Tributaria",
+        "techniques": [
+          {
+            "id": "T1684.001",
+            "name": "Social Engineering: Impersonation",
+            "tactic": "Stealth",
+            "why": "El remitente se hace pasar por una marca o persona de confianza.",
+            "url": "https://attack.mitre.org/techniques/T1684/001/"
+          }
+        ]
+      },
+      {
+        "id": "attachments.archive-executable",
+        "detector": "attachments",
+        "severity": "high",
+        "points": 30,
+        "title": "Comprimido con un programa dentro",
+        "detail": "\"documentos.zip\" lleva dentro \"Factura_0193.pdf.exe\", que puede ejecutar código al abrirlo.",
+        "evidence": "Factura_0193.pdf.exe",
+        "mitre": {
+          "id": "T1204.002",
+          "name": "User Execution: Malicious File",
+          "tactic": "Execution",
+          "why": "El ataque necesita que la víctima abra el archivo.",
+          "url": "https://attack.mitre.org/techniques/T1204/002/"
+        },
+        "category": "attachments",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1204.002",
+            "name": "User Execution: Malicious File",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima abra el archivo.",
+            "url": "https://attack.mitre.org/techniques/T1204/002/"
+          },
+          {
+            "id": "T1566.001",
+            "name": "Phishing: Spearphishing Attachment",
+            "tactic": "Initial Access",
+            "why": "El ataque llega en un adjunto del correo.",
+            "url": "https://attack.mitre.org/techniques/T1566/001/"
+          }
+        ]
+      },
+      {
+        "id": "language.credentials",
+        "detector": "language",
+        "severity": "high",
+        "points": 30,
+        "title": "Pide credenciales o datos bancarios",
+        "detail": "Ninguna empresa legítima te pide la contraseña, el PIN o la tarjeta por email.",
+        "evidence": "…ente. Abra el aviso adjunto y confirme sus datos bancarios en las próximas 24 horas o pe…",
+        "mitre": {
+          "id": "T1598",
+          "name": "Phishing for Information",
+          "tactic": "Reconnaissance",
+          "why": "El correo intenta que la víctima entregue datos o contraseñas.",
+          "url": "https://attack.mitre.org/techniques/T1598/"
+        },
+        "category": "language",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1598",
+            "name": "Phishing for Information",
+            "tactic": "Reconnaissance",
+            "why": "El correo intenta que la víctima entregue datos o contraseñas.",
+            "url": "https://attack.mitre.org/techniques/T1598/"
+          }
+        ]
+      },
+      {
+        "id": "sender.replyto-mismatch",
+        "detector": "sender",
+        "severity": "medium",
+        "points": 15,
+        "title": "Las respuestas van a otro dominio",
+        "detail": "Escribe desde notificaciones-hacienda.test, pero si respondes tu email irá a gestoria-rapida.test.",
+        "evidence": "From: avisos@notificaciones-hacienda.test · Reply-To: devoluciones@gestoria-rapida.test",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "tactic": "Initial Access",
+          "why": "El correo es el vector de entrada del ataque.",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        },
+        "category": "sender",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566",
+            "name": "Phishing",
+            "tactic": "Initial Access",
+            "why": "El correo es el vector de entrada del ataque.",
+            "url": "https://attack.mitre.org/techniques/T1566/"
+          }
+        ]
+      },
+      {
+        "id": "attachments.pdf-active",
+        "detector": "attachments",
+        "severity": "medium",
+        "points": 15,
+        "title": "PDF que actúa al abrirlo",
+        "detail": "\"aviso.pdf\" contiene /JavaScript, /OpenAction: instrucciones para que el visor haga algo por su cuenta.",
+        "evidence": "aviso.pdf",
+        "mitre": {
+          "id": "T1204.002",
+          "name": "User Execution: Malicious File",
+          "tactic": "Execution",
+          "why": "El ataque necesita que la víctima abra el archivo.",
+          "url": "https://attack.mitre.org/techniques/T1204/002/"
+        },
+        "category": "attachments",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1204.002",
+            "name": "User Execution: Malicious File",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima abra el archivo.",
+            "url": "https://attack.mitre.org/techniques/T1204/002/"
+          },
+          {
+            "id": "T1059.007",
+            "name": "Command and Scripting Interpreter: JavaScript",
+            "tactic": "Execution",
+            "why": "El correo incluye código JavaScript.",
+            "url": "https://attack.mitre.org/techniques/T1059/007/"
+          }
+        ]
+      },
+      {
+        "id": "attachments.encrypted-archive",
+        "detector": "attachments",
+        "severity": "medium",
+        "points": 15,
+        "title": "Comprimido con contraseña",
+        "detail": "1 de 1 entradas de \"documentos.zip\" están cifradas: ni el filtro del correo ni PhishLens pueden ver qué son.",
+        "evidence": "documentos.zip",
+        "mitre": {
+          "id": "T1027.013",
+          "name": "Obfuscated Files or Information: Encrypted/Encoded File",
+          "tactic": "Stealth",
+          "why": "El contenido va cifrado para que ningún filtro pueda revisarlo.",
+          "url": "https://attack.mitre.org/techniques/T1027/013/"
+        },
+        "category": "attachments",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1027.013",
+            "name": "Obfuscated Files or Information: Encrypted/Encoded File",
+            "tactic": "Stealth",
+            "why": "El contenido va cifrado para que ningún filtro pueda revisarlo.",
+            "url": "https://attack.mitre.org/techniques/T1027/013/"
+          },
+          {
+            "id": "T1566.001",
+            "name": "Phishing: Spearphishing Attachment",
+            "tactic": "Initial Access",
+            "why": "El ataque llega en un adjunto del correo.",
+            "url": "https://attack.mitre.org/techniques/T1566/001/"
+          }
+        ]
+      },
+      {
+        "id": "language.urgency",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Mete prisa",
+        "detail": "Los plazos muy cortos buscan que no te pares a comprobar si el mensaje es real.",
+        "evidence": "Notificación urgente: devolución pendiente Estimad…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "tactic": "Execution",
+          "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        },
+        "category": "language",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1204",
+            "name": "User Execution",
+            "tactic": "Execution",
+            "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+            "url": "https://attack.mitre.org/techniques/T1204/"
+          }
+        ]
+      },
+      {
+        "id": "sender.returnpath-mismatch",
+        "detector": "sender",
+        "severity": "low",
+        "points": 5,
+        "title": "Return-Path de otro dominio",
+        "detail": "La dirección técnica de rebote no coincide con el remitente. Es habitual en newsletters, pero también en suplantaciones.",
+        "evidence": "From: avisos@notificaciones-hacienda.test · Return-Path: rebotes@envio-masivo.test",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "tactic": "Initial Access",
+          "why": "El correo es el vector de entrada del ataque.",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        },
+        "category": "sender",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566",
+            "name": "Phishing",
+            "tactic": "Initial Access",
+            "why": "El correo es el vector de entrada del ataque.",
+            "url": "https://attack.mitre.org/techniques/T1566/"
+          }
+        ]
+      },
+      {
+        "id": "headers.missing-messageid",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin Message-ID",
+        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
+        "evidence": "",
+        "mitre": null,
+        "category": "infrastructure",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
+      },
+      {
+        "id": "attachments.archive",
+        "detector": "attachments",
+        "severity": "low",
+        "points": 5,
+        "title": "Fichero comprimido",
+        "detail": "Los comprimidos se usan para esconder ejecutables de los filtros antivirus del correo.",
+        "evidence": "documentos.zip",
+        "mitre": {
+          "id": "T1566.001",
+          "name": "Phishing: Spearphishing Attachment",
+          "tactic": "Initial Access",
+          "why": "El ataque llega en un adjunto del correo.",
+          "url": "https://attack.mitre.org/techniques/T1566/001/"
+        },
+        "category": "attachments",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566.001",
+            "name": "Phishing: Spearphishing Attachment",
+            "tactic": "Initial Access",
+            "why": "El ataque llega en un adjunto del correo.",
+            "url": "https://attack.mitre.org/techniques/T1566/001/"
+          },
+          {
+            "id": "T1204.002",
+            "name": "User Execution: Malicious File",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima abra el archivo.",
+            "url": "https://attack.mitre.org/techniques/T1204/002/"
+          }
+        ]
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Agencia Tributaria",
+        "address": "avisos@notificaciones-hacienda.test",
+        "domain": "notificaciones-hacienda.test"
+      },
+      "replyTo": {
+        "name": "",
+        "address": "devoluciones@gestoria-rapida.test",
+        "domain": "gestoria-rapida.test"
+      },
+      "returnPath": "rebotes@envio-masivo.test",
+      "subject": "Notificación urgente: devolución pendiente",
+      "links": [],
+      "authResults": "mx.example.com; spf=fail smtp.mailfrom=notificaciones-hacienda.test; dkim=fail header.d=notificaciones-hacienda.test; dmarc=fail header.from=notificaciones-hacienda.test",
+      "date": "Thu, 05 Nov 2026 10:02:30 +0100",
+      "route": [
+        {
+          "from": "notificaciones-hacienda.test",
+          "helo": "notificaciones-hacienda.test",
+          "by": "mx.example.com",
+          "rdns": "unknown",
+          "ip": "198.51.100.23",
+          "date": "Thu, 05 Nov 2026 10:02:44 +0100",
+          "time": 1793869364000,
+          "entry": true
+        }
+      ],
+      "attachments": [
+        {
+          "filename": "aviso.pdf",
+          "contentType": "application/pdf"
+        },
+        {
+          "filename": "documentos.zip",
+          "contentType": "application/zip"
+        }
+      ]
+    },
+    "iocs": {
+      "urls": [],
+      "domains": [
+        "notificaciones-hacienda.test",
+        "gestoria-rapida.test",
+        "envio-masivo.test"
+      ],
+      "ips": [
+        "198.51.100.23"
+      ],
+      "emails": [
+        "avisos@notificaciones-hacienda.test",
+        "devoluciones@gestoria-rapida.test",
+        "rebotes@envio-masivo.test"
+      ],
+      "attachments": [
+        "aviso.pdf",
+        "documentos.zip"
+      ]
+    }
   }
 }

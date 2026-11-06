@@ -1,0 +1,44 @@
+Authentication-Results: mx.example.com;
+ spf=fail smtp.mailfrom=notificaciones-hacienda.test;
+ dkim=fail header.d=notificaciones-hacienda.test;
+ dmarc=fail header.from=notificaciones-hacienda.test
+Received: from notificaciones-hacienda.test (unknown [198.51.100.23]) by mx.example.com; Thu, 05 Nov 2026 10:02:44 +0100
+Return-Path: <rebotes@envio-masivo.test>
+From: "Agencia Tributaria" <avisos@notificaciones-hacienda.test>
+Reply-To: devoluciones@gestoria-rapida.test
+To: pablo@example.com
+Subject: Notificación urgente: devolución pendiente
+Date: Thu, 05 Nov 2026 10:02:30 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="pz-12"
+
+--pz-12
+Content-Type: text/plain; charset=utf-8
+
+Estimado contribuyente:
+
+Tiene una devolución pendiente. Abra el aviso adjunto y confirme sus datos bancarios
+en las próximas 24 horas o perderá el derecho a la devolución.
+La contraseña del archivo documentos.zip es 1234.
+
+--pz-12
+Content-Type: application/pdf; name="aviso.pdf"
+Content-Disposition: attachment; filename="aviso.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjcKMSAwIG9iaiA8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMyAwIFIgL09wZW5BY3Rp
+b24gMiAwIFIgPj4gZW5kb2JqCjIgMCBvYmogPDwgL1MgL0phdmFTY3JpcHQgL0pTIChhcHAuYWxl
+cnRcKCdQaGlzaExlbnM6IG11ZXN0cmEgaW5vZmVuc2l2YSdcKSkgPj4gZW5kb2JqCjMgMCBvYmog
+PDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFtdIC9Db3VudCAwID4+IGVuZG9iagp0cmFpbGVyIDw8IC9S
+b290IDEgMCBSID4+CiUlRU9G
+
+--pz-12
+Content-Type: application/zip; name="documentos.zip"
+Content-Disposition: attachment; filename="documentos.zip"
+Content-Transfer-Encoding: base64
+
+UEsDBBQAAQgAAAAAAAAAAAAAVbwAAFW8AAAUAAAARmFjdHVyYV8wMTkzLnBkZi5leGVQSwECFAAU
+AAEIAAAAAAAAAAAAAFW8AABVvAAAFAAAAAAAAAAAAAAAAAAAAAAARmFjdHVyYV8wMTkzLnBkZi5l
+eGVQSwUGAAAAAAEAAQBCAAAAMgAAAAAA
+
+--pz-12--

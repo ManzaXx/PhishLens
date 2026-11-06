@@ -15,9 +15,11 @@ const expected = {
   '08-ruta-falsificada': 'critical',
   '09-cabeceras-trampa': 'phishing',
   '10-dominio-unicode': 'phishing',
+  '11-adjunto-tipo-falso': 'phishing',
+  '12-pdf-activo-zip': 'critical',
 };
 
-test('hay 10 ejemplos', () => assert.equal(SAMPLES.length, 10));
+test('hay 12 ejemplos', () => assert.equal(SAMPLES.length, 12));
 
 for (const sample of SAMPLES) {
   test(`${sample.id} → ${expected[sample.id]}`, () => {
@@ -32,6 +34,8 @@ for (const sample of SAMPLES) {
 const RULES = {
   '08-ruta-falsificada': ['route.private-ip-boundary', 'route.helo-mismatch', 'route.time-travel', 'route.slow-delivery'],
   '09-cabeceras-trampa': ['headers.duplicate-from', 'headers.duplicate', 'sender.display-name-address', 'sender.sender-mismatch'],
+  '11-adjunto-tipo-falso': ['attachments.type-mismatch'],
+  '12-pdf-activo-zip': ['attachments.pdf-active', 'attachments.archive-executable', 'attachments.encrypted-archive'],
   '10-dominio-unicode': ['lookalike.mixed-script-domain', 'lookalike.whole-script', 'lookalike.deceptive-subdomain', 'lookalike.brand-in-domain'],
 };
 

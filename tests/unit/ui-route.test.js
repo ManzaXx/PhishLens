@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { VIEWS, NAV_GROUPS, parseRoute, formatRoute, initialMode, resolveView } from '../../src/ui/route.js';
 
 test('vistas y grupos de la navegación', () => {
-  assert.deepEqual(VIEWS, ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'iocs', 'attack']);
+  assert.deepEqual(VIEWS, ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'iocs', 'attack']);
   assert.deepEqual(NAV_GROUPS.map((g) => g.label), ['Correo', 'Inteligencia']);
   assert.deepEqual(NAV_GROUPS.flatMap((g) => g.views), VIEWS);
   assert.deepEqual(NAV_GROUPS[1].views, ['iocs', 'attack']);
@@ -53,4 +53,7 @@ test('resolveView: una vista sin contenido en este informe vuelve al resumen', (
   assert.equal(resolveView('senales', url), 'senales');
   assert.equal(resolveView('autenticacion', eml), 'autenticacion');
   assert.equal(resolveView('nada', eml), 'resumen');
+  // Adjuntos solo si el correo trae alguno.
+  assert.equal(resolveView('adjuntos', eml), 'resumen');
+  assert.equal(resolveView('adjuntos', { email: { from: {}, attachments: [{ filename: 'a.pdf' }] } }), 'adjuntos');
 });

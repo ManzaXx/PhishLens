@@ -37,11 +37,6 @@ export function headersPanel(report) {
     });
     panel.append(el('section', {}, el('h4', { className: 'group__title', text: `Ruta del email (${email.route.length} saltos)` }), ol));
   }
-  if (email.attachments?.length) {
-    const ul = el('ul', { className: 'linklist' });
-    for (const a of email.attachments) ul.append(el('li', {}, el('span', { text: a.filename }), el('span', { className: 'mono', text: a.contentType })));
-    panel.append(el('section', {}, el('h4', { className: 'group__title', text: `Adjuntos (${email.attachments.length})` }), ul));
-  }
   if (!panel.childElementCount) panel.append(el('p', { className: 'empty empty--muted', text: 'Sin cabeceras: pega el email original para ver esta parte.' }));
   return panel;
 }

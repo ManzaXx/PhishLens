@@ -164,3 +164,21 @@
 .menu-button__item:hover, .menu-button__item:focus { background: var(--surface-2); outline: none; }
 .menu-button__item:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
 .report__toolbar .btn { min-height: 44px; }
+
+/* Vista «Adjuntos» */
+.data-table--attachments { min-width: 32rem; }
+.data-table--attachments td { overflow-wrap: anywhere; }
+.data-table--attachments td:nth-child(1) { min-width: 7rem; }
+.data-table--attachments td:nth-child(5) { min-width: 11rem; }
+.data-table--attachments .muted, .inside .muted, .hash-card .muted { color: var(--muted); }
+.attachment-name { font-weight: 600; color: var(--text-strong); overflow-wrap: anywhere; }
+.attachment-ext, .attachment-mime { display: block; }
+.attachment-mime { font-size: var(--text-xs); }
+.inside p { margin: 0 0 var(--space-1); }
+.inside-list { margin: 0; padding-left: var(--space-4); font-size: var(--text-xs); overflow-wrap: anywhere; }
+.hash-card { padding: var(--space-4); }
+.hash-file + .hash-file { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border); }
+.hash-file .attachment-name { margin: 0 0 var(--space-2); }
+.hashes { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-1) var(--space-3); margin: 0; font-size: var(--text-xs); }
+.hashes dt { font-weight: 600; color: var(--muted); }
+.hashes dd { margin: 0; overflow-wrap: anywhere; }

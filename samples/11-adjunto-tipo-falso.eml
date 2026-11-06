@@ -1,0 +1,35 @@
+Authentication-Results: mx.example.com;
+ spf=fail smtp.mailfrom=envios-paqueteria.test;
+ dkim=none;
+ dmarc=fail header.from=envios-paqueteria.test
+Received: from envios-paqueteria.test (unknown [203.0.113.77]) by mx.example.com; Thu, 05 Nov 2026 08:41:10 +0100
+Return-Path: <no-reply@envios-paqueteria.test>
+From: "Administración" <administracion@envios-paqueteria.test>
+To: pablo@example.com
+Subject: Factura pendiente de pago - último aviso
+Date: Thu, 05 Nov 2026 08:41:00 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="tf-11"
+
+--tf-11
+Content-Type: text/plain; charset=utf-8
+
+Hola:
+
+Le adjuntamos la factura pendiente. Ábrala hoy mismo para evitar el corte del servicio
+y un recargo del 20 %. Es urgente.
+
+Administración
+
+--tf-11
+Content-Type: application/pdf; name="factura.pdf"
+Content-Disposition: attachment; filename="factura.pdf"
+Content-Transfer-Encoding: base64
+
+TVoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAgAAAAFBoaXNoTGVuczogbXVlc3RyYSBpbm9mZW5zaXZhLCBzaW4gY29kaWdvLgAAAAAAAAAA
+AAAAAAAAAAAAAAAAAABQRQAATAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+
+--tf-11--

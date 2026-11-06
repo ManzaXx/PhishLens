@@ -11,4 +11,7 @@ export const SAMPLES = [
   { id: '08-ruta-falsificada', title: 'Ruta falsificada', file: '08-ruta-falsificada.eml' },
   { id: '09-cabeceras-trampa', title: 'Cabeceras trampa', file: '09-cabeceras-trampa.eml' },
   { id: '10-dominio-unicode', title: 'Dominios con otros alfabetos', file: '10-dominio-unicode.eml' },
+  // Adjuntos construidos byte a byte por tools/gen-samples.mjs: sin código ni malware.
+  { id: '11-adjunto-tipo-falso', title: 'Adjunto con tipo falso', file: '11-adjunto-tipo-falso.eml' },
+  { id: '12-pdf-activo-zip', title: 'PDF activo y ZIP cifrado', file: '12-pdf-activo-zip.eml' },
 ];
