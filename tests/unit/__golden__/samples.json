@@ -3632,11 +3632,11 @@
     }
   },
   "11-adjunto-tipo-falso": {
-    "score": 75,
-    "level": "phishing",
-    "label": "Probable phishing",
-    "summary": "5 señales graves o medias, entre ellas «El adjunto no es lo que dice ser» y «SPF: fail». No pulses enlaces ni abras adjuntos.",
-    "mainReason": "Pesa sobre todo: Autenticación y Adjuntos.",
+    "score": 82,
+    "level": "critical",
+    "label": "Phishing casi seguro",
+    "summary": "Combina varias señales graves, entre ellas «El adjunto no es lo que dice ser» y «SPF: fail». No pulses enlaces ni abras adjuntos y bórralo.",
+    "mainReason": "Motivo principal: Adjunto peligroso con presión para abrirlo.",
     "categories": [
       {
         "id": "authentication",
@@ -3682,7 +3682,17 @@
         "PhishLens no ha verificado nada por sí mismo."
       ]
     },
-    "correlations": [],
+    "correlations": [
+      {
+        "id": "attachment-pressure",
+        "label": "Adjunto peligroso con presión para abrirlo",
+        "findings": [
+          "attachments.type-mismatch",
+          "language.threat",
+          "language.urgency"
+        ]
+      }
+    ],
     "trust": [],
     "errors": [],
     "techniques": [
@@ -4040,6 +4050,15 @@
         "findings": [
           "language.credentials",
           "sender.brand-impersonation"
+        ]
+      },
+      {
+        "id": "attachment-pressure",
+        "label": "Adjunto peligroso con presión para abrirlo",
+        "findings": [
+          "attachments.archive-executable",
+          "attachments.pdf-active",
+          "language.urgency"
         ]
       }
     ],

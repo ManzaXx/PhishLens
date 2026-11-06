@@ -1,7 +1,7 @@
 // PDF: busca nombres que hacen que el visor actúe solo (JavaScript, acciones al abrir,
 // lanzar programas, ficheros incrustados). Solo el texto sin comprimir: los flujos
-// comprimidos se cuentan para avisar de lo que no se ha mirado. Un único recorrido lineal.
-import { latin1 } from './bytes.js';
+// comprimidos se cuentan para avisar de lo que no se ha mirado. Un único recorrido lineal
+// que no crea nada por nombre salvo que pueda ser uno de los buscados.
 
 const TOKENS = ['JavaScript', 'OpenAction', 'Launch', 'EmbeddedFile', 'URI', 'AA'];
 const ALIASES = new Map([
@@ -10,7 +10,8 @@ const ALIASES = new Map([
 ]);
 // Filtros que esconden el contenido (ISO 32000-1 §7.4), con sus abreviaturas.
 const FILTERS = new Set(['FlateDecode', 'Fl', 'LZWDecode', 'LZW', 'ASCII85Decode', 'A85', 'ASCIIHexDecode', 'AHx', 'RunLengthDecode', 'RL']);
-const NAME_MAX = 64;
+// Ningún nombre buscado pasa de 15 caracteres: lo más largo se descarta sin guardarlo.
+const NAME_MAX = 15;
 
 // Delimitadores y espacios de ISO 32000-1 §7.2.2.
 const ENDS = new Uint8Array(256);
@@ -22,25 +23,27 @@ const hex = (c) => (c >= 48 && c <= 57 ? c - 48 : c >= 65 && c <= 70 ? c - 55 : 
 export function scanPdf(bytes) {
   const found = new Set();
   let compressedStreams = 0;
+  const len = bytes.length;
   let i = 0;
-  while (i < bytes.length) {
+  while (i < len) {
     if (bytes[i] !== 0x2f) { i++; continue; }
     i++;
-    const name = [];
-    while (i < bytes.length && !ENDS[bytes[i]]) {
+    let name = '';
+    let n = 0;
+    while (i < len && !ENDS[bytes[i]]) {
       let c = bytes[i];
-      if (c === 0x23 && i + 2 < bytes.length && hex(bytes[i + 1]) >= 0 && hex(bytes[i + 2]) >= 0) {
-        c = hex(bytes[i + 1]) * 16 + hex(bytes[i + 2]);
-        i += 2;
+      if (c === 0x23 && i + 2 < len) {
+        const h = hex(bytes[i + 1]);
+        const l = hex(bytes[i + 2]);
+        if (h >= 0 && l >= 0) { c = h * 16 + l; i += 2; }
       }
-      if (name.length < NAME_MAX + 1) name.push(c);
+      if (++n <= NAME_MAX) name += String.fromCharCode(c);
       i++;
     }
-    if (!name.length || name.length > NAME_MAX) continue;
-    const text = latin1(Uint8Array.from(name));
-    const token = ALIASES.get(text);
+    if (!n || n > NAME_MAX) continue;
+    const token = ALIASES.get(name);
     if (token) found.add(token);
-    else if (FILTERS.has(text)) compressedStreams++;
+    else if (FILTERS.has(name)) compressedStreams++;
   }
   return { tokens: TOKENS.filter((t) => found.has(t)), compressedStreams };
 }

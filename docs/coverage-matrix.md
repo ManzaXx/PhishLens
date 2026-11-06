@@ -7,8 +7,8 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 
 | Regla | ATT&CK | Muestras | Tests | |
 | --- | --- | --- | --- | --- |
-| `attachments.archive` | T1566.001, T1204.002 | 12 | `unit/attachments.test.js`, `unit/engine.test.js` | ✅ |
-| `attachments.archive-executable` | T1204.002, T1566.001 | 12 | `unit/attachments.test.js`, `unit/samples.test.js` | ✅ |
+| `attachments.archive` | T1566.001, T1204.002 | 12 | `unit/attachments-review.test.js`, `unit/attachments.test.js`, `unit/engine.test.js` | ✅ |
+| `attachments.archive-executable` | T1204.002, T1566.001 | 12 | `unit/attachments-review.test.js`, `unit/attachments.test.js`, `unit/samples.test.js` | ✅ |
 | `attachments.dangerous` | T1566.001, T1204.002 | — | `unit/attachments.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
 | `attachments.disk-image` | T1553.005, T1204.002 | — | `unit/attachments.test.js` | ✅ |
 | `attachments.double-extension` | T1036.007, T1204.002 | 06 | `unit/advice.test.js`, `unit/attachments.test.js`, `unit/limits.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |

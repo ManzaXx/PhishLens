@@ -33,7 +33,10 @@ function hashRows(a) {
 
 function zipInside(zip) {
   if (!zip.ok) return [el('p', { text: `No se pudo leer: ${zip.reason}.` })];
-  if (!zip.entries.length) return [el('p', { text: 'ZIP vacío.' })];
+  const partial = zip.complete === false
+    ? el('p', { className: 'muted', text: 'El directorio del ZIP no se pudo leer entero: puede llevar más de lo que se ve aquí.' })
+    : null;
+  if (!zip.entries.length) return [partial ?? el('p', { text: 'ZIP vacío.' })];
   const locked = zip.entries.filter((e) => e.encrypted).length;
   const n = zip.entries.length;
   const count = `${n}${zip.truncated ? ' o más' : ''} ${n === 1 ? 'entrada' : 'entradas'}`;
@@ -42,6 +45,7 @@ function zipInside(zip) {
   const list = el('ul', { className: 'inside-list' }, ...zip.entries.slice(0, INNER_SHOWN).map((e) => el('li', { className: 'mono', text: e.name })));
   if (zip.entries.length > INNER_SHOWN) list.append(el('li', { text: `y ${zip.entries.length - INNER_SHOWN} más` }));
   lines.push(list);
+  if (partial) lines.push(partial);
   return lines;
 }
 
@@ -52,8 +56,12 @@ function inside(a) {
   const parts = [];
   if (i.zip) parts.push(...zipInside(i.zip));
   if (i.ole) {
-    parts.push(el('p', { text: i.ole.ok ? (i.ole.hasVba ? 'Lleva macros VBA.' : 'Sin macros.') : `No se pudo leer: ${i.ole.reason}.` }));
-    if (i.ole.ok && i.ole.reason) parts.push(el('p', { className: 'muted', text: `Aviso: ${i.ole.reason}.` }));
+    let text;
+    if (!i.ole.ok) text = `No se pudo leer: ${i.ole.reason}.`;
+    else if (i.ole.hasVba) text = 'Lleva macros VBA.';
+    else if (i.ole.complete === false) text = 'No se ha podido leer todo el documento: no se puede asegurar que no lleve macros.';
+    else text = 'Sin macros.';
+    parts.push(el('p', { text }));
   }
   if (i.pdf) {
     parts.push(el('p', { text: i.pdf.tokens.length ? `Instrucciones activas: ${i.pdf.tokens.map((t) => `/${t}`).join(', ')}.` : 'Sin instrucciones activas en el texto visible.' }));

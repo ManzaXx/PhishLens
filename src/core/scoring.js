@@ -91,7 +91,7 @@ const CORRELATIONS = [
     id: 'attachment-pressure',
     label: 'Adjunto peligroso con presión para abrirlo',
     match: (risk) => [
-      risk.filter((f) => /^attachments\.(dangerous|double-extension|rtl-override|macro)$/.test(f.id)),
+      risk.filter((f) => /^attachments\.(dangerous|double-extension|rtl-override|macro|ole-macro|lnk|disk-image|archive-executable|type-mismatch|html-smuggling|pdf-active)$/.test(f.id)),
       risk.filter((f) => /^language\.(urgency|threat)$/.test(f.id)),
     ],
   },

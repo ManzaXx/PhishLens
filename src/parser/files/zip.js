@@ -13,13 +13,14 @@ const EOCD_SEARCH = 22 + 0xffff;
 const CP437 = 'ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■\u00A0';
 const utf8 = new TextDecoder('utf-8');
 
+// Un nombre largo se recorta por delante: lo que importa (la extensión) está al final.
 function decodeName(bytes, isUtf8) {
-  const slice = bytes.subarray(0, NAME_MAX * 4);
-  const text = isUtf8 ? utf8.decode(slice) : Array.from(slice.subarray(0, NAME_MAX), (b) => (b < 0x80 ? String.fromCharCode(b) : CP437[b - 0x80])).join('');
-  return [...text].slice(0, NAME_MAX).join('');
+  const text = isUtf8 ? utf8.decode(bytes) : Array.from(bytes, (b) => (b < 0x80 ? String.fromCharCode(b) : CP437[b - 0x80])).join('');
+  const chars = [...text];
+  return chars.length <= NAME_MAX ? text : `…${chars.slice(-(NAME_MAX - 1)).join('')}`;
 }
 
-const fail = (reason) => ({ ok: false, entries: [], truncated: false, reason });
+const fail = (reason) => ({ ok: false, entries: [], truncated: false, complete: false, reason });
 
 function findEocd(bytes) {
   const stop = Math.max(0, bytes.length - EOCD_SEARCH);
@@ -29,7 +30,32 @@ function findEocd(bytes) {
   return -1;
 }
 
-/** `{ok, entries: [{name, encrypted, size}], truncated, reason}`. Nunca lanza. */
+// Si el directorio central no cuadra, se buscan también las cabeceras locales (PK\x03\x04):
+// algunos descompresores las leen en vez del directorio, así que lo que esconden cuenta.
+function localEntries(bytes, r, known, room) {
+  const out = [];
+  for (let o = 0; o + 30 <= bytes.length && out.length < room;) {
+    const at = bytes.indexOf(0x50, o);
+    if (at < 0 || at + 30 > bytes.length) break;
+    if (!startsWith(bytes, 'PK\x03\x04', at)) { o = at + 1; continue; }
+    const flags = r.u16(at + 6);
+    const n = r.u16(at + 26);
+    const m = r.u16(at + 28);
+    if (at + 30 + n > bytes.length) break;
+    const name = decodeName(bytes.subarray(at + 30, at + 30 + n), (flags & 0x800) !== 0);
+    if (n && !known.has(name)) {
+      known.add(name);
+      out.push({ name, encrypted: (flags & 1) === 1, size: r.u32(at + 22) });
+    }
+    o = at + 30 + n + m;
+  }
+  return out;
+}
+
+/**
+ * `{ok, entries: [{name, encrypted, size}], truncated, complete, reason}`. Nunca lanza.
+ * `complete: false` = el directorio no cuadra con lo que dice el propio ZIP: la lista puede faltar.
+ */
 export function readZip(bytes) {
   const r = reader(bytes);
   const eocd = findEocd(bytes);
@@ -39,7 +65,10 @@ export function readZip(bytes) {
   const cdOffset = r.u32(eocd + 16);
   // ZIP64 guarda los valores reales en otro registro, justo antes del EOCD.
   if (cdOffset === 0xffffffff || cdSize === 0xffffffff || startsWith(bytes, 'PK\x06\x07', eocd - 20)) return fail('ZIP64 no soportado');
-  if (cdOffset + cdSize > eocd) return fail('directorio fuera del fichero');
+  if (cdOffset + cdSize > eocd) {
+    const entries = localEntries(bytes, r, new Set(), ZIP_MAX_ENTRIES);
+    return entries.length ? { ok: true, entries, truncated: false, complete: false, reason: 'directorio fuera del fichero' } : fail('directorio fuera del fichero');
+  }
 
   const entries = [];
   const end = cdOffset + cdSize;
@@ -60,5 +89,7 @@ export function readZip(bytes) {
     });
     o += 46 + n + m + k;
   }
-  return { ok: true, entries, truncated, reason: null };
+  const complete = truncated || (entries.length === total && o === end);
+  if (!complete) entries.push(...localEntries(bytes, r, new Set(entries.map((e) => e.name)), ZIP_MAX_ENTRIES - entries.length));
+  return { ok: true, entries, truncated, complete, reason: complete ? null : 'el directorio no cuadra con su propia cuenta' };
 }

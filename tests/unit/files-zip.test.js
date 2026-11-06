@@ -15,7 +15,7 @@ test('readZip: nombres, tamaños y cifrado de cada entrada', () => {
 });
 
 test('readZip: ZIP vacío', () => {
-  assert.deepEqual(readZip(makeZip([])), { ok: true, entries: [], truncated: false, reason: null });
+  assert.deepEqual(readZip(makeZip([])), { ok: true, entries: [], truncated: false, complete: true, reason: null });
 });
 
 test('readZip: el EOCD dice 65.535 entradas y hay dos', () => {
@@ -25,7 +25,10 @@ test('readZip: el EOCD dice 65.535 entradas y hay dos', () => {
 });
 
 test('readZip: directorio fuera del fichero, sin EOCD o ZIP64 → ok:false con motivo', () => {
-  assert.deepEqual(readZip(makeZip([{ name: 'a' }], { cdOffset: 0x7fffffff })), { ok: false, entries: [], truncated: false, reason: 'directorio fuera del fichero' });
+  // Con el directorio fuera, lo que digan las cabeceras locales sigue contando, pero la lista no es completa.
+  const outside = readZip(makeZip([{ name: 'a' }], { cdOffset: 0x7fffffff }));
+  assert.deepEqual([outside.ok, outside.complete, outside.reason, outside.entries.map((e) => e.name)], [true, false, 'directorio fuera del fichero', ['a']]);
+  assert.deepEqual(readZip(Uint8Array.from([...new TextEncoder().encode('basura'), ...makeZip([], { cdOffset: 0x7fffffff })])).ok, false);
   assert.equal(readZip(new TextEncoder().encode('PK\x03\x04 nada más')).reason, 'sin directorio central');
   assert.equal(readZip(makeZip([{ name: 'a' }], { cdOffset: 0xffffffff })).reason, 'ZIP64 no soportado');
   assert.equal(readZip(new Uint8Array(0)).ok, false);

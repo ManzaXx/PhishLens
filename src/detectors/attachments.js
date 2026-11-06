@@ -9,6 +9,10 @@ export const name = 'attachments';
 const DOCUMENT_LIKE = /^(pdf|docx?|xlsx?|pptx?|txt|jpe?g|png|gif|csv|rtf|odt)$/;
 const BIDI = /[\u202A-\u202E\u2066-\u2069]/;
 const DISK_IMAGE = new Set(['iso', 'img', 'vhd', 'vhdx']);
+// Dentro de un comprimido solo cuentan los que ejecutan algo con un doble clic: un ZIP de
+// logos SVG o de una web guardada no es «un programa».
+const RUNS_INSIDE = new Set(['exe', 'scr', 'com', 'pif', 'bat', 'cmd', 'msi', 'js', 'jse', 'vbs', 'vbe', 'wsf', 'wsh', 'hta',
+  'ps1', 'jar', 'lnk', 'dll', 'cpl', 'reg', 'iso', 'img', 'vhd', 'vhdx']);
 // Tipos reales que ejecutan algo al abrirlos: si se disfrazan de documento, es grave.
 const EXECUTES = new Set(['pe', 'elf', 'lnk', 'script', 'html']);
 
@@ -16,8 +20,9 @@ const EXECUTES = new Set(['pe', 'elf', 'lnk', 'script', 'html']);
 const COMPATIBLE = new Map(Object.entries({
   pe: 'exe dll scr com cpl ocx sys drv efi mui ax pif',
   elf: 'so elf bin run out ko axf',
-  zip: 'zip docx xlsx pptx docm xlsm pptm dotx dotm xltx xltm xlam ppsx ppsm potx potm ppam vsdx odt ods odp odg epub jar apk kmz xpi appx msix nupkg whl ipa',
-  ole: 'doc dot xls xlt xla ppt pot pps msg msi msp mpp pub vsd',
+  zip: 'zip docx xlsx pptx docm xlsm pptm dotx dotm xltx xltm xlam xlsb ppsx ppsm potx potm ppam vsdx vsdm odt ods odp odg epub jar apk kmz xpi appx msix nupkg whl ipa pages numbers key xps oxps 3mf',
+  // Un Office moderno con contraseña se guarda como OLE (EncryptedPackage), no como ZIP.
+  ole: 'doc dot xls xlt xla ppt pot pps msg msi msp mpp pub vsd docx xlsx pptx docm xlsm pptm xlsb dotx dotm',
   pdf: 'pdf ai',
   rtf: 'rtf doc wri',
   iso: 'iso img udf',
@@ -81,7 +86,7 @@ function byContent(filename, insp, add) {
   }
   const zip = insp?.zip;
   if (zip?.ok) {
-    const inner = zip.entries.find((e) => DANGEROUS_EXTENSIONS.has(extOf(e.name)));
+    const inner = zip.entries.find((e) => RUNS_INSIDE.has(extOf(e.name)));
     if (inner) {
       add('attachments.archive-executable', 'high', 'Comprimido con un programa dentro',
         `"${filename}" lleva dentro "${inner.name}", que puede ejecutar código al abrirlo.`, inner.name);

@@ -15,7 +15,7 @@ const expected = {
   '08-ruta-falsificada': 'critical',
   '09-cabeceras-trampa': 'phishing',
   '10-dominio-unicode': 'phishing',
-  '11-adjunto-tipo-falso': 'phishing',
+  '11-adjunto-tipo-falso': 'critical',
   '12-pdf-activo-zip': 'critical',
 };
 

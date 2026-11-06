@@ -24,9 +24,10 @@ PhishLens trabaja sin red y en el navegador. Estas son las consecuencias, para q
 Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecuta nada. Por eso:
 
 - **Tipo real por los primeros bytes.** Se reconocen PE, ELF, ZIP, OLE2, PDF, RTF, ISO 9660, LNK, HTML y scripts con `#!`. Las imágenes y el resto de formatos salen como «Desconocido» y no se comparan con su extensión.
-- **ZIP: solo el directorio central.** Se leen nombres, tamaños y si están cifrados, pero no el contenido: un PDF dentro de un ZIP no se revisa. No se leen ZIP64, ZIP partidos ni ZIP cuyo directorio central contradiga las cabeceras locales; como mucho, 1.000 entradas.
+- **ZIP: solo la lista, nunca el contenido.** Se leen nombres, tamaños y si están cifrados del directorio central, y si este no cuadra con su propia cuenta también de las cabeceras locales (lo que leen algunos descompresores); el informe avisa de que la lista puede estar incompleta. Un PDF dentro de un ZIP no se revisa. No se leen ZIP64 ni ZIP partidos; como mucho, 1.000 entradas. Los nombres de más de 260 caracteres se recortan por delante para que se vea la extensión.
 - **OLE2 (Office antiguo): solo el directorio.** Se buscan los nombres de un proyecto VBA. La FAT se lee de la cabecera (109 sectores); un documento que necesite la DIFAT extendida se lee hasta donde llega y se avisa.
 - **PDF: solo el texto sin comprimir.** Se buscan `/JavaScript`, `/JS`, `/OpenAction`, `/AA`, `/Launch`, `/EmbeddedFile` y `/URI`, también ofuscados con `#xx`. Lo que vaya dentro de un flujo comprimido (`/FlateDecode` y otros) o de un flujo de objetos no se ve: el informe dice cuántos flujos comprimidos se han quedado sin mirar.
+- **PDF con formularios.** Un formulario rellenable de Acrobat lleva JavaScript propio (`AFNumber_Format` y similares) y sale como «PDF que actúa al abrirlo» de gravedad media, aunque sea legítimo: PhishLens no lee el código para distinguirlo.
 - **HTML: solo los primeros 2 MB** y solo si hay un `<script>`.
 - **ISO, IMG y VHD: no se abren.** Se avisa de que son imágenes de disco, pero no se lista lo que llevan dentro.
 - **Adjuntos recortados o ilegibles** (más de 10 MB o base64 roto): solo cuentan las reglas por nombre.

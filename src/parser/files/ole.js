@@ -10,9 +10,9 @@ const FREE = 0xffffffff;
 // Nombres que solo aparecen en documentos con macros (MS-OVBA §2.2).
 const VBA_NAMES = new Set(['vba', '_vba_project', '_vba_project_cur', 'macros']);
 
-const fail = (reason) => ({ ok: false, streams: [], hasVba: false, reason });
+const fail = (reason) => ({ ok: false, streams: [], hasVba: false, complete: false, reason });
 
-/** `{ok, streams: string[], hasVba, reason}`. Nunca lanza. */
+/** `{ok, streams: string[], hasVba, complete, reason}`. `complete: false` = el directorio no se pudo recorrer entero. Nunca lanza. */
 export function readOle(bytes) {
   if (!startsWith(bytes, OLE_MAGIC)) return fail('no es un documento OLE');
   if (bytes.length < 512) return fail('cabecera incompleta');
@@ -57,5 +57,7 @@ export function readOle(bytes) {
     }
     sector = next(sector);
   }
-  return { ok: true, streams, hasVba, reason };
+  // Entero solo si la cadena terminó donde debía (ENDOFCHAIN), no por un ciclo, un tope o un sector ilegible.
+  const complete = sector === END && reason === null;
+  return { ok: true, streams, hasVba, complete, reason: reason ?? (complete ? null : 'el directorio no se pudo leer entero') };
 }
