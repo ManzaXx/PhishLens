@@ -65,3 +65,13 @@ test('src/ui/components/ solo importa de ui/dom.js, de otros componentes y de da
   const violations = list.flatMap((f) => importsOf(f).filter((s) => !allowed(f, s)).map((s) => `${relative(ROOT, f)} → ${s}`));
   assert.deepEqual(violations, []);
 });
+
+test('src/parser/files/ solo importa de lib/, data/ y otros lectores de parser/files/', () => {
+  const dir = join(SRC, 'parser', 'files');
+  const allowed = (file, spec) => {
+    const target = relative(SRC, join(file, '..', spec)).replaceAll('\\', '/');
+    return target.startsWith('lib/') || target.startsWith('data/') || target.startsWith('parser/files/');
+  };
+  const violations = files(dir).flatMap((f) => importsOf(f).filter((s) => !allowed(f, s)).map((s) => `${relative(ROOT, f)} → ${s}`));
+  assert.deepEqual(violations, []);
+});

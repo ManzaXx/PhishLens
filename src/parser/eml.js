@@ -5,6 +5,7 @@ import { LIMITS } from '../lib/limits.js';
 import { sha256 } from '../lib/sha256.js';
 import { sha1 } from '../lib/sha1.js';
 import { md5 } from '../lib/md5.js';
+import { inspect } from './files/index.js';
 
 export { LIMITS };
 
@@ -311,7 +312,7 @@ function walkPart(headers, body, acc, depth = 0) {
     const truncated = (realSize ?? all.length) > LIMITS.attachmentBytes;
     if (truncated) note(acc, 'limit.attachment-bytes', `Algún adjunto supera ${LIMITS.attachmentBytes} bytes; se ha recortado y no se calcula su hash.`);
     const bytes = truncated ? all.slice(0, LIMITS.attachmentBytes) : all;
-    acc.attachments.push({
+    const attachment = {
       filename: filename || '(sin nombre)',
       contentType: type.value,
       size: realSize ?? all.length,
@@ -319,7 +320,9 @@ function walkPart(headers, body, acc, depth = 0) {
       truncated,
       lossy: Boolean(lossy),
       ...hashes(bytes, truncated || lossy || bytes.length === 0),
-    });
+    };
+    attachment.inspection = inspect(attachment);
+    acc.attachments.push(attachment);
     return;
   }
 
