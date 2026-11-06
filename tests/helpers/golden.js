@@ -14,6 +14,7 @@ export function legacyView(report) {
   const { email } = report;
   return {
     ...pick(report, ['score', 'level', 'label', 'summary', 'mainReason', 'categories', 'confidence', 'correlations', 'trust', 'errors', 'techniques']),
+    verdict: pick(report.verdict, ['tone', 'headline']),
     findings: report.findings.map((f) => pick(f, ['id', 'detector', 'severity', 'points', 'title', 'detail', 'evidence', 'mitre', 'category', 'reliability', 'provenance', 'polarity', 'brand', 'techniques'])),
     email: {
       ...pick(email, ['from', 'replyTo', 'returnPath', 'subject', 'links', 'authResults', 'date', 'route']),

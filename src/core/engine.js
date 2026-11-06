@@ -4,6 +4,7 @@ import { parseUrl } from '../parser/url.js';
 import { finding, SEVERITY_ORDER } from './finding.js';
 import { scoreFindings } from './scoring.js';
 import { confidenceFor } from './confidence.js';
+import { verdictFor } from './verdict.js';
 import { extractIocs } from '../intel/ioc.js';
 import { parseReceived } from '../parser/received.js';
 import { authReport } from '../auth/index.js';
@@ -66,7 +67,7 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
   const confidence = confidenceFor({
     hasHeaders: email.hasHeaders, auth, parseNotes: email.parseNotes ?? [], errors, categories: scored.categories,
   });
-  return {
+  const report = {
     score,
     level,
     label,
@@ -95,6 +96,8 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
     auth,
     iocs: extractIocs(email),
   };
+  report.verdict = verdictFor(report);
+  return report;
 }
 
 /**

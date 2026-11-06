@@ -54,6 +54,10 @@
     "trust": [],
     "errors": [],
     "techniques": [],
+    "verdict": {
+      "tone": "safe",
+      "headline": "Parece legítimo"
+    },
     "findings": [],
     "email": {
       "from": {
@@ -165,6 +169,10 @@
     "trust": [],
     "errors": [],
     "techniques": [],
+    "verdict": {
+      "tone": "safe",
+      "headline": "Parece legítimo"
+    },
     "findings": [],
     "email": {
       "from": {
@@ -364,6 +372,10 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
     "findings": [
       {
         "id": "auth.spf",
@@ -977,6 +989,10 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
     "findings": [
       {
         "id": "sender.brand-impersonation",
@@ -1464,6 +1480,10 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
     "findings": [
       {
         "id": "auth.dmarc",
@@ -1822,6 +1842,10 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
     "findings": [
       {
         "id": "attachments.double-extension",
@@ -2152,6 +2176,10 @@
         "url": "https://attack.mitre.org/techniques/T1684/002/"
       }
     ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
     "findings": [
       {
         "id": "sender.mixed-script",
@@ -2653,6 +2681,10 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
     "findings": [
       {
         "id": "sender.brand-impersonation",
@@ -3040,6 +3072,10 @@
         "url": "https://attack.mitre.org/techniques/T1566/"
       }
     ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
     "findings": [
       {
         "id": "sender.display-name-address",
@@ -3333,6 +3369,10 @@
         "url": "https://attack.mitre.org/techniques/T1598/"
       }
     ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
     "findings": [
       {
         "id": "links.punycode",

@@ -46,7 +46,7 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `links.brand-in-path` | T1566.002, T1204.001 | 04, 07 | `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.download` | T1566.002, T1204.001 | — | `unit/links.test.js` | ✅ |
 | `links.insecure-login` | T1566.002, T1204.001 | 03, 07 | `unit/coverage-matrix.test.js`, `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
-| `links.ip` | T1566.002, T1204.001 | 07 | `unit/coverage-matrix.test.js`, `unit/engine.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
+| `links.ip` | T1566.002, T1204.001 | 07 | `unit/coverage-matrix.test.js`, `unit/engine.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.mismatch` | T1566.002, T1204.001 | 03, 07 | `unit/advice.test.js`, `unit/finding.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.punycode` | T1566.002, T1204.001 | 10 | `unit/links.test.js` | ✅ |
 | `links.shortener` | T1566.002, T1204.001 | 04 | `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
@@ -72,7 +72,7 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `route.time-travel` | T1684.002 | 08 | `unit/mitre.test.js`, `unit/route.test.js`, `unit/samples.test.js` | ✅ |
 | `route.too-many-hops` | — | — | `unit/route.test.js` | ✅ |
 | `route.unparseable` | — | — | `unit/route.test.js` | ✅ |
-| `sender.brand-impersonation` | T1684.001 | 03, 04, 05, 08, 09 | `unit/advice.test.js`, `unit/engine.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
+| `sender.brand-impersonation` | T1684.001 | 03, 04, 05, 08, 09 | `unit/advice.test.js`, `unit/engine.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
 | `sender.display-name-address` | T1684.001 | 09 | `unit/samples.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
 | `sender.invisible-chars` | T1027 | 07 | `unit/sender.test.js` | ✅ |
 | `sender.mixed-script` | T1684.001 | 07 | `unit/sender.test.js` | ✅ |

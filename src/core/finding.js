@@ -1,6 +1,7 @@
 // Estructura común de un hallazgo.
 import { techniquesFor } from '../data/mitre.js';
 import { own } from '../lib/text.js';
+import { plainFor } from '../data/plain.js';
 
 export const SEVERITY_POINTS = { info: 0, low: 5, medium: 15, high: 30 };
 export const SEVERITY_ORDER = ['high', 'medium', 'low', 'info'];
@@ -42,7 +43,7 @@ export function finding({ id, detector, severity, title, detail, evidence = '', 
   const techniques = techniquesFor(id);
   const mitre = techniques[0] ?? null;
   return {
-    id, detector, severity, points: SEVERITY_POINTS[severity], title, detail,
+    id, detector, severity, points: SEVERITY_POINTS[severity], title, plain: plainFor(id, brand, title), detail,
     evidence: String(evidence), mitre,
     category: oneOf(CATEGORIES, category ?? defaults.category, 'Categoría'),
     reliability: oneOf(RELIABILITY, reliability ?? defaults.reliability, 'Fiabilidad'),
