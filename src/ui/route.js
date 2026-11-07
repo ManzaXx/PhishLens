@@ -1,14 +1,14 @@
 // Rutas del informe en la URL: '' es el modo sencillo y #analista/<vista> el modo analista.
 // Funciones puras (sin DOM): la URL y el almacenamiento son entrada no fiable.
 
-export const VIEWS = Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'iocs', 'campanas', 'attack']);
+export const VIEWS = Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'urls', 'iocs', 'campanas', 'attack']);
 export const VIEW_LABELS = Object.freeze({
   resumen: 'Resumen', senales: 'Señales', 'vista-segura': 'Vista segura', autenticacion: 'Autenticación',
-  cabeceras: 'Cabeceras y ruta', adjuntos: 'Adjuntos', iocs: 'IOCs', campanas: 'Campañas', attack: 'ATT&CK',
+  cabeceras: 'Cabeceras y ruta', adjuntos: 'Adjuntos', urls: 'URLs', iocs: 'IOCs', campanas: 'Campañas', attack: 'ATT&CK',
 });
 export const NAV_GROUPS = Object.freeze([
   Object.freeze({ label: 'Correo', views: Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos']) }),
-  Object.freeze({ label: 'Inteligencia', views: Object.freeze(['iocs', 'campanas', 'attack']) }),
+  Object.freeze({ label: 'Inteligencia', views: Object.freeze(['urls', 'iocs', 'campanas', 'attack']) }),
 ]);
 
 const PREFIX = '#analista';
@@ -56,6 +56,7 @@ export function hasView(view, report, context = {}) {
   if (view === 'autenticacion' || view === 'cabeceras') {
     return Boolean(report?.email?.from || report?.email?.authResults);
   }
+  if (view === 'urls') return (report?.email?.links?.length ?? 0) > 0;
   if (view === 'adjuntos') return (report?.email?.attachments?.length ?? 0) > 0;
   return true;
 }

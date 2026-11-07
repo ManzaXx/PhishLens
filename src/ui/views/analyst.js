@@ -13,11 +13,12 @@ import { headersPanel } from '../panels/headers.js';
 import { iocsPanel } from '../panels/iocs.js';
 import { mitrePanel } from '../panels/mitre.js';
 import { attachmentsPanel } from '../panels/attachments.js';
+import { urlsPanel } from '../panels/urls.js';
 import { campaignsPanel } from '../panels/campaigns.js';
 
 const PANELS = new Map([
   ['resumen', summaryPanel], ['senales', findingsPanel], ['vista-segura', safeViewPanel], ['autenticacion', authPanel],
-  ['cabeceras', headersPanel], ['adjuntos', attachmentsPanel], ['iocs', iocsPanel],
+  ['cabeceras', headersPanel], ['adjuntos', attachmentsPanel], ['urls', urlsPanel], ['iocs', iocsPanel],
   ['campanas', campaignsPanel], ['attack', mitrePanel],
 ]);
 
@@ -62,6 +63,7 @@ export function renderAnalyst(report, view, options = {}) {
   const counts = {
     senales: report.findings.length,
     adjuntos: report.email?.attachments?.length ?? 0,
+    urls: new Set((report.email?.links ?? []).map((l) => l.href)).size,
     iocs: IOC_KEYS.reduce((n, k) => n + (report.iocs?.[k]?.length ?? 0), 0),
     campanas: options.batch?.campaigns?.length ?? 0,
     attack: report.techniques.length,

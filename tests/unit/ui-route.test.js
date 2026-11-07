@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import { VIEWS, VIEW_LABELS, NAV_GROUPS, parseRoute, formatRoute, initialMode, resolveView, hasView } from '../../src/ui/route.js';
 
 test('vistas y grupos de la navegación', () => {
-  assert.deepEqual(VIEWS, ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'iocs', 'campanas', 'attack']);
+  assert.deepEqual(VIEWS, ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'urls', 'iocs', 'campanas', 'attack']);
   assert.deepEqual(NAV_GROUPS.map((g) => g.label), ['Correo', 'Inteligencia']);
   assert.deepEqual(NAV_GROUPS.flatMap((g) => g.views), VIEWS);
-  assert.deepEqual(NAV_GROUPS[1].views, ['iocs', 'campanas', 'attack']);
+  assert.deepEqual(NAV_GROUPS[1].views, ['urls', 'iocs', 'campanas', 'attack']);
 });
 
 test('parseRoute: tabla de casos', () => {
@@ -68,4 +68,12 @@ test('«Campañas» solo existe con un lote de 2 correos o más', () => {
   assert.equal(resolveView('campanas', r, {}), 'resumen');
   assert.equal(resolveView('campanas', r, { batch: { entries: [{}, {}] } }), 'campanas');
   assert.deepEqual(parseRoute('#analista/campanas'), { mode: 'analyst', view: 'campanas' });
+});
+
+test('«URLs» solo existe si hay algún enlace', () => {
+  assert.equal(VIEW_LABELS.urls, 'URLs');
+  assert.equal(hasView('urls', { email: { links: [] } }), false);
+  assert.equal(hasView('urls', { email: {} }), false);
+  assert.equal(hasView('urls', { email: { links: [{ href: 'https://a.test/', text: 'a' }] } }), true);
+  assert.deepEqual(parseRoute('#analista/urls'), { mode: 'analyst', view: 'urls' });
 });
