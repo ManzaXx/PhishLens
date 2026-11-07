@@ -64,9 +64,9 @@ const historyStatus = $('#history-status');
 const historyControl = createHistoryControl({ storage: storage((s) => s), factory: globalThis.indexedDB, version: VERSION });
 let evictedShown = false;
 historyControl.on('unavailable', () => {
+  // Se apaga pero se puede volver a intentar: la cuota se puede liberar o el bloqueo quitar.
   historyToggle.checked = false;
-  historyToggle.disabled = true;
-  historyStatus.textContent = 'Este navegador no deja guardar el historial (ventana privada o almacenamiento bloqueado).';
+  historyStatus.textContent = 'Este navegador no deja guardar el historial (ventana privada, almacenamiento bloqueado o lleno).';
 });
 historyControl.on('evicted', () => {
   if (evictedShown) return;
@@ -114,7 +114,7 @@ async function refreshHistory(extra = {}) {
     const techniques = [...new Set(all.items.flatMap((e) => (e.report.techniques ?? []).map((t) => t.id)))].sort();
     const previous = state.historyData ?? {};
     state.historyData = {
-      page: { ...page, offset }, filters, techniques,
+      page: { ...page, offset }, totalAll: all.total, filters, techniques,
       search: 'search' in extra ? extra.search : previous.search ?? null,
       compare: 'compare' in extra ? extra.compare : previous.compare ?? null,
       selected: (previous.selected ?? []).filter((id) => page.items.some((e) => e.id === id) || all.items.some((e) => e.id === id)),
@@ -156,6 +156,7 @@ function openSaved(entry, go = true) {
 }
 
 async function historyAction(action, target) {
+  await historyControl.ensure();
   const h = historyControl.history();
   if (!h) return;
   const id = target.getAttribute('data-id');
@@ -224,6 +225,7 @@ document.body.append(historyImport);
 historyImport.addEventListener('change', async () => {
   const file = historyImport.files?.[0];
   historyImport.value = '';
+  await historyControl.ensure();
   const h = historyControl.history();
   if (!file || !h) return;
   let importResult;

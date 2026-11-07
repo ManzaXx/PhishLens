@@ -99,6 +99,9 @@ export function validateEntry(value) {
   if (r.email != null && !isObj(r.email)) return fail('report.email: no es un objeto');
   // Las vistas y la búsqueda recorren estas listas: si vienen mal formadas, la entrada no entra.
   if (!Array.isArray(r.techniques)) return fail('report.techniques: no es una lista');
+  const v = r.verdict;
+  if (!isObj(v) || typeof v.headline !== 'string' || !Array.isArray(v.top) || !Array.isArray(v.steps)) return fail('report.verdict: veredicto mal formado');
+  if (r.auth != null && !isObj(r.auth)) return fail('report.auth: no es un objeto');
   if (r.categories != null && !Array.isArray(r.categories)) return fail('report.categories: no es una lista');
   if (r.iocs != null) {
     if (!isObj(r.iocs)) return fail('report.iocs: no es un objeto');

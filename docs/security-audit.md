@@ -70,6 +70,7 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | Import: `__proto__`, tipos inesperados, listas mal formadas, cadenas y ficheros enormes | ✅ | `tests/unit/storage-schema.test.js`, `tests/unit/storage-history.test.js` |
 | «Borrar todo» borra la base entera y lo comprueba | ✅ | `tests/e2e/history.e2e.js` |
 | Vista «Historial» sin `innerHTML`, sin enlaces y defanged; axe en claro y oscuro | ✅ | `tests/unit/history-ui.test.js`, `tests/e2e/history.e2e.js` |
+| Revisión final del PR10: «Borrar todo» cuenta lo guardado y no lo filtrado; otra pestaña que borra la base ya no apaga el historial de esta; entradas sin veredicto válido se rechazan | ✅ | `tests/unit/history-ui.test.js`, `tests/unit/history-control.test.js`, `tests/unit/storage-schema.test.js` |
 | Revisión de seguridad del PR10: dos hallazgos arreglados (el import podía meter el cuerpo del correo; listas mal formadas rompían la búsqueda) | ✅ | `tests/unit/storage-schema.test.js` |
 
 ## Pendiente

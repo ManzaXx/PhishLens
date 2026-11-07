@@ -109,3 +109,29 @@ test('«Borrar todo» deja la base cerrada y borrada; el siguiente análisis la 
   assert.equal(opened(), 2);
   assert.equal((await ctl.history().list()).total, 1);
 });
+
+test('revisión final: si otra pestaña borró la base, se reconecta una vez y guarda sin apagar el historial', async () => {
+  const good = memoryBackend();
+  let calls = 0;
+  const closed = { ...memoryBackend(), getByIndex: async () => { throw new Error('el historial está cerrado'); } };
+  const { ctl } = control({ open: async () => (calls++ === 0 ? closed : good) });
+  await ctl.enable();
+  let off = false;
+  ctl.on('unavailable', () => { off = true; });
+  await ctl.record(input('03-phishing-banco'), analyzeInput(input('03-phishing-banco')), 'x.eml');
+  assert.equal(off, false);
+  assert.equal(ctl.enabled(), true);
+  assert.equal(await good.count('analyses'), 1);
+});
+
+test('revisión final: ensure() reabre la base tras «Borrar todo» para poder importar', async () => {
+  const { ctl } = control();
+  await ctl.enable();
+  await ctl.clear();
+  assert.equal(ctl.history(), null);
+  assert.equal(await ctl.ensure(), true);
+  assert.ok(ctl.history());
+  ctl.disable();
+  assert.equal(await ctl.ensure(), false, 'apagado no abre nada');
+  assert.equal(ctl.history(), null);
+});

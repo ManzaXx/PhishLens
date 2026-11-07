@@ -46,14 +46,20 @@ export function createHistoryControl({ storage, factory, version, open = () => i
   async function guard(fn) {
     // Tras «Borrar todo» no hay conexión: la base se vuelve a crear con el siguiente análisis.
     if (!on || !(await connect())) return;
-    try {
-      const out = await fn(history);
-      const evicted = out?.evicted ?? 0;
-      if (evicted) emit('evicted', evicted);
-      emit('change');
-    } catch {
-      fail();
+    // Si otra pestaña borró la base, esta conexión quedó cerrada: se reabre una vez antes de rendirse.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const out = await fn(history);
+        const evicted = out?.evicted ?? 0;
+        if (evicted) emit('evicted', evicted);
+        emit('change');
+        return;
+      } catch {
+        history = null;
+        if (attempt === 1 || !(await connect())) break;
+      }
     }
+    fail();
   }
 
   return {
@@ -82,6 +88,8 @@ export function createHistoryControl({ storage, factory, version, open = () => i
       history = null;
       emit('change');
     },
+    /** Abre la base si el historial está encendido (tras «Borrar todo» no hay conexión). */
+    ensure: async () => (on ? connect() : false),
     /** «Borrar todo»: borra la base entera y no la reabre hasta que haya algo que guardar. */
     async clear() {
       if (!history) return;

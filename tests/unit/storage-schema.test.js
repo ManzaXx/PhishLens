@@ -100,7 +100,7 @@ test('Review Focus 2: entradas manipuladas no contaminan ni pasan', () => {
 });
 
 test('seguridad: una entrada importada con el cuerpo del correo se guarda sin él', () => {
-  const report = { level: 'phishing', score: 90, techniques: [], findings: [{ id: 'x', severity: 'high', detector: 'language', evidence: 'a'.repeat(200) }],
+  const report = { level: 'phishing', score: 90, techniques: [], verdict: { headline: 'H', steps: [], top: [] }, findings: [{ id: 'x', severity: 'high', detector: 'language', evidence: 'a'.repeat(200) }],
     email: { subject: 'S', text: 'CUERPO SECRETO', html: '<p>CUERPO</p>', raw: 'RAW', rawHeaders: 'H', attachments: [{ name: 'a.pdf', bytes: [1, 2] }] } };
   const res = validateEntry({ id: '00000000-0000-4000-8000-000000000001', savedAt: '2026-11-07T10:00:00.000Z', version: '3.0.0', kind: 'eml', sha256: 'a'.repeat(64), report });
   assert.equal(res.ok, true);
@@ -111,10 +111,21 @@ test('seguridad: una entrada importada con el cuerpo del correo se guarda sin é
 
 test('seguridad: listas mal formadas en un import se rechazan en vez de romper la búsqueda o la vista', () => {
   const base = { id: '00000000-0000-4000-8000-000000000002', savedAt: '2026-11-07T10:00:00.000Z', version: '3.0.0', kind: 'eml', sha256: 'b'.repeat(64) };
-  const ok = { level: 'phishing', score: 90, findings: [], techniques: [], categories: [], iocs: { domains: ['a.test'] } };
+  const ok = { level: 'phishing', score: 90, findings: [], techniques: [], verdict: { headline: 'H', steps: [], top: [] }, categories: [], iocs: { domains: ['a.test'] } };
   assert.equal(validateEntry({ ...base, report: ok }).ok, true);
   assert.match(validateEntry({ ...base, report: { ...ok, techniques: undefined } }).error, /report\.techniques/);
   assert.match(validateEntry({ ...base, report: { ...ok, categories: {} } }).error, /report\.categories/);
   assert.match(validateEntry({ ...base, report: { ...ok, iocs: { domains: {} } } }).error, /report\.iocs/);
   assert.match(validateEntry({ ...base, report: { ...ok, iocs: { domains: [1] } } }).error, /report\.iocs/);
+});
+
+test('revisión final: una entrada sin veredicto válido se rechaza (si no, abrirla rompe el informe)', () => {
+  const base = { id: '00000000-0000-4000-8000-000000000003', savedAt: '2026-11-07T10:00:00.000Z', version: '3.0.0', kind: 'eml', sha256: 'c'.repeat(64) };
+  const verdict = { tone: 'danger', headline: 'H', because: 'B', steps: [], top: [] };
+  const ok = { level: 'phishing', score: 90, findings: [], techniques: [], verdict };
+  assert.equal(validateEntry({ ...base, report: ok }).ok, true);
+  assert.match(validateEntry({ ...base, report: { ...ok, verdict: undefined } }).error, /report\.verdict/);
+  assert.match(validateEntry({ ...base, report: { ...ok, verdict: 'x' } }).error, /report\.verdict/);
+  assert.match(validateEntry({ ...base, report: { ...ok, verdict: { ...verdict, top: {} } } }).error, /report\.verdict/);
+  assert.match(validateEntry({ ...base, report: { ...ok, auth: 'x' } }).error, /report\.auth/);
 });

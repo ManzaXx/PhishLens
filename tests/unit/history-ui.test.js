@@ -100,3 +100,16 @@ test('crítica de diseño: el nombre del fichero va bajo el asunto, sin columna 
   assert.deepEqual(findAll(panel, (n) => n.localName === 'th' && n.parentNode?.parentNode?.localName === 'thead').map(text), ['Fecha', 'Remitente', 'Asunto', 'Nivel', 'Acciones']);
   assert.equal(findAll(panel, (n) => attr(n, 'class') === 'history__name').map(text).join(), 'correo-1.eml');
 });
+
+test('revisión final: «Borrar todo» cuenta todo lo guardado, no solo lo filtrado', () => {
+  const panel = historyPanel(r03, { history: data({ totalAll: 120, page: { items: [entry(1)], total: 3, skipped: 0, offset: 0 } }) });
+  assert.match(text(find(panel, (n) => n.localName === 'dialog')), /¿Borrar los 120 análisis guardados\?.*Borrar 120 análisis/s);
+});
+
+test('revisión final: un filtro sin resultados conserva los filtros y no dice que no hay nada', () => {
+  const panel = historyPanel(r03, { history: data({ totalAll: 5, filters: { level: 'safe' }, page: { items: [], total: 0, skipped: 0, offset: 0 } }) });
+  assert.doesNotMatch(text(panel), /Aún no hay nada guardado/);
+  assert.match(text(panel), /Ningún análisis guardado cumple estos filtros/);
+  assert.ok(find(panel, (n) => attr(n, 'data-filter') === 'level'));
+  assert.ok(find(panel, (n) => attr(n, 'data-action') === 'history-clear'));
+});

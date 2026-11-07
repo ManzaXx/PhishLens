@@ -48,9 +48,12 @@ export async function idbBackend(factory) {
   };
   let db = await request(open);
   // Otra pestaña pide borrar la base: se cierra esta conexión para no bloquearla.
-  db.onversionchange = () => db?.close();
+  db.onversionchange = () => {
+    db?.close();
+    db = null;
+  };
   const run = (store, mode, fn) => {
-    if (!db) throw new Error('el historial está cerrado');
+    if (!db) return Promise.reject(new Error('el historial está cerrado'));
     const tx = db.transaction(store, mode);
     const result = request(fn(tx.objectStore(store)));
     return new Promise((resolve, reject) => {

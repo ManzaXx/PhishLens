@@ -117,16 +117,18 @@ function clearDialog(total) {
 export function historyPanel(_report, options = {}) {
   const h = options.history ?? {};
   const page = h.page ?? { items: [], total: 0, skipped: 0, offset: 0 };
+  // Lo que se borra y si hay algo guardado se cuenta sin filtros; page.total es lo que cumple los filtros.
+  const totalAll = h.totalAll ?? page.total;
   const tools = el('div', { className: 'history__tools' },
     button('Exportar historial (.json)', 'history-export'),
     button('Importar historial (.json)', 'history-import'),
-    page.total ? button('Borrar todo', 'history-clear') : null);
+    totalAll ? button('Borrar todo', 'history-clear') : null);
   const parts = [
     el('p', { className: 'hint', text: 'Los análisis guardados en este navegador. El correo original no se guarda.' }),
     tools,
     importSummary(h.importResult),
   ];
-  if (!page.total && !h.search) {
+  if (!totalAll && !page.skipped && !h.search) {
     parts.push(emptyState('Aún no hay nada guardado.', 'Activa el historial y analiza algún correo para verlo aquí.'));
     return el('div', { className: 'stack history' }, ...parts);
   }
@@ -137,6 +139,6 @@ export function historyPanel(_report, options = {}) {
   if ((h.selected ?? []).length === 2) parts.push(button('Comparar los dos marcados', 'history-compare'));
   else parts.push(el('p', { className: 'hint', text: 'Marca dos análisis para compararlos.' }));
   if (h.compare) parts.push(comparison(h.compare));
-  parts.push(clearDialog(page.total));
+  parts.push(clearDialog(totalAll));
   return el('div', { className: 'stack history' }, ...parts);
 }
