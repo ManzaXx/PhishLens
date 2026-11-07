@@ -1,13 +1,13 @@
 // Rutas del informe en la URL (spec 2.3, §2): #analista/<vista>, nunca lanza y nunca sale de la lista.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { VIEWS, NAV_GROUPS, parseRoute, formatRoute, initialMode, resolveView } from '../../src/ui/route.js';
+import { VIEWS, VIEW_LABELS, NAV_GROUPS, parseRoute, formatRoute, initialMode, resolveView, hasView } from '../../src/ui/route.js';
 
 test('vistas y grupos de la navegación', () => {
-  assert.deepEqual(VIEWS, ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'iocs', 'attack']);
+  assert.deepEqual(VIEWS, ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'iocs', 'campanas', 'attack']);
   assert.deepEqual(NAV_GROUPS.map((g) => g.label), ['Correo', 'Inteligencia']);
   assert.deepEqual(NAV_GROUPS.flatMap((g) => g.views), VIEWS);
-  assert.deepEqual(NAV_GROUPS[1].views, ['iocs', 'attack']);
+  assert.deepEqual(NAV_GROUPS[1].views, ['iocs', 'campanas', 'attack']);
 });
 
 test('parseRoute: tabla de casos', () => {
@@ -56,4 +56,16 @@ test('resolveView: una vista sin contenido en este informe vuelve al resumen', (
   // Adjuntos solo si el correo trae alguno.
   assert.equal(resolveView('adjuntos', eml), 'resumen');
   assert.equal(resolveView('adjuntos', { email: { from: {}, attachments: [{ filename: 'a.pdf' }] } }), 'adjuntos');
+});
+
+test('«Campañas» solo existe con un lote de 2 correos o más', () => {
+  const r = { email: { from: { address: 'a@b.test' } }, findings: [], techniques: [], iocs: {} };
+  assert.equal(VIEW_LABELS.campanas, 'Campañas');
+  assert.equal(hasView('campanas', r, {}), false);
+  assert.equal(hasView('campanas', r), false);
+  assert.equal(hasView('campanas', r, { batch: { entries: [{}] } }), false);
+  assert.equal(hasView('campanas', r, { batch: { entries: [{}, {}] } }), true);
+  assert.equal(resolveView('campanas', r, {}), 'resumen');
+  assert.equal(resolveView('campanas', r, { batch: { entries: [{}, {}] } }), 'campanas');
+  assert.deepEqual(parseRoute('#analista/campanas'), { mode: 'analyst', view: 'campanas' });
 });

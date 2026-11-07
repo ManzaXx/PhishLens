@@ -1,14 +1,14 @@
 // Rutas del informe en la URL: '' es el modo sencillo y #analista/<vista> el modo analista.
 // Funciones puras (sin DOM): la URL y el almacenamiento son entrada no fiable.
 
-export const VIEWS = Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'iocs', 'attack']);
+export const VIEWS = Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'iocs', 'campanas', 'attack']);
 export const VIEW_LABELS = Object.freeze({
   resumen: 'Resumen', senales: 'Señales', 'vista-segura': 'Vista segura', autenticacion: 'Autenticación',
-  cabeceras: 'Cabeceras y ruta', adjuntos: 'Adjuntos', iocs: 'IOCs', attack: 'ATT&CK',
+  cabeceras: 'Cabeceras y ruta', adjuntos: 'Adjuntos', iocs: 'IOCs', campanas: 'Campañas', attack: 'ATT&CK',
 });
 export const NAV_GROUPS = Object.freeze([
   Object.freeze({ label: 'Correo', views: Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos']) }),
-  Object.freeze({ label: 'Inteligencia', views: Object.freeze(['iocs', 'attack']) }),
+  Object.freeze({ label: 'Inteligencia', views: Object.freeze(['iocs', 'campanas', 'attack']) }),
 ]);
 
 const PREFIX = '#analista';
@@ -49,9 +49,10 @@ export function initialMode(storage, hash) {
   }
 }
 
-/** ¿Tiene esta vista algo que enseñar en este informe? */
-export function hasView(view, report) {
+/** ¿Tiene esta vista algo que enseñar en este informe? context.batch: el lote analizado, si lo hay. */
+export function hasView(view, report, context = {}) {
   if (!VIEWS.includes(view)) return false;
+  if (view === 'campanas') return (context?.batch?.entries?.length ?? 0) >= 2;
   if (view === 'autenticacion' || view === 'cabeceras') {
     return Boolean(report?.email?.from || report?.email?.authResults);
   }
@@ -60,4 +61,4 @@ export function hasView(view, report) {
 }
 
 /** La vista pedida, o el resumen si no tiene contenido en este informe (p. ej. tras analizar una URL). */
-export const resolveView = (view, report) => (hasView(view, report) ? view : 'resumen');
+export const resolveView = (view, report, context = {}) => (hasView(view, report, context) ? view : 'resumen');

@@ -4,6 +4,7 @@ import { el } from './dom.js';
 import { iocsToText } from '../intel/ioc.js';
 import { modeSwitch } from './components/mode-switch.js';
 import { menuButton } from './components/menu-button.js';
+import { batchBar } from './components/batch-bar.js';
 import { renderSimple } from './views/simple.js';
 import { renderAnalyst, renderPrint } from './views/analyst.js';
 
@@ -22,17 +23,26 @@ function toolbar(mode) {
       el('button', { className: 'btn btn--primary', text: 'Analizar otro', attrs: { type: 'button', 'data-action': 'new' } })));
 }
 
+/** Barra del lote a partir de su estado: {entries, skipped, campaigns, current}. */
+function lotBar(batch) {
+  const items = batch.entries
+    .map(({ key, name, report }) => ({ key, name, level: report.level, label: report.label, score: report.score }))
+    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'es') || (a.key < b.key ? -1 : 1));
+  return batchBar({ items, current: batch.current, campaigns: batch.campaigns?.length ?? 0, skipped: batch.skipped?.length ?? 0 });
+}
+
 /**
  * Dibuja el informe dentro de `container`.
  * options.mode: 'simple' | 'analyst'; options.view: vista del modo analista (ya resuelta);
  * options.authStatus, dkimKey y spfRecord: estado de la comprobación local de DKIM y SPF.
+ * options.batch: el lote analizado (si lo hay), con su grafo y sus campañas.
  */
 export function renderReport(container, report, options = {}) {
   const mode = options.mode === 'analyst' ? 'analyst' : 'simple';
   container.replaceChildren();
   container.className = `wrap report report--${mode} level-${report.level}`;
-  const body = mode === 'analyst' ? renderAnalyst(report, options.view, options) : renderSimple(report);
-  container.append(toolbar(mode), body);
+  const body = mode === 'analyst' ? renderAnalyst(report, options.view, options) : renderSimple(report, options);
+  container.append(...[toolbar(mode), options.batch ? lotBar(options.batch) : null, body].filter(Boolean));
   container.hidden = false;
 }
 

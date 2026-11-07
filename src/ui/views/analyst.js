@@ -13,10 +13,12 @@ import { headersPanel } from '../panels/headers.js';
 import { iocsPanel } from '../panels/iocs.js';
 import { mitrePanel } from '../panels/mitre.js';
 import { attachmentsPanel } from '../panels/attachments.js';
+import { emptyState } from '../components/empty-state.js';
 
 const PANELS = new Map([
   ['resumen', summaryPanel], ['senales', findingsPanel], ['vista-segura', safeViewPanel], ['autenticacion', authPanel],
-  ['cabeceras', headersPanel], ['adjuntos', attachmentsPanel], ['iocs', iocsPanel], ['attack', mitrePanel],
+  ['cabeceras', headersPanel], ['adjuntos', attachmentsPanel], ['iocs', iocsPanel],
+  ['campanas', () => emptyState('Sin campañas', 'Ningún correo del lote comparte infraestructura, adjuntos ni plantilla.')], ['attack', mitrePanel],
 ]);
 
 const IOC_KEYS = IOC_SECTIONS.map(([key]) => key);
@@ -55,12 +57,13 @@ export function renderAnalyst(report, view, options = {}) {
   const current = PANELS.has(view) ? view : 'resumen';
   const groups = NAV_GROUPS.map((g) => ({
     label: g.label,
-    views: g.views.filter((v) => hasView(v, report)).map((id) => ({ id, label: VIEW_LABELS[id] })),
+    views: g.views.filter((v) => hasView(v, report, options)).map((id) => ({ id, label: VIEW_LABELS[id] })),
   }));
   const counts = {
     senales: report.findings.length,
     adjuntos: report.email?.attachments?.length ?? 0,
     iocs: IOC_KEYS.reduce((n, k) => n + (report.iocs?.[k]?.length ?? 0), 0),
+    campanas: options.batch?.campaigns?.length ?? 0,
     attack: report.techniques.length,
   };
   const id = nextId('view');

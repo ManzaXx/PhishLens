@@ -1,6 +1,9 @@
 // Controlador de la página: entradas, ejemplos, tema y acciones del informe.
 import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
-import { SAMPLES } from '../../samples/index.js';
+import { analyzeBatch } from '../core/batch.js';
+import { buildGraph } from '../intel/graph.js';
+import { findCampaigns } from '../intel/campaigns.js';
+import { SAMPLES, BATCHES } from '../../samples/index.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { renderReport, setPrintReport, reportToJson, iocsToText } from './render.js';
 import { FACTS, levelLegend } from '../core/facts.js';
@@ -8,6 +11,7 @@ import { menuKey } from './components/menu-button.js';
 import { parseRoute, formatRoute, initialMode, resolveView, isAnalystHash, MODE_KEY } from './route.js';
 
 import { LIMITS } from '../lib/limits.js';
+import { reveal } from '../lib/text.js';
 
 const MAX_BYTES = LIMITS.inputBytes;
 const MAX_MB = Math.round(MAX_BYTES / 1024 / 1024);
@@ -26,7 +30,11 @@ if (window.top !== window.self) {
 }
 const $ = (sel) => document.querySelector(sel);
 
-const state = { tab: 'eml', fileText: null, lastReport: null, lastInput: null, analyst: {}, route: { mode: 'simple', view: 'resumen' } };
+const state = {
+  tab: 'eml', fileText: null, lastReport: null, lastInput: null, analyst: {}, route: { mode: 'simple', view: 'resumen' },
+  // Lote en memoria mientras la pestaña esté abierta: {entries, skipped, warning, graph, campaigns, current}.
+  batch: null, batchTexts: new Map(), batchAbort: null,
+};
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 const dropzone = $('#dropzone');
@@ -120,7 +128,7 @@ async function loadFile(file) {
   run();
 }
 
-fileInput.addEventListener('change', () => loadFile(fileInput.files[0]));
+fileInput.addEventListener('change', () => loadFiles([...fileInput.files]));
 
 // Se puede soltar el archivo en cualquier parte de la página.
 const overlay = $('#drop-overlay');
@@ -149,8 +157,116 @@ window.addEventListener('drop', (e) => {
   overlay.hidden = true;
   dropzone.classList.remove('is-over');
   selectTab($('#tab-eml'));
-  loadFile(e.dataTransfer.files[0]);
+  loadFiles([...e.dataTransfer.files]);
 });
+
+// ---------- Lote: varios correos a la vez ----------
+const batchStatus = $('#batch-status');
+const batchProgress = $('#batch-progress');
+const batchProgressText = $('#batch-progress-text');
+const batchNotice = $('#batch-notice');
+
+const SKIP_REASONS = new Map([
+  ['tipo', 'no es un .eml'], ['tamano', `pesa más de ${MAX_MB} MB`], ['vacio', 'está vacío'],
+  ['limite', 'no cabe en el lote'], ['duplicado', 'está repetido'], ['error', 'no se pudo analizar'],
+]);
+
+/** Descarta el lote en curso (si lo hay) y el que se estaba viendo. */
+function cancelBatch() {
+  state.batchAbort?.abort();
+  state.batchAbort = null;
+  state.batch = null;
+  state.batchTexts = new Map();
+  batchStatus.hidden = true;
+  batchNotice.hidden = true;
+  batchNotice.replaceChildren();
+}
+
+function showBatchNotice(warning, skipped) {
+  batchNotice.replaceChildren();
+  if (warning) {
+    const p = document.createElement('p');
+    p.textContent = warning;
+    batchNotice.append(p);
+  }
+  if (skipped.length) {
+    const title = document.createElement('p');
+    title.textContent = skipped.length === 1 ? 'Un archivo no se ha analizado:' : `${skipped.length} archivos no se han analizado:`;
+    const list = document.createElement('ul');
+    for (const s of skipped) {
+      const li = document.createElement('li');
+      li.textContent = reveal(`${s.name}: ${SKIP_REASONS.get(s.reason) ?? 'no se pudo analizar'}`);
+      list.append(li);
+    }
+    batchNotice.append(title, list);
+  }
+  batchNotice.hidden = !warning && !skipped.length;
+}
+
+/** Abre un correo del lote (por su clave) sin perder el modo ni la vista. */
+function openBatchEmail(key) {
+  const entry = state.batch?.entries.find((e) => e.key === key);
+  if (!entry) return;
+  state.batch.current = key;
+  state.analyst = {};
+  state.lastReport = entry.report;
+  state.lastInput = { kind: 'eml', value: state.batchTexts.get(key) ?? '' };
+}
+
+/** Analiza varios ficheros {name, size, text()} como un lote. */
+async function runBatch(files) {
+  cancelBatch();
+  showError('');
+  const controller = new AbortController();
+  state.batchAbort = controller;
+  const texts = new Map();
+  batchStatus.hidden = false;
+  batchProgress.max = files.length;
+  batchProgress.value = 0;
+  batchProgressText.textContent = `Analizando 0 de ${files.length}…`;
+  const out = await analyzeBatch(files, {
+    signal: controller.signal,
+    analyze: (input) => {
+      const report = analyzeInput(input);
+      texts.set(report, input.value);
+      return report;
+    },
+    onProgress: (i, n) => {
+      if (controller.signal.aborted) return;
+      batchProgress.max = n;
+      batchProgress.value = i;
+      batchProgressText.textContent = `Analizando ${i} de ${n}…`;
+    },
+  });
+  // Otro análisis empezó mientras tanto: este lote ya no pinta nada.
+  if (!out || controller.signal.aborted || state.batchAbort !== controller) return;
+  state.batchAbort = null;
+  batchProgressText.textContent = `${out.entries.length} ${out.entries.length === 1 ? 'correo analizado' : 'correos analizados'}.`;
+  showBatchNotice(out.warning, out.skipped);
+  if (!out.entries.length) {
+    batchStatus.hidden = !out.skipped.length && !out.warning;
+    showError('No se ha podido analizar ningún correo del lote.');
+    return;
+  }
+  state.batchTexts = new Map(out.entries.map((e) => [e.key, texts.get(e.report)]));
+  // Se empieza por el primero por nombre, el mismo orden que el selector.
+  const first = [...out.entries].sort((a, b) => String(a.name).localeCompare(String(b.name), 'es'))[0];
+  state.batch = { ...out, graph: buildGraph(out.entries), campaigns: findCampaigns(out.entries), current: first.key };
+  openBatchEmail(first.key);
+  dropzone.classList.add('has-file');
+  dropzone.querySelector('.dropzone__title').textContent = `${out.entries.length} correos`;
+  dropzone.querySelector('.dropzone__hint').textContent = 'lote analizado';
+  paint();
+  announce(`Lote analizado: ${out.entries.length} correos y ${state.batch.campaigns.length} ${state.batch.campaigns.length === 1 ? 'campaña' : 'campañas'}. Se muestra ${state.lastReport.verdict.headline}.`);
+  reportBox.scrollIntoView({ block: 'start' });
+}
+
+/** Uno solo: el flujo de siempre. Varios: un lote. */
+function loadFiles(files) {
+  if (files.length > 1) return runBatch(files);
+  cancelBatch();
+  return loadFile(files[0]);
+}
 
 // ---------- Análisis ----------
 function currentInput() {
@@ -160,6 +276,7 @@ function currentInput() {
 }
 
 function run() {
+  cancelBatch();
   state.analyst = {};
   const input = currentInput();
   if (!input) {
@@ -219,8 +336,8 @@ function announce(text) {
 function paint(options = {}) {
   if (!state.lastReport) return;
   const { mode } = state.route;
-  const view = resolveView(state.route.view, state.lastReport);
-  renderReport(reportBox, state.lastReport, { mode, view, ...options });
+  const view = resolveView(state.route.view, state.lastReport, { batch: state.batch });
+  renderReport(reportBox, state.lastReport, { mode, view, batch: state.batch, ...options });
   // En móvil la navegación es una fila con desplazamiento: la vista actual tiene que verse.
   const nav = reportBox.querySelector('.nav-rail');
   const current = nav?.querySelector('[aria-current="page"]');
@@ -265,6 +382,14 @@ function goTo(mode) {
 }
 
 reportBox.addEventListener('click', onReportAction);
+reportBox.addEventListener('change', (e) => {
+  if (e.target.id !== 'batch-email') return;
+  openBatchEmail(e.target.value);
+  paint();
+  const select = $('#batch-email');
+  select?.focus();
+  announce(`Correo del lote: ${state.lastReport.verdict.headline}. ${state.lastReport.score} de 100.`);
+});
 
 // ---------- Menús (patrón ARIA menu button) ----------
 const menuItems = (menu) => [...menu.querySelectorAll('[role="menuitem"]')];
@@ -384,6 +509,13 @@ function onReportAction(e) {
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (action === 'mode-simple') goTo('simple');
   if (action === 'mode-analyst') goTo('analyst');
+  if (action === 'pick-email') {
+    openBatchEmail(e.target.closest('[data-action]').dataset.key);
+    state.route = { ...state.route, view: 'resumen' };
+    if (state.route.mode === 'analyst' && location.hash !== '#analista') history.pushState(null, '', '#analista');
+    paint();
+    focusView();
+  }
   if (action === 'verify-dkim') verifyDkim();
   if (action === 'eval-spf') evalSpf();
   if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || 'Sin IOCs');
@@ -433,6 +565,20 @@ for (const sample of SAMPLES) {
     rawInput.value = SAMPLE_TEXTS[sample.id];
     selectTab($('#tab-text'));
     run();
+  });
+  samplesBox.append(btn);
+}
+for (const lot of BATCHES) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'chip chip--batch';
+  btn.textContent = lot.title;
+  btn.addEventListener('click', () => {
+    selectTab($('#tab-eml'));
+    runBatch(lot.files.map((f) => {
+      const text = SAMPLE_TEXTS[f];
+      return { name: f.split('/').pop(), size: text.length, text: async () => text };
+    }));
   });
   samplesBox.append(btn);
 }
