@@ -151,7 +151,11 @@ export function analyzeUrl(href) {
   const entropy = { host: shannon(mainLabel), path: Math.max(0, ...segments.map(shannon)) };
   const tracking = isWrapperOrTracking(last.hostname);
   // Solo cuenta el host: un path aleatorio es lo normal en los enlaces de seguimiento de cualquier newsletter.
-  const highEntropy = !tracking && !last.isPunycode && mainLabel.length >= 12 && entropy.host >= 3.5 && !mainLabel.includes('-');
+  // Y además algo que las palabras reales no tienen: letras mezcladas con cifras o casi sin vocales
+  // («stackoverflow» o «universidadcomplutense» pasan de 3,5 bits y son nombres de verdad).
+  const vowels = (mainLabel.match(/[aeiou]/g) ?? []).length / (mainLabel.length || 1);
+  const unlike = (/\d/.test(mainLabel) && /[a-z]/.test(mainLabel)) || vowels < 0.2;
+  const highEntropy = !tracking && !last.isPunycode && mainLabel.length >= 12 && entropy.host >= 3.5 && !mainLabel.includes('-') && unlike;
 
   return {
     input,
@@ -163,7 +167,8 @@ export function analyzeUrl(href) {
     unicodeHost: toUnicode(last.hostname),
     port,
     entropy,
-    flags: { nestedRedirect: hops.length - 1 >= 2, obfuscatedIp, credentials, highEntropy, openRedirect, nonStandardPort: port !== '' },
+    // Solo cuentan los saltos que esconden el destino; Safe Links o Google delante de un seguimiento no.
+    flags: { nestedRedirect: hops.filter((h) => h.via === 'base64' || h.via?.startsWith('param:')).length >= 2, obfuscatedIp, credentials, highEntropy, openRedirect, nonStandardPort: port !== '' },
   };
 }
 

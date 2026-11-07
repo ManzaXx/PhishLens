@@ -17,7 +17,7 @@ const COMMON_SENDERS = reg(FREE_MAIL_DOMAINS);
 const SEVERITY = LEVELS.map((l) => l.level); // de más a menos grave
 
 /** La IP de entrada es de un gran proveedor (correo gratuito, Gmail, Outlook, SES…) y la comparten millones. */
-function sharedEntry(report, sender) {
+export function sharedEntry(report, sender) {
   if (sender && COMMON_SENDERS.has(registrableDomain(sender))) return true;
   const hop = (report?.email?.route ?? []).find((h) => h.entry);
   return [hop?.rdns, hop?.helo].some((name) => {

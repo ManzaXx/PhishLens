@@ -112,3 +112,23 @@ test('IPv6 e IDN', () => {
   assert.ok(domains.some((d) => d.startsWith('xn--') || d.includes('.xn--')), domains.join());
   assert.ok(domains.every((d) => /^[\x21-\x7e]+$/.test(d)));
 });
+
+test('revisión final: la infraestructura compartida y las direcciones de marca no son indicadores', () => {
+  const extra = [
+    'Received: from eu-smtp-inbound-1.mimecast.com (eu-smtp-inbound-1.mimecast.com [195.130.217.30]) by mx.example.com; Thu, 05 Nov 2026 08:41:12 +0100',
+    'Received: from a8-11.smtp-out.amazonses.com (a8-11.smtp-out.amazonses.com [54.240.7.11]) by eu-smtp-inbound-1.mimecast.com; Thu, 05 Nov 2026 08:41:11 +0100',
+    'Return-Path: <0102018f@eu-west-1.amazonses.com>',
+  ].join('\r\n');
+  const text = `${extra}\r\n${SAMPLE_TEXTS['03-phishing-banco']}`;
+  const report = analyzeInput({ kind: 'eml', value: text });
+  const b = toStixBundle([{ key: 'x', name: 'x.eml', report }], { now });
+  assert.deepEqual(validateBundle(b), []);
+  const patterns = b.objects.filter((o) => o.type === 'indicator').map((o) => o.pattern);
+  for (const bad of ['195.130.217.30', '54.240.7.11', 'amazonses.com']) assert.ok(!patterns.some((p) => p.includes(bad)), `${bad}: ${patterns.join('\n')}`);
+  // Siguen como observables.
+  assert.ok(b.objects.some((o) => o.type === 'ipv4-addr' && o.value === '54.240.7.11') || !report.iocs.ips.includes('54.240.7.11'));
+  // Un From suplantado con la dirección real del banco no se exporta como malicioso.
+  const spoof = analyzeInput({ kind: 'eml', value: SAMPLE_TEXTS['03-phishing-banco'].replace(/^From: .*$/m, 'From: Banco <avisos@bancosantander.es>') });
+  const sp = toStixBundle([{ key: 's', name: 's.eml', report: spoof }], { now });
+  assert.ok(!sp.objects.some((o) => o.type === 'indicator' && o.pattern.includes('bancosantander.es')));
+});

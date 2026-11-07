@@ -6,7 +6,9 @@
 import { uuidv5 } from '../lib/uuid.js';
 import { registrableDomain } from '../parser/url.js';
 import { BRANDS } from '../data/brands.js';
-import { URL_SHORTENERS, TRACKING_DOMAINS, FREE_MAIL_DOMAINS, SOCIAL_DOMAINS, HOSTING_PLATFORMS } from '../data/lists.js';
+import { URL_SHORTENERS, TRACKING_DOMAINS, FREE_MAIL_DOMAINS, SOCIAL_DOMAINS, HOSTING_PLATFORMS, SHARED_MAIL_INFRA } from '../data/lists.js';
+import { entryIp, senderDomain } from './graph.js';
+import { sharedEntry } from './campaigns.js';
 
 export const STIX_SCO_NAMESPACE = '00abedb4-aa42-466c-9c01-fed23315a9b7';
 export const PHISHLENS_NAMESPACE = 'f3a9c2d1-5b7e-4c8a-9d2f-6e1b0a7c4d53';
@@ -16,9 +18,13 @@ const HASH_PREFERENCE = ['MD5', 'SHA-1', 'SHA-256', 'SHA-512'];
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
 // Dominios que aparecen en correos de phishing sin ser del atacante: no se marcan como maliciosos.
-const BENIGN = new Set([...BRANDS.flatMap((b) => b.domains), ...URL_SHORTENERS, ...TRACKING_DOMAINS, ...FREE_MAIL_DOMAINS, ...SOCIAL_DOMAINS, ...HOSTING_PLATFORMS]
-  .map((d) => registrableDomain(d)));
+// La infraestructura de correo compartida (SES, Mimecast, Outlook…) tampoco: la usa todo el mundo.
+const reg = (list) => new Set([...list].map((d) => registrableDomain(d)));
+const BENIGN = reg([...BRANDS.flatMap((b) => b.domains), ...URL_SHORTENERS, ...TRACKING_DOMAINS, ...FREE_MAIL_DOMAINS, ...SOCIAL_DOMAINS, ...HOSTING_PLATFORMS, ...SHARED_MAIL_INFRA]);
 const isBenign = (host) => BENIGN.has(registrableDomain(host));
+// Una dirección de correo gratuito sí es pista (la cuenta la abrió el atacante); la de una marca o un proveedor, no.
+const NOT_ATTACKER_MAIL = reg([...BRANDS.flatMap((b) => b.domains), ...SHARED_MAIL_INFRA, ...TRACKING_DOMAINS]);
+const isAttackerMail = (address) => !NOT_ATTACKER_MAIL.has(registrableDomain(String(address).split('@').pop()));
 
 /** JSON canónico (claves ordenadas, sin espacios), como pide STIX para calcular ids. */
 function canonical(value) {
@@ -84,6 +90,10 @@ export function toStixBundle(entries, { campaigns = [], now = new Date() } = {})
     const iocs = report?.iocs ?? {};
     const severe = SEVERE.has(report?.level);
     const mine = [];
+    // De las IP de las cabeceras Received solo la de entrada habla del atacante, y no si es de un gran proveedor.
+    const routeIps = new Set((email.route ?? []).map((h) => h.ip).filter(Boolean));
+    const entry = entryIp(report);
+    const entryCounts = entry && !sharedEntry(report, senderDomain(report)) ? entry : null;
     const indicator = (type, value, observable, patternType = type) => {
       const pattern = stixPattern(patternType, value);
       const id = sdo('indicator', pattern, {
@@ -114,11 +124,11 @@ export function toStixBundle(entries, { campaigns = [], now = new Date() } = {})
       const value = String(raw).replace(/^\[|\]$/g, '');
       const type = value.includes(':') ? 'ipv6-addr' : 'ipv4-addr';
       const id = sco(type, { value });
-      if (severe) indicator(type, value, id);
+      if (severe && (!routeIps.has(value) || value === entryCounts)) indicator(type, value, id);
     }
     for (const value of iocs.emails ?? []) {
       const id = sco('email-addr', { value });
-      if (severe) indicator('email-addr', value, id);
+      if (severe && isAttackerMail(value)) indicator('email-addr', value, id);
     }
 
     const attachmentRisk = (report?.findings ?? []).some((f) => f.category === 'attachments' && f.severity === 'high');

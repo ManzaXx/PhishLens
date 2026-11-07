@@ -105,3 +105,19 @@ test('host Unicode y entradas que no son http(s)', () => {
   assert.equal(analyzeUrl(null), null);
   assert.equal(analyzeUrl('www.x.test').final, 'http://www.x.test/');
 });
+
+test('revisión final: Safe Links o Google delante de un seguimiento no es redirección anidada', () => {
+  const shop = 'https://tienda.test/oferta';
+  const tracked = `https://d2Ab3.na1.hubspotlinks.com/Ctc/x?url=${encodeURIComponent(shop)}`;
+  const safe = analyzeUrl(`https://eur01.safelinks.protection.outlook.com/?url=${encodeURIComponent(tracked)}&data=x`);
+  assert.equal(safe.final, shop);
+  assert.equal(safe.flags.nestedRedirect, false);
+  const google = analyzeUrl(`https://www.google.com/url?q=${encodeURIComponent(tracked)}`);
+  assert.equal(google.flags.nestedRedirect, false);
+});
+
+test('revisión final: nombres largos reales no tienen aspecto aleatorio', () => {
+  for (const host of ['stackoverflow.com', 'universidadcomplutense.es', 'elcorteingles.es', 'mercadolibre.com', 'booking.com', 'aliexpress.com', 'washingtonpost.com', 'theguardian.com', 'decathlonespana.es'])
+    assert.equal(analyzeUrl(`https://${host}/`).flags.highEntropy, false, host);
+  for (const host of ['kq3v9zx7w2pl.test', 'xkqwzvbtrplmnh.top']) assert.equal(analyzeUrl(`https://${host}/`).flags.highEntropy, true, host);
+});

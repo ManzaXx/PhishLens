@@ -17,7 +17,7 @@ PhishLens puede descargar el análisis en [STIX 2.1](https://docs.oasis-open.org
 | `campaign` | Cada campaña del lote y lo que tienen en común sus correos | Solo con un lote |
 | `relationship` | `based-on` (indicador → observable), `indicates` (indicador → técnica o campaña) y `uses` (campaña → técnica) | Siempre que haya ambos extremos |
 
-Los dominios que salen en el phishing sin ser del atacante no se marcan como indicadores: los de marcas reales, los acortadores, el email marketing, el correo gratuito, las redes sociales y las plataformas de alojamiento. Siguen apareciendo como observables.
+Los dominios que salen en el phishing sin ser del atacante no se marcan como indicadores: los de marcas reales, los acortadores, el email marketing, el correo gratuito, las redes sociales, las plataformas de alojamiento y la infraestructura de correo compartida (SES, Mimecast, Outlook…). Tampoco las IP de los servidores intermedios de `Received` (solo la de entrada, si no es de un gran proveedor) ni las direcciones de correo de una marca suplantada. Todo eso sigue apareciendo como observable.
 
 ## Ids deterministas
 
