@@ -27,6 +27,7 @@ const FORBIDDEN = {
   detectors: ['ui'],
   intel: ['ui'],
   core: ['ui'],
+  storage: ['ui', 'detectors'],
 };
 
 test('regla de dependencias entre capas', () => {
