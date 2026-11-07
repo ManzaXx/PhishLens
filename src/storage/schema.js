@@ -97,5 +97,15 @@ export function validateEntry(value) {
     if (!isObj(f) || typeof f.id !== 'string' || !SEVERITIES.has(f.severity)) return fail(`report.findings[${i}]: hallazgo mal formado`);
   }
   if (r.email != null && !isObj(r.email)) return fail('report.email: no es un objeto');
-  return { ok: true, entry: { ...entry, name: entry.name ?? null } };
+  // Las vistas y la búsqueda recorren estas listas: si vienen mal formadas, la entrada no entra.
+  if (!Array.isArray(r.techniques)) return fail('report.techniques: no es una lista');
+  if (r.categories != null && !Array.isArray(r.categories)) return fail('report.categories: no es una lista');
+  if (r.iocs != null) {
+    if (!isObj(r.iocs)) return fail('report.iocs: no es un objeto');
+    for (const [k, v] of Object.entries(r.iocs)) {
+      if (!Array.isArray(v) || v.some((x) => typeof x !== 'string')) return fail(`report.iocs.${k}: lista de textos`);
+    }
+  }
+  // Lo que llega de un fichero o de otra pestaña tampoco puede meter el cuerpo del correo.
+  return { ok: true, entry: { ...entry, name: entry.name ?? null, report: slimReport(r) } };
 }

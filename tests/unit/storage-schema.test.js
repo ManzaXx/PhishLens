@@ -98,3 +98,23 @@ test('Review Focus 2: entradas manipuladas no contaminan ni pasan', () => {
   assert.notEqual(out.report, good.report);
   assert.throws(() => safeParse('{no'));
 });
+
+test('seguridad: una entrada importada con el cuerpo del correo se guarda sin él', () => {
+  const report = { level: 'phishing', score: 90, techniques: [], findings: [{ id: 'x', severity: 'high', detector: 'language', evidence: 'a'.repeat(200) }],
+    email: { subject: 'S', text: 'CUERPO SECRETO', html: '<p>CUERPO</p>', raw: 'RAW', rawHeaders: 'H', attachments: [{ name: 'a.pdf', bytes: [1, 2] }] } };
+  const res = validateEntry({ id: '00000000-0000-4000-8000-000000000001', savedAt: '2026-11-07T10:00:00.000Z', version: '3.0.0', kind: 'eml', sha256: 'a'.repeat(64), report });
+  assert.equal(res.ok, true);
+  const out = JSON.stringify(res.entry);
+  for (const s of ['CUERPO', 'RAW', '"rawHeaders"', '"bytes"']) assert.ok(!out.includes(s), s);
+  assert.equal(res.entry.report.findings[0].evidence.length, 40);
+});
+
+test('seguridad: listas mal formadas en un import se rechazan en vez de romper la búsqueda o la vista', () => {
+  const base = { id: '00000000-0000-4000-8000-000000000002', savedAt: '2026-11-07T10:00:00.000Z', version: '3.0.0', kind: 'eml', sha256: 'b'.repeat(64) };
+  const ok = { level: 'phishing', score: 90, findings: [], techniques: [], categories: [], iocs: { domains: ['a.test'] } };
+  assert.equal(validateEntry({ ...base, report: ok }).ok, true);
+  assert.match(validateEntry({ ...base, report: { ...ok, techniques: undefined } }).error, /report\.techniques/);
+  assert.match(validateEntry({ ...base, report: { ...ok, categories: {} } }).error, /report\.categories/);
+  assert.match(validateEntry({ ...base, report: { ...ok, iocs: { domains: {} } } }).error, /report\.iocs/);
+  assert.match(validateEntry({ ...base, report: { ...ok, iocs: { domains: [1] } } }).error, /report\.iocs/);
+});
