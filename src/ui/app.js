@@ -110,9 +110,17 @@ function showError(message) {
 }
 
 // ---------- Fichero ----------
+// Lo que dice la zona de arrastre antes de elegir nada, para volver a ello al descartar un lote.
+const DROP_TEXT = ['.dropzone__title', '.dropzone__hint'].map((sel) => [sel, [...dropzone.querySelector(sel).childNodes].map((n) => n.cloneNode(true))]);
+
+function resetDropzone() {
+  dropzone.classList.remove('has-file');
+  for (const [sel, nodes] of DROP_TEXT) dropzone.querySelector(sel).replaceChildren(...nodes.map((n) => n.cloneNode(true)));
+}
+
+// Un fichero que no vale muestra el error pero no descarta lo que ya había (ni el lote).
 async function loadFile(file) {
   showError('');
-  state.fileText = null;
   if (!file) return;
   if (file.size > MAX_BYTES) {
     showError(`El archivo pesa ${(file.size / 1024 / 1024).toFixed(1)} MB. El máximo es ${MAX_MB} MB.`);
@@ -122,7 +130,15 @@ async function loadFile(file) {
     showError('Solo se aceptan archivos .eml (o .txt con el email original).');
     return;
   }
-  state.fileText = await file.text();
+  let text;
+  try {
+    text = await file.text();
+  } catch {
+    showError('No se pudo leer el archivo.');
+    return;
+  }
+  cancelBatch();
+  state.fileText = text;
   dropzone.classList.add('has-file');
   dropzone.querySelector('.dropzone__title').textContent = file.name;
   dropzone.querySelector('.dropzone__hint').textContent = `${(file.size / 1024).toFixed(1)} KB · listo para analizar`;
@@ -174,6 +190,7 @@ const SKIP_REASONS = new Map([
 
 /** Descarta el lote en curso (si lo hay) y el que se estaba viendo. */
 function cancelBatch() {
+  if (state.batch || state.batchAbort) resetDropzone();
   state.batchAbort?.abort();
   state.batchAbort = null;
   state.batch = null;
@@ -219,6 +236,8 @@ function openBatchEmail(key) {
 async function runBatch(files) {
   cancelBatch();
   showError('');
+  // El correo suelto de antes ya no es lo que se ve: «Analizar» no debe volver a él.
+  state.fileText = null;
   const controller = new AbortController();
   state.batchAbort = controller;
   const texts = new Map();
@@ -252,11 +271,18 @@ async function runBatch(files) {
     showError('No se ha podido analizar ningún correo del lote.');
     return;
   }
-  state.batchTexts = new Map(out.entries.map((e) => [e.key, texts.get(e.report)]));
-  // Se empieza por el primero por nombre, el mismo orden que el selector.
-  const first = [...out.entries].sort((a, b) => String(a.name).localeCompare(String(b.name), 'es'))[0];
-  state.batch = { ...out, graph: buildGraph(out.entries), campaigns: findCampaigns(out.entries), current: first.key };
-  openBatchEmail(first.key);
+  try {
+    state.batchTexts = new Map(out.entries.map((e) => [e.key, texts.get(e.report)]));
+    // Se empieza por el primero por nombre, el mismo orden que el selector.
+    const first = [...out.entries].sort((a, b) => String(a.name).localeCompare(String(b.name), 'es'))[0];
+    state.batch = { ...out, graph: buildGraph(out.entries), campaigns: findCampaigns(out.entries), current: first.key };
+    openBatchEmail(first.key);
+  } catch {
+    // Un lote raro nunca debe dejar la página a medias.
+    cancelBatch();
+    showError('No se ha podido relacionar los correos del lote.');
+    return;
+  }
   dropzone.classList.add('has-file');
   dropzone.querySelector('.dropzone__title').textContent = `${out.entries.length} correos`;
   dropzone.querySelector('.dropzone__hint').textContent = 'lote analizado';
@@ -267,8 +293,8 @@ async function runBatch(files) {
 
 /** Uno solo: el flujo de siempre. Varios: un lote. */
 function loadFiles(files) {
+  if (!files.length) return null;
   if (files.length > 1) return runBatch(files);
-  cancelBatch();
   return loadFile(files[0]);
 }
 
@@ -280,9 +306,13 @@ function currentInput() {
 }
 
 function run() {
-  cancelBatch();
-  state.analyst = {};
   const input = currentInput();
+  // Con un lote a la vista y sin fichero nuevo, «Analizar» no tiene nada que rehacer: se vuelve al informe.
+  if (!input && state.tab === 'eml' && state.batch) {
+    showError('');
+    reportBox.scrollIntoView({ block: 'start' });
+    return;
+  }
   if (!input) {
     showError({ eml: 'Elige o arrastra un archivo .eml.', text: 'Pega el contenido del email.', url: 'Escribe una URL.' }[state.tab]);
     return;
@@ -292,6 +322,8 @@ function run() {
     return;
   }
   showError('');
+  cancelBatch();
+  state.analyst = {};
   try {
     state.lastInput = input;
     state.lastReport = analyzeInput(input);

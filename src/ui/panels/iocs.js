@@ -1,7 +1,7 @@
 // Panel «IOCs»: el grafo del lote (o del correo) con su tabla, y los indicadores del correo en formato defanged.
 import { el } from '../dom.js';
 import { defang, PLAIN, IOC_SECTIONS as IOC_LABELS } from '../../intel/ioc.js';
-import { buildGraph, NODE_LABELS } from '../../intel/graph.js';
+import { buildGraph, NODE_LABELS, NODE_TYPES } from '../../intel/graph.js';
 import { layoutGraph } from '../../intel/layout.js';
 import { toUnicode } from '../../parser/punycode.js';
 import { graphView } from '../components/graph.js';
@@ -38,13 +38,27 @@ export function graphModel(graph, layout, current = null) {
   };
 }
 
-/** Tabla equivalente al grafo (lectores de pantalla y teclado), con un máximo de filas. */
-export function graphTable(graph) {
+const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
+/** «a, b, c y N más»: los correos de un nodo por nombre, ordenados. */
+function emailNames(keys, names) {
+  const list = keys.map((k) => names.get(k) ?? k).sort((a, b) => a.localeCompare(b, 'es'));
+  return list.length > 3 ? `${list.slice(0, 3).join(', ')} y ${list.length - 3} más` : list.join(', ');
+}
+
+/**
+ * Tabla equivalente al grafo (lectores de pantalla y teclado), con un máximo de filas: primero lo que
+ * comparten más correos, que es lo que interesa al buscar campañas.
+ * @param {Map<string,string>} names clave del correo -> nombre del fichero
+ */
+export function graphTable(graph, names = new Map()) {
   const d = degrees(graph);
-  const rows = graph.nodes.slice(0, TABLE_LIMIT).map((n) => [NODE_LABELS[n.type], nodeText(n), String(n.emails.length), String(d.get(n.id) ?? 0)]);
+  const order = (t) => NODE_TYPES.indexOf(t);
+  const sorted = [...graph.nodes].sort((a, b) => b.emails.length - a.emails.length || order(a.type) - order(b.type) || cmp(a.id, b.id));
+  const rows = sorted.slice(0, TABLE_LIMIT).map((n) => [NODE_LABELS[n.type], nodeText(n), emailNames(n.emails, names), String(d.get(n.id) ?? 0)]);
   return el('div', { className: 'stack' },
     dataTable({ caption: 'Nodos del grafo', columns: ['Tipo', 'Valor', 'Correos', 'Relaciones'], rows, className: 'data-table--graph' }),
-    graph.nodes.length > TABLE_LIMIT ? el('p', { className: 'graph__note', text: `Se muestran ${TABLE_LIMIT} de ${graph.nodes.length}.` }) : null);
+    graph.nodes.length > TABLE_LIMIT ? el('p', { className: 'graph__note', text: `Se muestran ${TABLE_LIMIT} de ${graph.nodes.length}, primero los compartidos por más correos.` }) : null);
 }
 
 function iocLists(report) {
@@ -78,10 +92,11 @@ export function iocsPanel(report, options = {}) {
   const batch = options.batch;
   const graph = batch?.graph ?? buildGraph([{ key: 'actual', name: report.email?.subject || 'Este correo', report }]);
   const current = batch ? `email:${batch.current}` : null;
+  const names = new Map((batch?.entries ?? [{ key: 'actual', name: report.email?.subject || 'Este correo' }]).map((e) => [e.key, e.name]));
   const section = (title, ...children) => el('section', { className: 'stack' }, el('h3', { text: title }), ...children);
   return el('div', { className: 'stack' },
     section(batch ? `Relaciones del lote (${batch.entries.length} correos)` : 'Relaciones de este correo',
       graph.nodes.length > 1 ? graphView(graphModel(graph, layoutGraph(graph), current)) : el('p', { className: 'empty empty--muted', text: 'No hay relaciones que dibujar.' }),
-      graph.nodes.length > 1 ? graphTable(graph) : null),
+      graph.nodes.length > 1 ? graphTable(graph, names) : null),
     section('IOCs de este correo', iocLists(report)));
 }

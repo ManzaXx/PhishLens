@@ -218,7 +218,7 @@
 .graph__node--email .graph__shape { fill: var(--critical); }
 .graph__node--address .graph__shape { fill: var(--suspicious); }
 .graph__node--domain .graph__shape { fill: var(--accent); }
-.graph__node--ip .graph__shape { fill: var(--focus); }
+.graph__node--ip .graph__shape { fill: var(--muted); }
 .graph__node--url .graph__shape { fill: var(--phishing); }
 .graph__node--hash .graph__shape { fill: var(--info); }
 .graph__node.is-current .graph__shape:first-of-type { stroke: var(--text-strong); stroke-width: 3; }

@@ -100,3 +100,34 @@ test('varias campañas: la más grande primero; propiedad: el orden no cambia el
   assert.deepEqual(base.map((c) => [c.name, c.emails.length]), [['Campaña 1', 3], ['Campaña 2', 2]]);
   for (let seed = 1; seed <= 20; seed++) assert.deepEqual(findCampaigns(shuffle(list, seed)), base);
 });
+
+const hop = (ip, rdns) => [{ ip, rdns, helo: rdns, entry: true }];
+
+test('la IP de un gran proveedor de correo no une campañas (Gmail, Outlook, SES…)', () => {
+  assert.deepEqual(findCampaigns([
+    entry({ email: { from: { address: 'juan.perez1987@gmail.com' }, route: hop('209.85.220.41', 'mail-ed1-f41.google.com') } }),
+    entry({ email: { from: { address: 'loteria.int.2026@gmail.com' }, route: hop('209.85.220.41', 'mail-ed1-f41.google.com') } }),
+  ]), []);
+  assert.deepEqual(findCampaigns([
+    entry({ email: { from: { address: 'a@uno.test' }, route: hop('40.107.1.1', 'mail-db8eur05.outbound.protection.outlook.com') } }),
+    entry({ email: { from: { address: 'b@dos.test' }, route: hop('40.107.1.1', 'mail-db8eur05.outbound.protection.outlook.com') } }),
+  ]), []);
+  assert.deepEqual(findCampaigns([
+    entry({ email: { from: { address: 'a@uno.test' }, route: hop('54.240.1.1', 'a1-1.smtp-out.eu-west-1.amazonses.com') } }),
+    entry({ email: { from: { address: 'b@dos.test' }, route: hop('54.240.1.1', 'a1-1.smtp-out.eu-west-1.amazonses.com') } }),
+  ]), []);
+});
+
+test('redes sociales y plataformas de alojamiento compartidas no unen campañas; el mismo host sí', () => {
+  const pair = (h1, h2) => findCampaigns([
+    entry({ email: { from: { address: 'a@uno.test' }, links: [{ href: `https://${h1}` }] } }),
+    entry({ email: { from: { address: 'b@dos.test' }, links: [{ href: `https://${h2}` }] } }),
+  ]);
+  for (const [a, b] of [['x.com/tiendaA', 'x.com/clubB'], ['wa.me/3461', 'wa.me/3462'], ['www.instagram.com/a', 'instagram.com/b'],
+    ['login-a.pages.dev/', 'banco-b.pages.dev/'], ['firebasestorage.googleapis.com/x', 'storage.googleapis.com/y'],
+    ['a.web.core.windows.net/', 'b.web.core.windows.net/'], ['uno.github.io/', 'dos.github.io/']]) {
+    assert.deepEqual(pair(a, b), [], `${a} + ${b}`);
+  }
+  const [c] = pair('banco-falso.pages.dev/a', 'banco-falso.pages.dev/b');
+  assert.deepEqual(c.reasons.map((r) => `${r.type}:${r.value}`), ['link-domain:banco-falso.pages.dev']);
+});

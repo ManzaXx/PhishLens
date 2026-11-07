@@ -78,7 +78,7 @@ export function graphView(model) {
     el('figcaption', { className: 'graph__caption' },
       legend,
       el('p', { className: 'hint', text: 'Con el teclado: Tab entra en el grafo y las flechas pasan de un nodo a otro. Al enfocar un nodo se resaltan sus relaciones.' }),
-      model.hidden > 0 ? el('p', { className: 'graph__note', text: `Se dibujan ${model.nodes.length} de ${model.total} nodos; la tabla tiene el resto.` }) : null));
+      model.hidden > 0 ? el('p', { className: 'graph__note', text: `Se dibujan los ${model.nodes.length} nodos más conectados de ${model.total}.` }) : null));
   return figure;
 }
 

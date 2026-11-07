@@ -21,6 +21,29 @@ export const TRACKING_DOMAINS = new Set([
   'cmail19.com', 'cmail20.com', 'emltrk.com', 'mlsend.com', 'mailerlite.com', 'acems1.com',
 ]);
 
+// Organizaciones que envían correo de millones de remitentes sin relación: su IP de entrada no es pista de campaña.
+export const SHARED_MAIL_INFRA = new Set([
+  'google.com', 'googlemail.com', 'outlook.com', 'hotmail.com', 'protection.outlook.com', 'microsoft.com',
+  'amazonses.com', 'sendgrid.net', 'mailgun.org', 'mailgun.net', 'mcsv.net', 'mandrillapp.com',
+  'sparkpostmail.com', 'yahoo.com', 'yahoodns.net', 'mailjet.com', 'zoho.com', 'zoho.eu', 'icloud.com',
+  'me.com', 'apple.com', 'gmx.net', 'web.de', 'protonmail.ch', 'yandex.net', 'mailchimp.com', 'rsgsv.net',
+  'messagelabs.com', 'pphosted.com', 'mimecast.com', 'ovh.net', 'ionos.com', 'secureserver.net',
+]);
+
+// Redes sociales y mensajería: aparecen en correos legítimos y fraudulentos sin que eso los relacione.
+export const SOCIAL_DOMAINS = new Set([
+  'x.com', 'twitter.com', 'facebook.com', 'fb.com', 'instagram.com', 'linkedin.com', 'youtube.com',
+  'youtu.be', 'tiktok.com', 'wa.me', 'whatsapp.com', 't.me', 'telegram.me', 'pinterest.com', 'threads.net',
+]);
+
+// Plataformas de alojamiento donde cada cliente tiene su subdominio: la pista es el host completo.
+export const HOSTING_PLATFORMS = new Set([
+  'pages.dev', 'workers.dev', 'web.app', 'firebaseapp.com', 'googleapis.com', 'appspot.com',
+  'windows.net', 'azurewebsites.net', 'github.io', 'gitlab.io', 'netlify.app', 'vercel.app',
+  'herokuapp.com', 'blogspot.com', 'wordpress.com', 'weebly.com', 'wixsite.com', 'glitch.me',
+  'onrender.com', 'amazonaws.com', 'cloudfront.net', 'r2.dev', 'ngrok.io', 'ngrok-free.app',
+]);
+
 export const SUSPICIOUS_TLDS = new Set([
   'xyz', 'top', 'zip', 'mov', 'click', 'link', 'live', 'online', 'site', 'shop', 'icu',
   'buzz', 'rest', 'monster', 'cfd', 'sbs', 'gq', 'ml', 'cf', 'tk', 'ga', 'work', 'support',

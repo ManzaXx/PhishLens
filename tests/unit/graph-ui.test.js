@@ -60,7 +60,8 @@ test('graphView avisa cuando no caben todos los nodos', () => {
   const links = Array.from({ length: 200 }, (_, i) => ({ href: `https://h${i}.test/` }));
   const big = buildGraph([{ key: 'k', name: 'k.eml', report: { level: 'phishing', email: { links } } }]);
   const view = M.graphView(M.graphModel(big, layoutGraph(big)));
-  assert.ok(view.textContent.includes(`Se dibujan 150 de ${big.nodes.length} nodos; la tabla tiene el resto.`));
+  assert.ok(view.textContent.includes(`Se dibujan los 150 nodos más conectados de ${big.nodes.length}.`));
+  assert.ok(!view.textContent.includes('la tabla tiene el resto'));
 });
 
 test('graphKey: flechas con vuelta, Inicio y Fin', () => {
@@ -74,10 +75,17 @@ test('graphKey: flechas con vuelta, Inicio y Fin', () => {
   assert.equal(M.graphKey(0, 'a', 3), null);
 });
 
-test('graphTable: como mucho 500 filas y lo dice', () => {
-  const nodes = Array.from({ length: 600 }, (_, i) => ({ id: `domain:d${i}.test`, type: 'domain', value: `d${i}.test`, label: `d${i}.test`, emails: ['k'] }));
-  const table = M.graphTable({ nodes, edges: [] });
-  assert.equal(findAll(table, (n) => n.localName === 'tr').length, 501);
-  assert.ok(table.textContent.includes('Se muestran 500 de 600.'));
-  assert.ok(table.textContent.includes('d0[.]test'));
+test('graphTable: como mucho 500 filas, primero lo compartido por más correos, y con los correos por nombre', () => {
+  const nodes = [
+    ...Array.from({ length: 600 }, (_, i) => ({ id: `domain:d${i}.test`, type: 'domain', value: `d${i}.test`, label: `d${i}.test`, emails: ['k1'] })),
+    { id: `hash:${'a'.repeat(64)}`, type: 'hash', value: 'a'.repeat(64), label: 'factura.pdf', emails: ['k1', 'k2', 'k3', 'k4', 'k5'] },
+  ];
+  const names = new Map([['k1', 'uno.eml'], ['k2', 'dos.eml'], ['k3', 'tres.eml'], ['k4', 'cuatro.eml'], ['k5', 'cinco.eml']]);
+  const table = M.graphTable({ nodes, edges: [] }, names);
+  const rows = findAll(table, (n) => n.localName === 'tr');
+  assert.equal(rows.length, 501);
+  assert.equal(rows[1].children[1].textContent, 'factura.pdf');
+  assert.equal(rows[1].children[2].textContent, 'cinco.eml, cuatro.eml, dos.eml y 2 más');
+  assert.equal(rows[2].children[2].textContent, 'uno.eml');
+  assert.ok(table.textContent.includes('Se muestran 500 de 601, primero los compartidos por más correos.'));
 });

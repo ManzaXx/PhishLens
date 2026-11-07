@@ -9,8 +9,9 @@ const file = (name, text, size = text.length) => ({ name, size, text: async () =
 const sample = (id) => SAMPLE_TEXTS[id];
 const noYield = { yieldFn: async () => {} };
 
-test('emailKey es el SHA-256 del texto crudo', () => {
+test('emailKey es el SHA-256 del texto crudo con los saltos de línea normalizados', () => {
   assert.equal(emailKey('abc'), sha256('abc'));
+  assert.equal(emailKey('a\r\nb\rc'), sha256('a\nb\nc'));
 });
 
 test('tres muestras: tres entradas ordenadas por clave, sin saltos ni aviso, con progreso', async () => {
@@ -101,4 +102,20 @@ test('cede el hilo entre correos y se puede abortar', async () => {
   const controller = new AbortController();
   const out = await analyzeBatch(files, { yieldFn: async () => controller.abort(), signal: controller.signal });
   assert.equal(out, null);
+});
+
+test('un archivo que no se puede leer se salta como error y el resto sigue', async () => {
+  const bad = { name: 'b.eml', size: 10, text: async () => { throw Object.assign(new Error('x'), { name: 'NotReadableError' }); } };
+  const out = await analyzeBatch([file('a.eml', sample('03-phishing-banco')), bad, file('c.eml', sample('04-phishing-correos'))], noYield);
+  assert.equal(out.entries.length, 2);
+  assert.deepEqual(out.skipped, [{ name: 'b.eml', reason: 'error' }]);
+});
+
+test('el mismo correo con saltos de línea LF o CRLF es el mismo correo', async () => {
+  const crlf = sample('03-phishing-banco').replace(/\r?\n/g, '\r\n');
+  const lf = crlf.replace(/\r\n/g, '\n');
+  assert.equal(emailKey(crlf), emailKey(lf));
+  const out = await analyzeBatch([file('a.eml', crlf), file('b.eml', lf)], noYield);
+  assert.equal(out.entries.length, 1);
+  assert.deepEqual(out.skipped, [{ name: 'b.eml', reason: 'duplicado' }]);
 });

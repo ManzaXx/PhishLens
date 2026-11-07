@@ -4,8 +4,8 @@ import { analyzeInput } from './engine.js';
 import { sha256 } from '../lib/sha256.js';
 import { LIMITS } from '../lib/limits.js';
 
-/** Identidad de un correo: el SHA-256 de su texto crudo (no depende del nombre ni del orden). */
-export const emailKey = (text) => sha256(text);
+/** Identidad de un correo: el SHA-256 de su texto con los saltos de línea normalizados (no depende del nombre, del orden ni de CRLF/LF). */
+export const emailKey = (text) => sha256(String(text).replace(/\r\n?/g, '\n'));
 
 const isEmailFile = (f) => /\.(eml|txt)$/i.test(f.name ?? '') || f.type === 'message/rfc822';
 
@@ -38,9 +38,16 @@ export async function analyzeBatch(files, { analyze = analyzeInput, yieldFn = ne
   for (let i = 0; i < queue.length; i++) {
     if (signal?.aborted) return null;
     const f = queue[i];
-    const text = await f.text();
+    let text;
+    try {
+      text = String(await f.text());
+    } catch {
+      text = null;
+    }
     if (signal?.aborted) return null;
-    if (!text.trim()) {
+    if (text === null) {
+      skipped.push({ name: f.name, reason: 'error' });
+    } else if (!text.trim()) {
       skipped.push({ name: f.name, reason: 'vacio' });
     } else {
       const key = emailKey(text);

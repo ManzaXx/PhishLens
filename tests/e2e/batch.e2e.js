@@ -179,3 +179,55 @@ test('lector de pantalla: el estado del lote no se anuncia en cada correo y dice
   assert.equal(texts.at(-1), '10 correos analizados. Un archivo no se ha analizado.');
   await context.close();
 });
+
+test('el lote sobrevive a un «Analizar» sin datos nuevos y no vuelve a un correo anterior', { skip }, async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  page.setDefaultTimeout(5000);
+  await page.goto(`${server.url}/index.html#analista/campanas`);
+  await page.setInputFiles('#file-input', TEN[0]);
+  await page.locator('#report .verdict-card, #report nav').first().waitFor();
+  await loadLot(page);
+  // Pestaña .eml sin fichero nuevo: «Analizar» no rehace el correo suelto de antes.
+  await page.locator('#analyze-btn').click();
+  assert.equal(await page.locator('#report .batch-bar').count(), 1, 'el lote desaparece con «Analizar»');
+  assert.equal(await page.locator('#batch-email option').count(), 4);
+  // Pestaña URL vacía + Enter: error, pero el lote sigue ahí y se puede cambiar de correo.
+  await page.locator('#tab-url').click();
+  await page.locator('#url-input').press('Enter');
+  assert.equal(await page.locator('#input-error').isVisible(), true);
+  assert.equal(await page.locator('#report .batch-bar').count(), 1, 'el lote desaparece con una URL vacía');
+  await page.selectOption('#batch-email', { index: 2 });
+  await page.locator('#report nav a[href="#analista/campanas"]').waitFor();
+  // Elegir un fichero que no vale no descarta el lote ni deja el texto del lote en la zona de arrastre.
+  await page.locator('#tab-eml').click();
+  await page.setInputFiles('#file-input', fileURLToPath(new URL('../../README.md', import.meta.url)));
+  assert.equal(await page.locator('#report .batch-bar').count(), 1, 'un fichero no válido descarta el lote');
+  await page.getByRole('button', { name: SAMPLES[2].title, exact: true }).click();
+  await page.locator('#report .batch-bar').waitFor({ state: 'detached' });
+  assert.equal(/correos/.test(await page.locator('.dropzone__title').textContent()), false, 'la zona de arrastre sigue hablando del lote');
+  await context.close();
+});
+
+test('el foco se ve en todos los tipos de nodo, también en las IP', { skip }, async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  page.setDefaultTimeout(5000);
+  await page.goto(`${server.url}/index.html#analista/iocs`);
+  await loadLot(page);
+  await page.locator('.graph__node[tabindex="0"]').focus();
+  const seen = new Map();
+  for (let i = 0; i < 60; i++) {
+    await page.keyboard.press('ArrowRight');
+    const s = await page.evaluate(() => {
+      const n = document.activeElement;
+      const shape = n.querySelector('.graph__shape');
+      const cs = getComputedStyle(shape);
+      return { type: [...n.classList].find((c) => c.startsWith('graph__node--')), fill: cs.fill, stroke: cs.stroke };
+    });
+    if (!seen.has(s.type)) seen.set(s.type, s);
+  }
+  assert.ok(seen.has('graph__node--ip'), `sin nodos IP: ${[...seen.keys()]}`);
+  for (const [type, s] of seen) assert.notEqual(s.stroke, s.fill, `${type}: el anillo de foco tiene el color del relleno`);
+  await context.close();
+});
