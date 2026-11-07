@@ -4,13 +4,14 @@
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { serve } from '../tests/e2e/server.js';
-import { SAMPLES } from '../samples/index.js';
+import { SAMPLES, BATCHES } from '../samples/index.js';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
 const OUT = fileURLToPath(new URL('../docs/img/', import.meta.url));
-const title = (id) => SAMPLES.find((s) => s.id === id).title;
+const title = (id) => (id === 'lote' ? BATCHES[0].title : SAMPLES.find((s) => s.id === id).title);
 
-// [archivo, muestra o null (portada), hash, ancho, tema, ¿página entera?]
+// [archivo, muestra ('lote' = el lote de campaña) o null (portada), hash, ancho, tema]
+// Con argumentos solo se hacen esas capturas: node tools/screenshots.mjs analista-grafo movil-lote
 const SHOTS = [
   ['inicio', null, '', 1280, 'light'],
   ['sencillo-claro', '03-phishing-banco', '', 1280, 'light'],
@@ -24,13 +25,17 @@ const SHOTS = [
   ['analista-adjuntos', '12-pdf-activo-zip', '#analista/adjuntos', 1280, 'light'],
   ['analista-iocs', '10-dominio-unicode', '#analista/iocs', 1280, 'dark'],
   ['analista-attack', '03-phishing-banco', '#analista/attack', 1280, 'light'],
+  ['analista-grafo', 'lote', '#analista/iocs', 1280, 'light'],
+  ['analista-campanas', 'lote', '#analista/campanas', 1280, 'dark'],
+  ['movil-lote', 'lote', '', 390, 'light'],
   ['movil-sencillo', '03-phishing-banco', '', 390, 'light'],
   ['movil-analista', '03-phishing-banco', '#analista/senales', 390, 'dark'],
 ];
 
 const server = await serve();
 const browser = await chromium.launch();
-for (const [name, sample, hash, width, colorScheme] of SHOTS) {
+const only = process.argv.slice(2);
+for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !only.length || only.includes(n))) {
   const page = await browser.newPage({ viewport: { width, height: width < 600 ? 844 : 900 }, deviceScaleFactor: 2, colorScheme, reducedMotion: 'reduce' });
   await page.goto(`${server.url}/index.html${hash}`);
   if (sample) {
@@ -38,6 +43,8 @@ for (const [name, sample, hash, width, colorScheme] of SHOTS) {
     await page.locator('#report > *').first().waitFor();
     await page.locator('#report').evaluate((n) => n.scrollIntoView({ block: 'start' }));
   }
+  // El ratón se queda donde estaba el ejemplo: se aparta para que no salga ningún :hover.
+  await page.mouse.move(0, 0);
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${OUT}${name}.png` });
   await page.close();

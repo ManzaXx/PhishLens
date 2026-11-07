@@ -237,13 +237,15 @@ async function runBatch(files) {
       if (controller.signal.aborted) return;
       batchProgress.max = n;
       batchProgress.value = i;
-      batchProgressText.textContent = `Analizando ${i} de ${n}…`;
+      // La barra avanza con cada correo, pero el texto (que lee el lector de pantalla) solo cada 10.
+      if (i % 10 === 0 && i < n) batchProgressText.textContent = `Analizando ${i} de ${n}…`;
     },
   });
   // Otro análisis empezó mientras tanto: este lote ya no pinta nada.
   if (!out || controller.signal.aborted || state.batchAbort !== controller) return;
   state.batchAbort = null;
-  batchProgressText.textContent = `${out.entries.length} ${out.entries.length === 1 ? 'correo analizado' : 'correos analizados'}.`;
+  const skippedText = !out.skipped.length ? '' : out.skipped.length === 1 ? ' Un archivo no se ha analizado.' : ` ${out.skipped.length} archivos no se han analizado.`;
+  batchProgressText.textContent = `${out.entries.length} ${out.entries.length === 1 ? 'correo analizado' : 'correos analizados'}.${skippedText}`;
   showBatchNotice(out.warning, out.skipped);
   if (!out.entries.length) {
     batchStatus.hidden = !out.skipped.length && !out.warning;

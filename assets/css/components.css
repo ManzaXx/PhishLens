@@ -198,6 +198,7 @@
 .batch-bar__select:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .batch-bar__summary { margin: 0; font-size: var(--text-sm); color: var(--muted); }
 .batch-status { margin-top: var(--space-4); display: grid; gap: var(--space-2); }
+.batch-status[hidden], .batch-status__notice[hidden] { display: none; }
 .batch-status progress { width: 100%; height: 8px; accent-color: var(--accent); }
 .batch-status__text { margin: 0; font-size: var(--text-sm); color: var(--muted); }
 .batch-status__notice { padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--suspicious-soft); color: var(--text); font-size: var(--text-sm); overflow-wrap: anywhere; }
@@ -221,7 +222,7 @@
 .graph__node--url .graph__shape { fill: var(--phishing); }
 .graph__node--hash .graph__shape { fill: var(--info); }
 .graph__node.is-current .graph__shape:first-of-type { stroke: var(--text-strong); stroke-width: 3; }
-.graph__label { fill: var(--text); font-size: var(--text-xs); font-family: var(--sans); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.graph__label { fill: var(--text); font-size: var(--text-sm); font-family: var(--sans); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
 .graph__node:focus-visible .graph__shape:first-of-type { stroke: var(--focus); stroke-width: 4; }
 .graph__svg.has-focus .graph__node:not(.is-related), .graph__svg.has-focus .graph__edge:not(.is-related) { opacity: .2; }
 .graph__edge.is-related { stroke-opacity: .9; stroke-width: 2; }
@@ -249,6 +250,6 @@
 .campaign__reasons li { display: grid; gap: 2px; padding: var(--space-2) var(--space-3); background: var(--surface-2); border-radius: var(--radius-sm); overflow-wrap: anywhere; }
 .campaign__reason { font-weight: 600; }
 .campaign__who { font-size: var(--text-sm); color: var(--muted); }
-.campaign-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--critical-soft); color: var(--text); }
+.campaign-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); color: var(--text); }
 .campaign-note p { margin: 0; flex: 1 1 18rem; }
 .campaign-note .btn { min-height: 44px; }
