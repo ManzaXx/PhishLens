@@ -10,4 +10,6 @@ export const LIMITS = {
   inputBytes: 25 * 1024 * 1024,
   headers: 1000,
   headerBytes: 64 * 1024,
+  batchFiles: 50,
+  batchBytes: 100 * 1024 * 1024,
 };
