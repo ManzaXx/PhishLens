@@ -205,3 +205,29 @@
 .batch-status__notice ul { margin: 0; padding-left: var(--space-5); }
 .chip--batch { border-style: dashed; }
 @media print { .batch-bar, .batch-status { display: none !important; } }
+
+/* ---------- Grafo de IOCs (PR8) ---------- */
+.graph { margin: 0; display: grid; gap: var(--space-3); }
+.graph__canvas { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2); }
+.graph__svg { display: block; width: 100%; height: auto; max-height: 70vh; color: var(--muted); }
+.graph__edge { stroke: currentColor; stroke-opacity: .35; stroke-width: 1.2; }
+.graph__shape { stroke: var(--surface); stroke-width: 2; }
+.graph__shape--inner { fill: var(--surface) !important; stroke: none; }
+.graph__node { cursor: default; outline: none; }
+.graph__node--email .graph__shape { fill: var(--critical); }
+.graph__node--address .graph__shape { fill: var(--suspicious); }
+.graph__node--domain .graph__shape { fill: var(--accent); }
+.graph__node--ip .graph__shape { fill: var(--focus); }
+.graph__node--url .graph__shape { fill: var(--phishing); }
+.graph__node--hash .graph__shape { fill: var(--info); }
+.graph__node.is-current .graph__shape:first-of-type { stroke: var(--text-strong); stroke-width: 3; }
+.graph__label { fill: var(--text); font-size: 12px; font-family: var(--sans); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.graph__node:focus-visible .graph__shape:first-of-type { stroke: var(--focus); stroke-width: 4; }
+.graph__svg.has-focus .graph__node:not(.is-related), .graph__svg.has-focus .graph__edge:not(.is-related) { opacity: .2; }
+.graph__edge.is-related { stroke-opacity: .9; stroke-width: 2; }
+.graph__legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); list-style: none; margin: 0; padding: 0; font-size: var(--text-sm); }
+.graph__legend li { display: inline-flex; align-items: center; gap: var(--space-1); }
+.graph__icon .graph__shape { stroke: none; }
+.graph__note { margin: 0; font-size: var(--text-sm); color: var(--muted); }
+.graph__caption .hint { margin: var(--space-2) 0 0; }
+.data-table--graph td:nth-child(2) { overflow-wrap: anywhere; font-family: var(--mono); font-size: var(--text-sm); }

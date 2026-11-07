@@ -8,6 +8,7 @@ import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { renderReport, setPrintReport, reportToJson, iocsToText } from './render.js';
 import { FACTS, levelLegend } from '../core/facts.js';
 import { menuKey } from './components/menu-button.js';
+import { graphKey } from './components/graph.js';
 import { parseRoute, formatRoute, initialMode, resolveView, isAnalystHash, MODE_KEY } from './route.js';
 
 import { LIMITS } from '../lib/limits.js';
@@ -382,6 +383,41 @@ function goTo(mode) {
 }
 
 reportBox.addEventListener('click', onReportAction);
+// ---------- Grafo de IOCs: un paso de Tab y flechas entre nodos ----------
+reportBox.addEventListener('keydown', (e) => {
+  const node = e.target.closest?.('.graph__node');
+  if (!node) return;
+  const nodes = [...node.ownerSVGElement.querySelectorAll('.graph__node')];
+  const next = graphKey(nodes.indexOf(node), e.key, nodes.length);
+  if (next == null) return;
+  e.preventDefault();
+  node.setAttribute('tabindex', '-1');
+  nodes[next].setAttribute('tabindex', '0');
+  nodes[next].focus();
+});
+reportBox.addEventListener('focusin', (e) => {
+  const node = e.target.closest?.('.graph__node');
+  if (!node) return;
+  const svgRoot = node.ownerSVGElement;
+  for (const x of svgRoot.querySelectorAll('.is-related')) x.classList.remove('is-related');
+  const id = node.dataset.node;
+  const related = new Set([id]);
+  for (const line of svgRoot.querySelectorAll('.graph__edge')) {
+    if (line.dataset.from !== id && line.dataset.to !== id) continue;
+    line.classList.add('is-related');
+    related.add(line.dataset.from);
+    related.add(line.dataset.to);
+  }
+  for (const g of svgRoot.querySelectorAll('.graph__node')) if (related.has(g.dataset.node)) g.classList.add('is-related');
+  svgRoot.classList.add('has-focus');
+});
+reportBox.addEventListener('focusout', (e) => {
+  const svgRoot = e.target.closest?.('.graph__node')?.ownerSVGElement;
+  if (!svgRoot || svgRoot.contains(e.relatedTarget)) return;
+  svgRoot.classList.remove('has-focus');
+  for (const x of svgRoot.querySelectorAll('.is-related')) x.classList.remove('is-related');
+});
+
 reportBox.addEventListener('change', (e) => {
   if (e.target.id !== 'batch-email') return;
   openBatchEmail(e.target.value);

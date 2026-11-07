@@ -25,6 +25,28 @@ export function svg(tag, attrs = {}) {
   return node;
 }
 
+// Grafo de IOCs: solo estas etiquetas y atributos SVG. Nada de <a>, <script>, <foreignObject>,
+// href ni manejadores on*: los valores del grafo vienen del correo.
+const SVG_TAGS = new Set(['svg', 'g', 'line', 'circle', 'rect', 'polygon', 'path', 'text', 'title']);
+const SVG_ATTRS = new Set([
+  'viewBox', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'width', 'height', 'points', 'd', 'transform',
+  'role', 'tabindex', 'aria-label', 'aria-labelledby', 'aria-hidden', 'focusable', 'data-node', 'data-from', 'data-to',
+  'class', 'text-anchor', 'preserveAspectRatio',
+]);
+
+/** Elemento SVG con lista blanca de etiquetas y atributos; el texto va en textContent (revelado). */
+export function svgEl(tag, { attrs, text, className } = {}) {
+  if (!SVG_TAGS.has(tag)) throw new Error(`Etiqueta SVG no permitida: ${tag}`);
+  const node = document.createElementNS(SVG_NS, tag);
+  if (className) node.setAttribute('class', className);
+  for (const [k, v] of Object.entries(attrs ?? {})) {
+    if (!SVG_ATTRS.has(k)) throw new Error(`Atributo SVG no permitido: ${k}`);
+    node.setAttribute(k, String(v));
+  }
+  if (text != null) node.textContent = reveal(String(text));
+  return node;
+}
+
 // Trazos de 24×24 (estilo línea). Map: una clave como "constructor" no sale del prototipo.
 const ICONS = new Map([
   ['alert', ['M12 3l9 16H3L12 3z', 'M12 10v4', 'M12 17h.01']],
