@@ -17,9 +17,10 @@ const expected = {
   '10-dominio-unicode': 'phishing',
   '11-adjunto-tipo-falso': 'critical',
   '12-pdf-activo-zip': 'critical',
+  '13-redireccion-anidada': 'phishing',
 };
 
-test('hay 12 ejemplos', () => assert.equal(SAMPLES.length, 12));
+test('hay 13 ejemplos', () => assert.equal(SAMPLES.length, 13));
 
 for (const sample of SAMPLES) {
   test(`${sample.id} → ${expected[sample.id]}`, () => {

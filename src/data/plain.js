@@ -60,6 +60,12 @@ export const PLAIN = Object.freeze({
 
   // Enlaces
   'links.at-sign': 'El enlace usa un truco con «@» para esconder a dónde lleva de verdad.',
+  'links.credentials-in-url': 'El enlace lleva un usuario y una contraseña escondidos dentro.',
+  'links.high-entropy': 'La dirección de la web parece escrita al azar, como las que se crean para una estafa.',
+  'links.nested-redirect': 'El enlace da varios saltos para esconder a dónde lleva de verdad.',
+  'links.non-standard-port': 'El enlace usa una entrada poco habitual de la web, algo raro en sitios normales.',
+  'links.obfuscated-ip': 'El enlace esconde una dirección numérica escrita de forma extraña.',
+  'links.open-redirect': 'El enlace empieza en una web conocida y te lleva a otra distinta sin avisar.',
   'links.brand-in-path': 'El enlace nombra a {marca}, pero lleva a una web que no es suya.',
   'links.download': 'El enlace descarga un archivo en lugar de abrir una página.',
   'links.insecure-login': 'Te lleva a una página para iniciar sesión sin conexión segura.',

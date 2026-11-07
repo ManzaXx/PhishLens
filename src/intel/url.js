@@ -150,8 +150,8 @@ export function analyzeUrl(href) {
   const segments = last.pathOnly.split('/').filter((s) => s.length >= 24);
   const entropy = { host: shannon(mainLabel), path: Math.max(0, ...segments.map(shannon)) };
   const tracking = isWrapperOrTracking(last.hostname);
-  const highEntropy = !tracking && !last.isPunycode
-    && ((mainLabel.length >= 12 && entropy.host >= 3.5 && !mainLabel.includes('-')) || entropy.path >= 4.5);
+  // Solo cuenta el host: un path aleatorio es lo normal en los enlaces de seguimiento de cualquier newsletter.
+  const highEntropy = !tracking && !last.isPunycode && mainLabel.length >= 12 && entropy.host >= 3.5 && !mainLabel.includes('-');
 
   return {
     input,

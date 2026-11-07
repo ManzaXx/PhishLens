@@ -4598,5 +4598,465 @@
         "documentos.zip"
       ]
     }
+  },
+  "13-redireccion-anidada": {
+    "score": 75,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "6 señales graves o medias, entre ellas «DMARC: fail» y «Dominio .top». No pulses enlaces ni abras adjuntos.",
+    "mainReason": "Pesa sobre todo: Autenticación y Enlaces y contenido.",
+    "categories": [
+      {
+        "id": "authentication",
+        "label": "Autenticación",
+        "score": 20.9,
+        "max": 25
+      },
+      {
+        "id": "sender",
+        "label": "Remitente y suplantación",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "links",
+        "label": "Enlaces y contenido",
+        "score": 16.8,
+        "max": 20
+      },
+      {
+        "id": "attachments",
+        "label": "Adjuntos",
+        "score": 0,
+        "max": 15
+      },
+      {
+        "id": "language",
+        "label": "Lenguaje",
+        "score": 2.5,
+        "max": 10
+      },
+      {
+        "id": "infrastructure",
+        "label": "Infraestructura",
+        "score": 1.3,
+        "max": 10
+      }
+    ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
+    "correlations": [],
+    "trust": [],
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1684.002",
+        "name": "Social Engineering: Email Spoofing",
+        "tactic": "Stealth",
+        "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+        "url": "https://attack.mitre.org/techniques/T1684/002/"
+      },
+      {
+        "id": "T1566.002",
+        "name": "Phishing: Spearphishing Link",
+        "tactic": "Initial Access",
+        "why": "El ataque llega en un enlace del correo.",
+        "url": "https://attack.mitre.org/techniques/T1566/002/"
+      },
+      {
+        "id": "T1204.001",
+        "name": "User Execution: Malicious Link",
+        "tactic": "Execution",
+        "why": "El ataque necesita que la víctima pulse el enlace.",
+        "url": "https://attack.mitre.org/techniques/T1204/001/"
+      },
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "tactic": "Execution",
+        "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      }
+    ],
+    "verdict": {
+      "tone": "phishing",
+      "headline": "No te fíes: es phishing"
+    },
+    "findings": [
+      {
+        "id": "auth.dmarc",
+        "detector": "auth",
+        "severity": "high",
+        "points": 30,
+        "title": "DMARC: fail",
+        "detail": "DMARC es la política del dominio sobre qué hacer si SPF y DKIM fallan. Un fallo de DMARC es una señal fuerte de suplantación.",
+        "evidence": "dmarc=fail (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "auth.spf",
+        "detector": "auth",
+        "severity": "medium",
+        "points": 15,
+        "title": "SPF: softfail",
+        "detail": "SPF comprueba que el servidor que envió el email está autorizado por el dominio. Si falla, el remitente puede estar falsificado.",
+        "evidence": "spf=softfail (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "links.tld",
+        "detector": "links",
+        "severity": "medium",
+        "points": 15,
+        "title": "Dominio .top",
+        "detail": ".top es una extensión barata muy usada en campañas de phishing.",
+        "evidence": "\"Pagar y programar la entrega\" → https://xk7q2vz9pw4m.top:8443/entrega/pago?id=ES48213 (envuelto en www.ayuntamiento-ejemplo.test)",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "tactic": "Initial Access",
+          "why": "El ataque llega en un enlace del correo.",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        },
+        "category": "links",
+        "reliability": "medium",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566.002",
+            "name": "Phishing: Spearphishing Link",
+            "tactic": "Initial Access",
+            "why": "El ataque llega en un enlace del correo.",
+            "url": "https://attack.mitre.org/techniques/T1566/002/"
+          },
+          {
+            "id": "T1204.001",
+            "name": "User Execution: Malicious Link",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima pulse el enlace.",
+            "url": "https://attack.mitre.org/techniques/T1204/001/"
+          }
+        ]
+      },
+      {
+        "id": "links.nested-redirect",
+        "detector": "links",
+        "severity": "medium",
+        "points": 15,
+        "title": "Enlace que pasa por varias webs antes de llegar",
+        "detail": "El enlace salta 2 veces antes de llegar a xk7q2vz9pw4m.top: así se esconde el destino real.",
+        "evidence": "https://www.ayuntamiento-ejemplo.test/redir?url=… → https://acortar-enlaces.test/r?… → https://xk7q2vz9pw4m.top:8443/entrega/pago?id=ES48213",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "tactic": "Initial Access",
+          "why": "El ataque llega en un enlace del correo.",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        },
+        "category": "links",
+        "reliability": "medium",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566.002",
+            "name": "Phishing: Spearphishing Link",
+            "tactic": "Initial Access",
+            "why": "El ataque llega en un enlace del correo.",
+            "url": "https://attack.mitre.org/techniques/T1566/002/"
+          },
+          {
+            "id": "T1204.001",
+            "name": "User Execution: Malicious Link",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima pulse el enlace.",
+            "url": "https://attack.mitre.org/techniques/T1204/001/"
+          }
+        ]
+      },
+      {
+        "id": "links.open-redirect",
+        "detector": "links",
+        "severity": "medium",
+        "points": 15,
+        "title": "Enlace que se aprovecha de otra web",
+        "detail": "El enlace empieza en www.ayuntamiento-ejemplo.test, pero esa web te reenvía a xk7q2vz9pw4m.top. Se usa una web conocida para parecer de fiar.",
+        "evidence": "https://www.ayuntamiento-ejemplo.test/redir?url=… → https://acortar-enlaces.test/r?… → https://xk7q2vz9pw4m.top:8443/entrega/pago?id=ES48213",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "tactic": "Initial Access",
+          "why": "El ataque llega en un enlace del correo.",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        },
+        "category": "links",
+        "reliability": "medium",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566.002",
+            "name": "Phishing: Spearphishing Link",
+            "tactic": "Initial Access",
+            "why": "El ataque llega en un enlace del correo.",
+            "url": "https://attack.mitre.org/techniques/T1566/002/"
+          },
+          {
+            "id": "T1204.001",
+            "name": "User Execution: Malicious Link",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima pulse el enlace.",
+            "url": "https://attack.mitre.org/techniques/T1204/001/"
+          }
+        ]
+      },
+      {
+        "id": "language.urgency",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Mete prisa",
+        "detail": "Los plazos muy cortos buscan que no te pares a comprobar si el mensaje es real.",
+        "evidence": "…ramar la entrega Si no pagas en 24 horas, el paquete volverá al remite…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "tactic": "Execution",
+          "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        },
+        "category": "language",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1204",
+            "name": "User Execution",
+            "tactic": "Execution",
+            "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+            "url": "https://attack.mitre.org/techniques/T1204/"
+          }
+        ]
+      },
+      {
+        "id": "auth.dkim",
+        "detector": "auth",
+        "severity": "low",
+        "points": 5,
+        "title": "DKIM: none",
+        "detail": "DKIM es una firma digital del dominio. Si falla, el mensaje pudo ser modificado o no lo firmó quien dice ser.",
+        "evidence": "dkim=none (según mx.example.com)",
+        "mitre": {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        },
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1684.002",
+            "name": "Social Engineering: Email Spoofing",
+            "tactic": "Stealth",
+            "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+            "url": "https://attack.mitre.org/techniques/T1684/002/"
+          }
+        ]
+      },
+      {
+        "id": "headers.missing-messageid",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Sin Message-ID",
+        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
+        "evidence": "",
+        "mitre": null,
+        "category": "infrastructure",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
+      },
+      {
+        "id": "links.high-entropy",
+        "detector": "links",
+        "severity": "low",
+        "points": 5,
+        "title": "Dirección con aspecto aleatorio",
+        "detail": "xk7q2vz9pw4m.top o su ruta parecen escritos al azar, algo típico de webs de usar y tirar.",
+        "evidence": "https://www.ayuntamiento-ejemplo.test/redir?url=… → https://acortar-enlaces.test/r?… → https://xk7q2vz9pw4m.top:8443/entrega/pago?id=ES48213",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "tactic": "Initial Access",
+          "why": "El ataque llega en un enlace del correo.",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        },
+        "category": "links",
+        "reliability": "medium",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566.002",
+            "name": "Phishing: Spearphishing Link",
+            "tactic": "Initial Access",
+            "why": "El ataque llega en un enlace del correo.",
+            "url": "https://attack.mitre.org/techniques/T1566/002/"
+          },
+          {
+            "id": "T1204.001",
+            "name": "User Execution: Malicious Link",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima pulse el enlace.",
+            "url": "https://attack.mitre.org/techniques/T1204/001/"
+          }
+        ]
+      },
+      {
+        "id": "links.non-standard-port",
+        "detector": "links",
+        "severity": "low",
+        "points": 5,
+        "title": "Enlace con un puerto poco habitual",
+        "detail": "El enlace usa el puerto 8443. Las webs normales no lo indican.",
+        "evidence": "https://www.ayuntamiento-ejemplo.test/redir?url=… → https://acortar-enlaces.test/r?… → https://xk7q2vz9pw4m.top:8443/entrega/pago?id=ES48213",
+        "mitre": {
+          "id": "T1566.002",
+          "name": "Phishing: Spearphishing Link",
+          "tactic": "Initial Access",
+          "why": "El ataque llega en un enlace del correo.",
+          "url": "https://attack.mitre.org/techniques/T1566/002/"
+        },
+        "category": "links",
+        "reliability": "medium",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566.002",
+            "name": "Phishing: Spearphishing Link",
+            "tactic": "Initial Access",
+            "why": "El ataque llega en un enlace del correo.",
+            "url": "https://attack.mitre.org/techniques/T1566/002/"
+          },
+          {
+            "id": "T1204.001",
+            "name": "User Execution: Malicious Link",
+            "tactic": "Execution",
+            "why": "El ataque necesita que la víctima pulse el enlace.",
+            "url": "https://attack.mitre.org/techniques/T1204/001/"
+          }
+        ]
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Servicio de Entregas",
+        "address": "avisos@avisos-entregas.test",
+        "domain": "avisos-entregas.test"
+      },
+      "replyTo": null,
+      "returnPath": "rebotes@avisos-entregas.test",
+      "subject": "Tu paquete no se ha podido entregar",
+      "links": [
+        {
+          "text": "Pagar y programar la entrega",
+          "href": "https://www.ayuntamiento-ejemplo.test/redir?url=https%3A%2F%2Facortar-enlaces.test%2Fr%3Fu%3DaHR0cHM6Ly94azdxMnZ6OXB3NG0udG9wOjg0NDMvZW50cmVnYS9wYWdvP2lkPUVTNDgyMTM%3D"
+        }
+      ],
+      "authResults": "mx.example.com; spf=softfail smtp.mailfrom=avisos-entregas.test; dkim=none; dmarc=fail header.from=avisos-entregas.test",
+      "date": "Sat, 07 Nov 2026 09:13:55 +0100",
+      "route": [
+        {
+          "from": "avisos-entregas.test",
+          "helo": "avisos-entregas.test",
+          "by": "mx.example.com",
+          "rdns": "unknown",
+          "ip": "203.0.113.77",
+          "date": "Sat, 07 Nov 2026 09:14:02 +0100",
+          "time": 1794039242000,
+          "entry": true
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://xk7q2vz9pw4m.top:8443/entrega/pago?id=ES48213"
+      ],
+      "domains": [
+        "avisos-entregas.test",
+        "xk7q2vz9pw4m.top"
+      ],
+      "ips": [
+        "203.0.113.77"
+      ],
+      "emails": [
+        "avisos@avisos-entregas.test",
+        "rebotes@avisos-entregas.test"
+      ],
+      "attachments": []
+    }
   }
 }

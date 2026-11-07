@@ -3,7 +3,7 @@
 Generada con `npm run coverage` (`tools/gen-coverage.mjs`); `tests/unit/coverage-matrix.test.js` falla si no está al día.
 Una regla cuenta como probada si su id aparece en algún test o si alguna muestra de `samples/` la produce.
 
-80 reglas, 80 probadas.
+86 reglas, 86 probadas.
 
 | Regla | ATT&CK | Muestras | Tests | |
 | --- | --- | --- | --- | --- |
@@ -20,17 +20,17 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `attachments.pdf-active` | T1204.002, T1059.007 | 12 | `unit/attachments.test.js`, `unit/samples.test.js` | ✅ |
 | `attachments.rtl-override` | T1036.002, T1204.002 | — | `unit/attachments.test.js`, `unit/mitre.test.js` | ✅ |
 | `attachments.type-mismatch` | T1036.008, T1204.002 | 11 | `unit/attachments.test.js`, `unit/samples.test.js` | ✅ |
-| `auth.dkim` | T1684.002 | 03, 04, 07, 11, 12 | `unit/auth.test.js`, `unit/plain.test.js` | ✅ |
+| `auth.dkim` | T1684.002 | 03, 04, 07, 11, 12, 13 | `unit/auth.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.dkim-body-modified` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `auth.dkim-body-verified` | — | — | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |
 | `auth.dkim-verified-aligned` | — | — | `unit/auth-evaluate.test.js` | ✅ |
 | `auth.dkim-weak` | — | — | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |
-| `auth.dmarc` | T1684.002 | 03, 04, 05, 07, 11, 12 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/plain.test.js` | ✅ |
+| `auth.dmarc` | T1684.002 | 03, 04, 05, 07, 11, 12, 13 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.dmarc-declared-mismatch` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `auth.dmarc-unaligned` | T1684.002 | 04 | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |
 | `auth.forged-results` | T1684.002 | — | `unit/auth-evaluate.test.js`, `unit/mitre.test.js` | ✅ |
 | `auth.missing` | — | 06, 08, 09, 10 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
-| `auth.spf` | T1684.002 | 03, 04, 11, 12 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/finding.test.js`, `unit/plain.test.js` | ✅ |
+| `auth.spf` | T1684.002 | 03, 04, 11, 12, 13 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/finding.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.spf-offline` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `headers.duplicate` | — | 09 | `unit/headers.test.js`, `unit/samples.test.js` | ✅ |
 | `headers.duplicate-from` | T1684.002 | 09 | `unit/headers.test.js`, `unit/mitre.test.js`, `unit/samples.test.js` | ✅ |
@@ -38,7 +38,7 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `headers.mailer` | — | 03 | `unit/headers.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
 | `headers.messageid-domain` | — | 03 | `unit/headers.test.js` | ✅ |
 | `headers.missing-date` | — | — | `unit/headers.test.js` | ✅ |
-| `headers.missing-messageid` | — | 04, 05, 06, 11, 12 | `unit/headers.test.js` | ✅ |
+| `headers.missing-messageid` | — | 04, 05, 06, 11, 12, 13 | `unit/headers.test.js` | ✅ |
 | `html.data-uri` | T1598 | — | `unit/html.test.js`, `unit/security.test.js` | ✅ |
 | `html.form` | T1598 | 07 | `unit/html.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
 | `html.hidden-text` | T1027 | 07 | `unit/html.test.js` | ✅ |
@@ -49,16 +49,22 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `language.credentials` | T1598 | 03, 05, 07, 10, 12 | `unit/advice.test.js`, `unit/engine.test.js`, `unit/language.test.js`, `unit/scoring.test.js` | ✅ |
 | `language.prize` | T1204 | — | `unit/language.test.js` | ✅ |
 | `language.threat` | T1204 | 03, 04, 05, 06, 08, 11 | `unit/language.test.js`, `unit/scoring.test.js` | ✅ |
-| `language.urgency` | T1204 | 03, 04, 05, 06, 11, 12 | `unit/coverage-matrix.test.js`, `unit/language.test.js`, `unit/scoring.test.js` | ✅ |
+| `language.urgency` | T1204 | 03, 04, 05, 06, 11, 12, 13 | `unit/coverage-matrix.test.js`, `unit/language.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.at-sign` | T1566.002, T1204.001 | — | `unit/links.test.js` | ✅ |
 | `links.brand-in-path` | T1566.002, T1204.001 | 04, 07 | `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
+| `links.credentials-in-url` | T1566.002, T1204.001 | — | `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.download` | T1566.002, T1204.001 | — | `unit/links.test.js` | ✅ |
+| `links.high-entropy` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.insecure-login` | T1566.002, T1204.001 | 03, 07 | `unit/coverage-matrix.test.js`, `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.ip` | T1566.002, T1204.001 | 07 | `unit/coverage-matrix.test.js`, `unit/engine.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.mismatch` | T1566.002, T1204.001 | 03, 07 | `unit/advice.test.js`, `unit/finding.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
+| `links.nested-redirect` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
+| `links.non-standard-port` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
+| `links.obfuscated-ip` | T1566.002, T1204.001 | — | `unit/links.test.js`, `unit/plain.test.js` | ✅ |
+| `links.open-redirect` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.punycode` | T1566.002, T1204.001 | 10 | `unit/links.test.js` | ✅ |
 | `links.shortener` | T1566.002, T1204.001 | 04 | `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
-| `links.tld` | T1566.002, T1204.001 | — | `unit/links.test.js` | ✅ |
+| `links.tld` | T1566.002, T1204.001 | 13 | `unit/links.test.js` | ✅ |
 | `links.tracking` | T1566.002, T1204.001 | — | `unit/links.test.js` | ✅ |
 | `lookalike.brand-in-domain` | T1583.001 | 03, 08, 10 | `unit/lookalike.test.js`, `unit/samples.test.js`, `unit/scoring.test.js` | ✅ |
 | `lookalike.deceptive-subdomain` | T1583.001 | 10 | `unit/lookalike.test.js`, `unit/samples.test.js` | ✅ |

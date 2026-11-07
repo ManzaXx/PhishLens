@@ -86,7 +86,11 @@ test('entropía: hosts y rutas aleatorias, pero no el seguimiento', () => {
   assert.equal(analyzeUrl('https://kq3v9zx7w2pl.test/').flags.highEntropy, true);
   assert.equal(analyzeUrl('https://correos.es/').flags.highEntropy, false);
   assert.equal(analyzeUrl('https://notificaciones-clientes.test/').flags.highEntropy, false);
-  assert.equal(analyzeUrl('https://x.test/a/Zq8Lp3Vx9Rt2Mk7Wb4Nc6Hd1Yf5Gj0Qs').flags.highEntropy, true);
+  // El path aleatorio se mide (sale en la vista «URLs») pero no es regla: los enlaces de seguimiento lo tienen.
+  const path = analyzeUrl('https://x.test/a/Zq8Lp3Vx9Rt2Mk7Wb4Nc6Hd1Yf5Gj0Qs');
+  assert.ok(path.entropy.path >= 4.5);
+  assert.equal(path.flags.highEntropy, false);
+  assert.equal(analyzeUrl('https://email.mg.tienda.test/c/eJxNjkEOgyAQRc_iWsgAgxZX7ePqjhuDlQh9eCmdZQGb5bmEyn--Eb').flags.highEntropy, false);
   assert.equal(analyzeUrl('https://links.sendgrid.net/ls/click?upn=Zq8Lp3Vx9Rt2Mk7Wb4Nc6Hd1Yf5Gj0Qs/Zq8Lp3Vx9Rt2Mk7Wb4Nc6Hd1Yf5Gj0Qs').flags.highEntropy, false);
   const r = analyzeUrl('https://kq3v9zx7w2pl.test/');
   assert.ok(r.entropy.host > 3.5);

@@ -1,5 +1,6 @@
 // Extracción de indicadores de compromiso (IOCs) para compartir con un equipo de seguridad.
-import { parseUrl, unwrapUrl } from '../parser/url.js';
+import { parseUrl } from '../parser/url.js';
+import { analyzeUrl } from './url.js';
 import { parseReceived } from '../parser/received.js';
 
 const PRIVATE_IP = /^(10\.|127\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.)/;
@@ -32,7 +33,7 @@ export function extractIocs(email) {
   addEmail(email.returnPath);
 
   for (const link of email.links ?? []) {
-    const href = unwrapUrl(link.href) ?? link.href;
+    const href = analyzeUrl(link.href)?.final ?? link.href;
     const url = parseUrl(href);
     if (!url) continue;
     urls.add(url.href);

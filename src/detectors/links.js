@@ -1,6 +1,7 @@
 // Detector de enlaces engañosos o sospechosos.
 import { finding } from '../core/finding.js';
-import { parseUrl, registrableDomain, unwrapUrl } from '../parser/url.js';
+import { parseUrl, registrableDomain } from '../parser/url.js';
+import { analyzeUrl } from '../intel/url.js';
 import { URL_SHORTENERS, SUSPICIOUS_TLDS, TRACKING_DOMAINS, DANGEROUS_EXTENSIONS, ARCHIVE_EXTENSIONS, MACRO_EXTENSIONS } from '../data/lists.js';
 import { BRANDS } from '../data/brands.js';
 import { isOfficialDomain } from './sender.js';
@@ -14,7 +15,56 @@ const DOMAIN_IN_TEXT = /\b((?:[a-z0-9-]{1,63}\.){1,10}[a-z]{2,24})\b/i;
 const MAX_TEXT = 300;
 const LOGIN_PATH = /(log[-_]?in|sign[-_]?in|acceso|cuenta|account|verif|password|contrase|banca|secure)/i;
 
-function checksFor(link, url) {
+const MAX_EVIDENCE = 300;
+
+/** Un salto intermedio sin su query larga: «https://r.test/go?url=…». */
+function shortHop(href, nextVia) {
+  const u = new URL(href);
+  const name = nextVia?.startsWith('param:') ? nextVia.slice(6) : null;
+  return `${u.origin}${u.pathname}${u.search ? (name ? `?${name}=…` : '?…') : ''}`;
+}
+
+/** La cadena de saltos en una línea: «a → b → c». */
+export function chainText(analysis) {
+  const { hops } = analysis;
+  const text = hops.map((h, i) => (i < hops.length - 1 ? shortHop(h.href, hops[i + 1].via) : h.href)).join(' → ');
+  return text.length > MAX_EVIDENCE ? `${text.slice(0, MAX_EVIDENCE - 1)}…` : text;
+}
+
+/** Reglas de la URL desenvuelta (spec 2.3, §5.3). Cada una lleva la cadena como evidencia. */
+function urlChecks(a) {
+  const out = [];
+  const chain = chainText(a);
+  const hosts = a.hops.map((h) => new URL(h.href).hostname);
+  const jumps = a.hops.length - 1;
+  if (a.flags.nestedRedirect) {
+    out.push(['nested-redirect', 'medium', 'Enlace que pasa por varias webs antes de llegar',
+      `El enlace salta ${jumps} veces antes de llegar a ${a.hostname}: así se esconde el destino real.`, chain]);
+  }
+  if (a.flags.openRedirect) {
+    out.push(['open-redirect', 'medium', 'Enlace que se aprovecha de otra web',
+      `El enlace empieza en ${hosts[0]}, pero esa web te reenvía a ${a.hostname}. Se usa una web conocida para parecer de fiar.`, chain]);
+  }
+  if (a.flags.obfuscatedIp) {
+    out.push(['obfuscated-ip', 'high', 'Dirección IP disfrazada',
+      `El enlace escribe la dirección ${a.hostname} de una forma rara para que no parezca una IP.`, chain]);
+  }
+  if (a.flags.credentials) {
+    out.push(['credentials-in-url', 'high', 'Enlace con usuario y contraseña dentro',
+      `El enlace lleva un usuario y una contraseña antes de ${a.hostname}. Ninguna web seria los pone ahí: sirve para engañar o para colar un acceso robado.`, chain]);
+  }
+  if (a.flags.highEntropy) {
+    out.push(['high-entropy', 'low', 'Dirección con aspecto aleatorio',
+      `${a.hostname} o su ruta parecen escritos al azar, algo típico de webs de usar y tirar.`, chain]);
+  }
+  if (a.flags.nonStandardPort) {
+    out.push(['non-standard-port', 'low', 'Enlace con un puerto poco habitual',
+      `El enlace usa el puerto ${a.port}. Las webs normales no lo indican.`, chain]);
+  }
+  return out;
+}
+
+function checksFor(link, url, analysis) {
   const out = [];
   const shown = link.text !== link.href ? DOMAIN_IN_TEXT.exec(link.text.slice(0, MAX_TEXT))?.[1] : null;
   if (shown && registrableDomain(shown) !== url.registrableDomain) {
@@ -26,7 +76,7 @@ function checksFor(link, url) {
         `El texto muestra ${shown.toLowerCase()}, pero al pulsar irías a ${url.hostname}.`]);
     }
   }
-  if (url.hasAt) {
+  if (url.hasAt && !analysis.flags.credentials) {
     out.push(['at-sign', 'high', 'URL con @ que oculta el destino real',
       `Todo lo que va antes de la @ se ignora: el navegador iría a ${url.hostname}.`]);
   }
@@ -73,13 +123,15 @@ export function detect(email) {
   // Un hallazgo por tipo de señal: con 200 enlaces iguales el informe sigue siendo legible.
   const byId = new Map();
   for (const link of email.links ?? []) {
-    // Si el enlace está envuelto (Safe Links, Google...) se analiza el destino real.
-    const real = unwrapUrl(link.href);
-    const target = real ?? link.href;
+    // Si el enlace está envuelto (Safe Links, Google, un redirector...) se analiza el destino real.
+    const analysis = analyzeUrl(link.href);
+    if (!analysis) continue;
+    const real = analysis.hops.length > 1 ? analysis.final : null;
+    const target = analysis.final;
     const url = parseUrl(target);
     if (!url) continue;
     const shownText = link.text === link.href ? target : link.text;
-    for (const [id, severity, title, detail] of checksFor({ text: shownText, href: target }, url)) {
+    for (const [id, severity, title, detail, chain] of [...checksFor({ text: shownText, href: target }, url, analysis), ...urlChecks(analysis)]) {
       const entry = byId.get(id);
       if (entry) {
         entry.hrefs.add(url.href);
@@ -90,7 +142,7 @@ export function detect(email) {
         severity,
         title,
         detail,
-        evidence: (link.text !== link.href ? `"${link.text}" → ` : '') + (real ? `${real} (envuelto en ${new URL(link.href).hostname})` : link.href),
+        evidence: chain ?? (link.text !== link.href ? `"${link.text}" → ` : '') + (real ? `${real} (envuelto en ${new URL(analysis.hops[0].href).hostname})` : link.href),
       });
     }
   }

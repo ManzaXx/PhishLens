@@ -40,3 +40,10 @@ test('los textos de SPF, DKIM y DMARC valen también para «none» o «neutral»
     assert.doesNotMatch(PLAIN[id], /no da por bueno|rechaz|prohíbe|falla/i, id);
   }
 });
+
+test('los textos llanos de las reglas de URLs no usan palabras técnicas', () => {
+  for (const id of ['links.nested-redirect', 'links.obfuscated-ip', 'links.credentials-in-url', 'links.high-entropy', 'links.open-redirect', 'links.non-standard-port']) {
+    assert.ok(Object.hasOwn(PLAIN, id), id);
+    assert.doesNotMatch(PLAIN[id], /\b(URL|IP|puerto|base64|entrop[ií]a|redirecci[oó]n)\b/i, id);
+  }
+});

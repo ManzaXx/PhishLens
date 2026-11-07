@@ -14,6 +14,7 @@ export const SAMPLES = [
   // Adjuntos construidos byte a byte por tools/gen-samples.mjs: sin código ni malware.
   { id: '11-adjunto-tipo-falso', title: 'Adjunto con tipo falso', file: '11-adjunto-tipo-falso.eml' },
   { id: '12-pdf-activo-zip', title: 'PDF activo y ZIP cifrado', file: '12-pdf-activo-zip.eml' },
+  { id: '13-redireccion-anidada', title: 'Redirección anidada', file: '13-redireccion-anidada.eml' },
 ];
 
 // Lotes de ejemplo: varios correos que se analizan juntos (grafo y campañas).

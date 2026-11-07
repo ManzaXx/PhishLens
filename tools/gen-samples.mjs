@@ -94,6 +94,33 @@ const GENERATED = {
     '--pz-12--',
     '',
   ].join('\n'),
+  // Redirección anidada: un redirector abierto que lleva a un acortador con el destino en base64,
+  // y al final un host aleatorio con un puerto raro. Ningún dominio existe (.test y .top de ejemplo).
+  '13-redireccion-anidada.eml': (() => {
+    const final = 'https://xk7q2vz9pw4m.top:8443/entrega/pago?id=ES48213';
+    const middle = `https://acortar-enlaces.test/r?u=${Buffer.from(final).toString('base64')}`;
+    const outer = `https://www.ayuntamiento-ejemplo.test/redir?url=${encodeURIComponent(middle)}`;
+    return [
+      'Authentication-Results: mx.example.com;',
+      ' spf=softfail smtp.mailfrom=avisos-entregas.test;',
+      ' dkim=none;',
+      ' dmarc=fail header.from=avisos-entregas.test',
+      'Received: from avisos-entregas.test (unknown [203.0.113.77]) by mx.example.com; Sat, 07 Nov 2026 09:14:02 +0100',
+      'Return-Path: <rebotes@avisos-entregas.test>',
+      'From: "Servicio de Entregas" <avisos@avisos-entregas.test>',
+      'To: pablo@example.com',
+      'Subject: Tu paquete no se ha podido entregar',
+      'Date: Sat, 07 Nov 2026 09:13:55 +0100',
+      'MIME-Version: 1.0',
+      'Content-Type: text/html; charset=utf-8',
+      '',
+      '<p>Hola:</p>',
+      '<p>No hemos podido entregar tu paquete porque faltan 1,99 EUR de gastos de envío.</p>',
+      `<p><a href="${outer}">Pagar y programar la entrega</a></p>`,
+      '<p>Si no pagas en 24 horas, el paquete volverá al remitente.</p>',
+      '',
+    ].join('\n');
+  })(),
 };
 for (const [file, text] of Object.entries(GENERATED)) writeFileSync(new URL(file, dir), text);
 

@@ -1,7 +1,8 @@
 // Grafo de IOCs de un lote (spec 2.3, §5.2). Determinista: el mismo lote en cualquier orden da el
 // mismo grafo. No hay red: `resuelve-en` solo une el dominio del remitente con la IP del salto de
 // entrada que figura en las propias cabeceras.
-import { parseUrl, unwrapUrl } from '../parser/url.js';
+import { parseUrl } from '../parser/url.js';
+import { analyzeUrl } from './url.js';
 import { isReservedIp } from '../lib/ip.js';
 
 export const NODE_TYPES = Object.freeze(['email', 'address', 'domain', 'ip', 'url', 'hash']);
@@ -25,7 +26,7 @@ export const senderDomain = (report) => lowerAddress(report?.email?.from)?.split
 export function linkUrls(report) {
   const out = [];
   for (const link of report?.email?.links ?? []) {
-    const url = parseUrl(unwrapUrl(link.href) ?? link.href);
+    const url = parseUrl(analyzeUrl(link.href)?.final ?? link.href);
     if (url) out.push(url);
   }
   return out;
