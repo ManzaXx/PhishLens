@@ -1,11 +1,12 @@
 // Rutas del informe en la URL (spec 2.3, §2): #analista/<vista>, nunca lanza y nunca sale de la lista.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { VIEWS, VIEW_LABELS, NAV_GROUPS, parseRoute, formatRoute, initialMode, resolveView, hasView } from '../../src/ui/route.js';
+import { VIEWS, VIEW_LABELS, NAV_GROUPS, parseRoute, formatRoute, initialMode, resolveView, hasView, historyEnabled, HISTORY_KEY } from '../../src/ui/route.js';
 
 test('vistas y grupos de la navegación', () => {
-  assert.deepEqual(VIEWS, ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'urls', 'iocs', 'campanas', 'attack']);
-  assert.deepEqual(NAV_GROUPS.map((g) => g.label), ['Correo', 'Inteligencia']);
+  assert.deepEqual(VIEWS, ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'urls', 'iocs', 'campanas', 'attack', 'historial']);
+  assert.deepEqual(NAV_GROUPS.map((g) => g.label), ['Correo', 'Inteligencia', 'Historial']);
+  assert.equal(VIEW_LABELS.historial, 'Historial');
   assert.deepEqual(NAV_GROUPS.flatMap((g) => g.views), VIEWS);
   assert.deepEqual(NAV_GROUPS[1].views, ['urls', 'iocs', 'campanas', 'attack']);
 });
@@ -76,4 +77,19 @@ test('«URLs» solo existe si hay algún enlace', () => {
   assert.equal(hasView('urls', { email: {} }), false);
   assert.equal(hasView('urls', { email: { links: [{ href: 'https://a.test/', text: 'a' }] } }), true);
   assert.deepEqual(parseRoute('#analista/urls'), { mode: 'analyst', view: 'urls' });
+});
+
+test('historyEnabled: solo «on» enciende el historial y nunca rompe', () => {
+  const store = (v) => ({ getItem: (k) => (k === HISTORY_KEY ? v : null) });
+  assert.equal(HISTORY_KEY, 'phishlens-history');
+  assert.equal(historyEnabled(store('on')), true);
+  for (const v of ['off', 'yes', 'ON', null, '']) assert.equal(historyEnabled(store(v)), false, String(v));
+  assert.equal(historyEnabled({ getItem: () => { throw new Error('bloqueado'); } }), false);
+  assert.equal(historyEnabled(null), false);
+});
+
+test('«Historial» solo existe con el historial encendido', () => {
+  assert.equal(hasView('historial', {}, {}), false);
+  assert.equal(hasView('historial', {}, { historyEnabled: true }), true);
+  assert.equal(resolveView('historial', {}, {}), 'resumen');
 });

@@ -96,6 +96,15 @@
           <div class="batch-status__notice" id="batch-notice" hidden></div>
         </div>
 
+        <div class="history-toggle">
+          <label class="history-toggle__label">
+            <input type="checkbox" id="history-toggle" aria-describedby="history-toggle-hint">
+            Guardar historial en este navegador
+          </label>
+          <p class="hint" id="history-toggle-hint">Se guarda el resultado de cada análisis en este navegador. El correo no se guarda. Nadie más lo ve.</p>
+          <p class="history-toggle__status" id="history-status" role="status"></p>
+        </div>
+
         <div class="samples">
           <span class="samples__label">Prueba un ejemplo:</span>
           <div class="samples__list" id="samples"></div>

@@ -1,19 +1,30 @@
 // Rutas del informe en la URL: '' es el modo sencillo y #analista/<vista> el modo analista.
 // Funciones puras (sin DOM): la URL y el almacenamiento son entrada no fiable.
 
-export const VIEWS = Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'urls', 'iocs', 'campanas', 'attack']);
+export const VIEWS = Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'urls', 'iocs', 'campanas', 'attack', 'historial']);
 export const VIEW_LABELS = Object.freeze({
   resumen: 'Resumen', senales: 'Señales', 'vista-segura': 'Vista segura', autenticacion: 'Autenticación',
-  cabeceras: 'Cabeceras y ruta', adjuntos: 'Adjuntos', urls: 'URLs', iocs: 'IOCs', campanas: 'Campañas', attack: 'ATT&CK',
+  cabeceras: 'Cabeceras y ruta', adjuntos: 'Adjuntos', urls: 'URLs', iocs: 'IOCs', campanas: 'Campañas', attack: 'ATT&CK', historial: 'Historial',
 });
 export const NAV_GROUPS = Object.freeze([
   Object.freeze({ label: 'Correo', views: Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos']) }),
   Object.freeze({ label: 'Inteligencia', views: Object.freeze(['urls', 'iocs', 'campanas', 'attack']) }),
+  Object.freeze({ label: 'Historial', views: Object.freeze(['historial']) }),
 ]);
 
 const PREFIX = '#analista';
 const SIMPLE = Object.freeze({ mode: 'simple', view: 'resumen' });
 export const MODE_KEY = 'phishlens-mode';
+export const HISTORY_KEY = 'phishlens-history';
+
+/** ¿Está encendido el historial? Solo «on» cuenta; un almacenamiento bloqueado es «apagado». */
+export function historyEnabled(storage) {
+  try {
+    return storage?.getItem(HISTORY_KEY) === 'on';
+  } catch {
+    return false;
+  }
+}
 
 /** ¿Es un hash del modo analista? (#analista o #analista/…, no #analistas). */
 export const isAnalystHash = (hash) => typeof hash === 'string' && (hash === PREFIX || hash.startsWith(`${PREFIX}/`));
@@ -52,6 +63,7 @@ export function initialMode(storage, hash) {
 /** ¿Tiene esta vista algo que enseñar en este informe? context.batch: el lote analizado, si lo hay. */
 export function hasView(view, report, context = {}) {
   if (!VIEWS.includes(view)) return false;
+  if (view === 'historial') return context?.historyEnabled === true;
   if (view === 'campanas') return (context?.batch?.entries?.length ?? 0) >= 2;
   if (view === 'autenticacion' || view === 'cabeceras') {
     return Boolean(report?.email?.from || report?.email?.authResults);

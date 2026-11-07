@@ -10,6 +10,8 @@ import { FACTS, levelLegend } from '../core/facts.js';
 import { menuKey } from './components/menu-button.js';
 import { graphKey } from './components/graph.js';
 import { parseRoute, formatRoute, initialMode, resolveView, isAnalystHash, MODE_KEY } from './route.js';
+import { createHistoryControl } from './history-control.js';
+import { VERSION } from './render.js';
 
 import { LIMITS } from '../lib/limits.js';
 import { reveal } from '../lib/text.js';
@@ -53,6 +55,32 @@ function storage(fn) {
     return null;
   }
 }
+
+// ---------- Historial (apagado por defecto; nada de esto puede romper un análisis) ----------
+const historyToggle = $('#history-toggle');
+const historyStatus = $('#history-status');
+const historyControl = createHistoryControl({ storage: storage((s) => s), factory: globalThis.indexedDB, version: VERSION });
+let evictedShown = false;
+historyControl.on('unavailable', () => {
+  historyToggle.checked = false;
+  historyToggle.disabled = true;
+  historyStatus.textContent = 'Este navegador no deja guardar el historial (ventana privada o almacenamiento bloqueado).';
+});
+historyControl.on('evicted', () => {
+  if (evictedShown) return;
+  evictedShown = true;
+  historyStatus.textContent = 'Se ha borrado el análisis más antiguo para no pasar de 500.';
+});
+historyToggle.addEventListener('change', async () => {
+  if (historyToggle.checked) {
+    const res = await historyControl.enable();
+    if (res.ok) historyStatus.textContent = 'Historial activado.';
+  } else {
+    historyControl.disable();
+    historyStatus.textContent = 'Historial desactivado. Lo ya guardado sigue ahí hasta que lo borres.';
+  }
+});
+historyControl.ready().then(() => { historyToggle.checked = historyControl.enabled(); });
 
 state.route = { mode: initialMode(storage((s) => s), location.hash), view: parseRoute(location.hash).view };
 // El modo recordado se lleva a la URL, para que Atrás y los enlaces copiados digan lo mismo que la pantalla.
@@ -139,6 +167,7 @@ async function loadFile(file) {
   }
   cancelBatch();
   state.fileText = text;
+  state.fileName = file.name;
   dropzone.classList.add('has-file');
   dropzone.querySelector('.dropzone__title').textContent = file.name;
   dropzone.querySelector('.dropzone__hint').textContent = `${(file.size / 1024).toFixed(1)} KB · listo para analizar`;
@@ -287,6 +316,7 @@ async function runBatch(files) {
   dropzone.querySelector('.dropzone__title').textContent = `${out.entries.length} correos`;
   dropzone.querySelector('.dropzone__hint').textContent = 'lote analizado';
   paint();
+  historyControl.recordBatch(state.batch, state.batchTexts);
   announce(`Lote analizado: ${out.entries.length} correos y ${state.batch.campaigns.length} ${state.batch.campaigns.length === 1 ? 'campaña' : 'campañas'}. Se muestra ${state.lastReport.verdict.headline}.`);
   reportBox.scrollIntoView({ block: 'start' });
 }
@@ -329,6 +359,7 @@ function run() {
     state.lastReport = analyzeInput(input);
     paint();
     announce(`Resultado: ${state.lastReport.verdict.headline}. ${state.lastReport.score} de 100.`);
+    historyControl.record(input, state.lastReport, input.kind === 'eml' ? state.fileName ?? null : null);
   } catch {
     // Un email malformado nunca debe dejar la página rota.
     reportBox.hidden = true;
@@ -542,6 +573,7 @@ const authLive = $('#auth-live');
 /** Re-analiza con lo que ha pegado el analista y vuelve a abrir la pestaña de autenticación. */
 function reanalyze(status) {
   state.lastReport = analyzeInput({ ...state.lastInput, ...state.analyst });
+  historyControl.record(state.lastInput, state.lastReport, state.batch?.entries.find((e) => e.key === state.batch.current)?.name ?? state.fileName ?? null);
   const dkimKey = $('#dkim-key')?.value ?? '';
   const spfRecord = $('#spf-record')?.value ?? '';
   state.route = { mode: 'analyst', view: 'autenticacion' };

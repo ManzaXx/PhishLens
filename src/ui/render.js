@@ -54,9 +54,12 @@ export function setPrintReport(container, report) {
   if (report) container.append(renderPrint(report));
 }
 
+/** Versión de PhishLens: va en los informes y en cada entrada del historial. */
+export const VERSION = '2.3.0';
+
 /** Informe serializado para descargar. */
 export function reportToJson(report) {
-  return JSON.stringify({ tool: 'PhishLens', version: '2.3.0', generatedAt: new Date().toISOString(), ...report }, null, 2);
+  return JSON.stringify({ tool: 'PhishLens', version: VERSION, generatedAt: new Date().toISOString(), ...report }, null, 2);
 }
 
 export { iocsToText };
