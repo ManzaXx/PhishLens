@@ -34,7 +34,7 @@ const $ = (sel) => document.querySelector(sel);
 const state = {
   tab: 'eml', fileText: null, lastReport: null, lastInput: null, analyst: {}, route: { mode: 'simple', view: 'resumen' },
   // Lote en memoria mientras la pestaña esté abierta: {entries, skipped, warning, graph, campaigns, current}.
-  batch: null, batchTexts: new Map(), batchAbort: null,
+  batch: null, batchTexts: new Map(), batchAbort: null, campaign: null,
 };
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
@@ -177,6 +177,7 @@ function cancelBatch() {
   state.batchAbort?.abort();
   state.batchAbort = null;
   state.batch = null;
+  state.campaign = null;
   state.batchTexts = new Map();
   batchStatus.hidden = true;
   batchNotice.hidden = true;
@@ -338,7 +339,7 @@ function paint(options = {}) {
   if (!state.lastReport) return;
   const { mode } = state.route;
   const view = resolveView(state.route.view, state.lastReport, { batch: state.batch });
-  renderReport(reportBox, state.lastReport, { mode, view, batch: state.batch, ...options });
+  renderReport(reportBox, state.lastReport, { mode, view, batch: state.batch, campaign: state.campaign, ...options });
   // En móvil la navegación es una fila con desplazamiento: la vista actual tiene que verse.
   const nav = reportBox.querySelector('.nav-rail');
   const current = nav?.querySelector('[aria-current="page"]');
@@ -545,6 +546,15 @@ function onReportAction(e) {
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (action === 'mode-simple') goTo('simple');
   if (action === 'mode-analyst') goTo('analyst');
+  if (action === 'pick-campaign') {
+    state.campaign = e.target.closest('[data-action]').dataset.id;
+    paint();
+    reportBox.querySelector('.campaign__title')?.focus({ preventScroll: true });
+  }
+  if (action === 'view-campaign') {
+    state.campaign = e.target.closest('[data-action]').dataset.id;
+    location.hash = formatRoute({ mode: 'analyst', view: 'campanas' });
+  }
   if (action === 'pick-email') {
     openBatchEmail(e.target.closest('[data-action]').dataset.key);
     state.route = { ...state.route, view: 'resumen' };

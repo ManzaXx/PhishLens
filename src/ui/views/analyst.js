@@ -13,12 +13,12 @@ import { headersPanel } from '../panels/headers.js';
 import { iocsPanel } from '../panels/iocs.js';
 import { mitrePanel } from '../panels/mitre.js';
 import { attachmentsPanel } from '../panels/attachments.js';
-import { emptyState } from '../components/empty-state.js';
+import { campaignsPanel } from '../panels/campaigns.js';
 
 const PANELS = new Map([
   ['resumen', summaryPanel], ['senales', findingsPanel], ['vista-segura', safeViewPanel], ['autenticacion', authPanel],
   ['cabeceras', headersPanel], ['adjuntos', attachmentsPanel], ['iocs', iocsPanel],
-  ['campanas', () => emptyState('Sin campañas', 'Ningún correo del lote comparte infraestructura, adjuntos ni plantilla.')], ['attack', mitrePanel],
+  ['campanas', campaignsPanel], ['attack', mitrePanel],
 ]);
 
 const IOC_KEYS = IOC_SECTIONS.map(([key]) => key);

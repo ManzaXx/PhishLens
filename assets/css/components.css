@@ -231,3 +231,24 @@
 .graph__note { margin: 0; font-size: var(--text-sm); color: var(--muted); }
 .graph__caption .hint { margin: var(--space-2) 0 0; }
 .data-table--graph td:nth-child(2) { overflow-wrap: anywhere; font-family: var(--mono); font-size: var(--text-sm); }
+
+/* ---------- Campañas (PR8) ---------- */
+.campaigns { display: grid; gap: var(--space-4); }
+.campaign-list { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+.campaign-list__btn { min-height: 44px; padding: 0 var(--space-4); font: inherit; font-weight: 600; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--muted); border-radius: var(--radius-sm); cursor: pointer; text-align: left; }
+.campaign-list__btn.level-critical { border-left-color: var(--critical); }
+.campaign-list__btn.level-phishing { border-left-color: var(--phishing); }
+.campaign-list__btn.level-suspicious { border-left-color: var(--suspicious); }
+.campaign-list__btn[aria-current="true"] { background: var(--accent-soft); border-color: var(--accent); border-left-width: 4px; }
+.campaign-list__btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.campaign { display: grid; gap: var(--space-4); }
+.campaign__title { margin: 0; }
+.campaign__block p { margin: 0; }
+.campaign__emails, .campaign__reasons, .campaign__techniques { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.campaign__email { min-height: 44px; width: 100%; justify-content: flex-start; text-align: left; overflow-wrap: anywhere; white-space: normal; }
+.campaign__reasons li { display: grid; gap: 2px; padding: var(--space-2) var(--space-3); background: var(--surface-2); border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+.campaign__reason { font-weight: 600; }
+.campaign__who { font-size: var(--text-sm); color: var(--muted); }
+.campaign-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--critical-soft); color: var(--text); }
+.campaign-note p { margin: 0; flex: 1 1 18rem; }
+.campaign-note .btn { min-height: 44px; }
