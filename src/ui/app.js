@@ -37,6 +37,8 @@ const state = {
   tab: 'eml', fileText: null, lastReport: null, lastInput: null, analyst: {}, route: { mode: 'simple', view: 'resumen' },
   // Lote en memoria mientras la pestaña esté abierta: {entries, skipped, warning, graph, campaigns, current}.
   batch: null, batchTexts: new Map(), batchAbort: null, campaign: null,
+  // Vista «Historial»: lo que se ha leído del historial para pintarla y el aviso del informe abierto desde él.
+  historyData: null, historyQuery: { filters: {}, offset: 0 }, savedNote: '',
 };
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
@@ -80,7 +82,163 @@ historyToggle.addEventListener('change', async () => {
     historyStatus.textContent = 'Historial desactivado. Lo ya guardado sigue ahí hasta que lo borres.';
   }
 });
-historyControl.ready().then(() => { historyToggle.checked = historyControl.enabled(); });
+const historyOpen = $('#history-open');
+historyControl.on('change', () => updateHistoryButton());
+historyControl.ready().then(() => {
+  historyToggle.checked = historyControl.enabled();
+  updateHistoryButton();
+});
+
+/** «Ver historial (N)» en la portada, solo si hay algo guardado. */
+async function updateHistoryButton() {
+  const h = historyControl.history();
+  const n = h ? await h.count().catch(() => 0) : 0;
+  historyOpen.hidden = !n;
+  historyOpen.textContent = `Ver historial (${n})`;
+}
+
+const DAY = 24 * 60 * 60 * 1000;
+/** Lee del historial lo que pinta la vista y la vuelve a pintar. */
+async function refreshHistory(extra = {}) {
+  const h = historyControl.history();
+  if (!h) {
+    state.historyData = null;
+    paint();
+    return;
+  }
+  const { filters, offset } = state.historyQuery;
+  try {
+    const since = filters.range ? new Date(Date.now() - Number(filters.range) * DAY) : undefined;
+    const page = await h.list({ level: filters.level || undefined, technique: filters.technique || undefined, since, offset });
+    const all = await h.list({ limit: 500 });
+    const techniques = [...new Set(all.items.flatMap((e) => (e.report.techniques ?? []).map((t) => t.id)))].sort();
+    const previous = state.historyData ?? {};
+    state.historyData = {
+      page: { ...page, offset }, filters, techniques,
+      search: 'search' in extra ? extra.search : previous.search ?? null,
+      compare: 'compare' in extra ? extra.compare : previous.compare ?? null,
+      selected: (previous.selected ?? []).filter((id) => page.items.some((e) => e.id === id) || all.items.some((e) => e.id === id)),
+      importResult: extra.importResult ?? null,
+    };
+  } catch {
+    state.historyData = null;
+  }
+  paint();
+}
+
+/** Abre el historial desde la portada, con el último análisis guardado como informe de fondo. */
+async function openHistory() {
+  const h = historyControl.history();
+  const latest = h ? (await h.list({ limit: 1 }).catch(() => ({ items: [] }))).items[0] : null;
+  if (!latest) return;
+  if (!state.lastReport) openSaved(latest, false);
+  reportBox.hidden = false;
+  location.hash = formatRoute({ mode: 'analyst', view: 'historial' });
+  if (state.route.view === 'historial') await refreshHistory();
+  reportBox.scrollIntoView({ block: 'start' });
+}
+historyOpen.addEventListener('click', openHistory);
+
+/** Carga una entrada guardada como informe actual (sin el correo: no se puede reanalizar). */
+function openSaved(entry, go = true) {
+  cancelBatch();
+  state.batch = null;
+  state.analyst = {};
+  state.lastInput = null;
+  state.lastReport = entry.report;
+  state.savedNote = `Informe guardado el ${new Date(entry.savedAt).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })}; el correo original no está guardado.`;
+  if (go) {
+    state.route = { mode: 'analyst', view: 'resumen' };
+    if (location.hash !== '#analista') history.pushState(null, '', '#analista');
+    paint();
+    focusView();
+  }
+}
+
+async function historyAction(action, target) {
+  const h = historyControl.history();
+  if (!h) return;
+  const id = target.getAttribute('data-id');
+  if (action === 'history-open') {
+    const entry = await h.get(id).catch(() => null);
+    if (!entry) {
+      announce('Este análisis ya no está guardado.');
+      return refreshHistory();
+    }
+    return openSaved(entry);
+  }
+  if (action === 'history-delete') {
+    await h.remove(id).catch(() => {});
+    announce('Análisis borrado.');
+    await refreshHistory();
+    updateHistoryButton();
+    return reportBox.querySelector('[data-action="history-export"]')?.focus();
+  }
+  if (action === 'history-page') {
+    state.historyQuery.offset = Number(target.getAttribute('data-offset')) || 0;
+    await refreshHistory();
+    return reportBox.querySelector('.history__table')?.focus();
+  }
+  if (action === 'history-search') {
+    const query = reportBox.querySelector('[data-role="history-query"]')?.value ?? '';
+    const results = await h.searchIoc(query).catch(() => []);
+    await refreshHistory({ search: { query, results } });
+    announce(results.length ? `${results.length} ${results.length === 1 ? 'IOC encontrado' : 'IOCs encontrados'}.` : 'Sin resultados.');
+    return reportBox.querySelector('[data-role="history-query"]')?.focus();
+  }
+  if (action === 'history-compare') {
+    const [a, b] = state.historyData?.selected ?? [];
+    const compare = a && b ? await h.compare(a, b).catch(() => null) : null;
+    await refreshHistory({ compare });
+    return reportBox.querySelector('.history__compare h3')?.focus?.();
+  }
+  if (action === 'history-clear') return reportBox.querySelector('.history__dialog')?.showModal();
+  if (action === 'history-clear-cancel') {
+    reportBox.querySelector('.history__dialog')?.close();
+    return reportBox.querySelector('[data-action="history-clear"]')?.focus();
+  }
+  if (action === 'history-clear-confirm') {
+    reportBox.querySelector('.history__dialog')?.close();
+    await h.clear().catch(() => {});
+    // Se reabre la base vacía para seguir guardando si el historial sigue encendido.
+    historyControl.disable();
+    await historyControl.enable();
+    state.historyData = null;
+    state.historyQuery = { filters: {}, offset: 0 };
+    await refreshHistory();
+    updateHistoryButton();
+    announce('Historial borrado.');
+    return reportBox.querySelector('.view__title')?.focus();
+  }
+  if (action === 'history-export') {
+    download(await h.exportJson(), 'historial');
+    return announce('Historial exportado.');
+  }
+  if (action === 'history-import') return historyImport.click();
+  return undefined;
+}
+
+const historyImport = document.createElement('input');
+historyImport.type = 'file';
+historyImport.accept = '.json,application/json';
+historyImport.hidden = true;
+document.body.append(historyImport);
+historyImport.addEventListener('change', async () => {
+  const file = historyImport.files?.[0];
+  historyImport.value = '';
+  const h = historyControl.history();
+  if (!file || !h) return;
+  let importResult;
+  try {
+    if (file.size > 20 * 1024 * 1024) throw new Error('El fichero pasa de 20 MB.');
+    importResult = await h.importJson(await file.text());
+  } catch (e) {
+    importResult = { imported: 0, rejected: [{ index: -1, error: e.message }] };
+  }
+  await refreshHistory({ importResult });
+  updateHistoryButton();
+  announce(`Importados ${importResult.imported}; rechazados ${importResult.rejected.length}.`);
+});
 
 state.route = { mode: initialMode(storage((s) => s), location.hash), view: parseRoute(location.hash).view };
 // El modo recordado se lleva a la URL, para que Atrás y los enlaces copiados digan lo mismo que la pantalla.
@@ -258,6 +416,7 @@ function openBatchEmail(key) {
   state.batch.current = key;
   state.analyst = {};
   state.lastReport = entry.report;
+  state.savedNote = '';
   state.lastInput = { kind: 'eml', value: state.batchTexts.get(key) ?? '' };
 }
 
@@ -356,6 +515,7 @@ function run() {
   state.analyst = {};
   try {
     state.lastInput = input;
+    state.savedNote = '';
     state.lastReport = analyzeInput(input);
     paint();
     announce(`Resultado: ${state.lastReport.verdict.headline}. ${state.lastReport.score} de 100.`);
@@ -403,8 +563,11 @@ function announce(text) {
 function paint(options = {}) {
   if (!state.lastReport) return;
   const { mode } = state.route;
-  const view = resolveView(state.route.view, state.lastReport, { batch: state.batch });
-  renderReport(reportBox, state.lastReport, { mode, view, batch: state.batch, campaign: state.campaign, ...options });
+  const context = { batch: state.batch, historyEnabled: historyControl.enabled() };
+  const view = resolveView(state.route.view, state.lastReport, context);
+  renderReport(reportBox, state.lastReport, {
+    mode, view, ...context, campaign: state.campaign, history: state.historyData, savedNote: state.savedNote, ...options,
+  });
   // En móvil la navegación es una fila con desplazamiento: la vista actual tiene que verse.
   const nav = reportBox.querySelector('.nav-rail');
   const current = nav?.querySelector('[aria-current="page"]');
@@ -430,6 +593,10 @@ function onRoute() {
   state.route = parseRoute(hash);
   storage((s) => s.setItem(MODE_KEY, state.route.mode));
   if (!state.lastReport || reportBox.hidden) return;
+  if (state.route.view === 'historial') {
+    refreshHistory().then(focusView);
+    return;
+  }
   paint();
   focusView();
 }
@@ -449,6 +616,12 @@ function goTo(mode) {
 }
 
 reportBox.addEventListener('click', onReportAction);
+reportBox.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.getAttribute?.('data-role') === 'history-query') {
+    e.preventDefault();
+    historyAction('history-search', e.target);
+  }
+});
 // ---------- Grafo de IOCs: un paso de Tab y flechas entre nodos ----------
 reportBox.addEventListener('keydown', (e) => {
   const node = e.target.closest?.('.graph__node');
@@ -485,6 +658,24 @@ reportBox.addEventListener('focusout', (e) => {
 });
 
 reportBox.addEventListener('change', (e) => {
+  const action = e.target.getAttribute?.('data-action');
+  if (action === 'history-filter') {
+    state.historyQuery = { filters: { ...state.historyQuery.filters, [e.target.getAttribute('data-filter')]: e.target.value }, offset: 0 };
+    const name = e.target.getAttribute('data-filter');
+    refreshHistory().then(() => reportBox.querySelector(`[data-filter="${name}"]`)?.focus());
+    return;
+  }
+  if (action === 'history-select' && state.historyData) {
+    const id = e.target.getAttribute('data-id');
+    const set = new Set(state.historyData.selected);
+    if (e.target.checked) set.add(id);
+    else set.delete(id);
+    // Como mucho dos: el más antiguo marcado se desmarca.
+    state.historyData.selected = [...set].slice(-2);
+    paint();
+    reportBox.querySelector(`[data-action="history-select"][data-id="${id}"]`)?.focus();
+    return;
+  }
   if (e.target.id !== 'batch-email') return;
   openBatchEmail(e.target.value);
   paint();
@@ -572,6 +763,10 @@ const authLive = $('#auth-live');
 
 /** Re-analiza con lo que ha pegado el analista y vuelve a abrir la pestaña de autenticación. */
 function reanalyze(status) {
+  if (!state.lastInput) {
+    authLive.textContent = 'Este informe viene del historial: el correo no está guardado y no se puede volver a analizar.';
+    return;
+  }
   state.lastReport = analyzeInput({ ...state.lastInput, ...state.analyst });
   historyControl.record(state.lastInput, state.lastReport, state.batch?.entries.find((e) => e.key === state.batch.current)?.name ?? state.fileName ?? null);
   const dkimKey = $('#dkim-key')?.value ?? '';
@@ -585,6 +780,7 @@ function reanalyze(status) {
 }
 
 async function verifyDkim() {
+  if (!state.lastInput) return reanalyze('');
   const key = $('#dkim-key')?.value.trim();
   if (!key) return reanalyze('Pega primero la clave pública DKIM.');
   const input = state.lastInput;
@@ -610,6 +806,10 @@ function evalSpf() {
 
 function onReportAction(e) {
   const action = e.target.closest('[data-action]')?.dataset.action;
+  if (action?.startsWith('history-') && action !== 'history-select' && action !== 'history-filter') {
+    historyAction(action, e.target.closest('[data-action]'));
+    return;
+  }
   if (action === 'mode-simple') goTo('simple');
   if (action === 'mode-analyst') goTo('analyst');
   if (action === 'pick-campaign') {
