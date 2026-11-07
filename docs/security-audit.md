@@ -54,6 +54,12 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | Grafo y campañas independientes del orden y sin lanzar con correos mutados | ✅ | `tests/fuzz/batch.test.js` |
 | Privacidad con un lote de 10 correos por todas las vistas, en claro y oscuro | ✅ | `tests/e2e/batch.e2e.js` |
 | Revisión de seguridad del PR8 sin hallazgos explotables | 👁️ | skill `security-review` sobre el diff |
+| Desenvolver URLs: 10 saltos, base64 y `%` roto sin lanzar y en menos de 50 ms | ✅ | `tests/unit/url-intel.test.js` |
+| Vista «URLs» sin enlaces pulsables y todo defanged | ✅ | `tests/unit/urls-ui.test.js`, `tests/e2e/a11y.e2e.js` |
+| STIX: patrones escapados, solo `JSON.stringify`, referencias que existen y bundle válido para todo lote mutado | ✅ | `tests/unit/stix.test.js`, `tests/fuzz/batch.test.js` |
+| STIX: ids de observables iguales a los de la librería oficial `stix2` y bundles válidos para el validador de OASIS | ✅ / 👁️ | `tests/unit/stix.test.js`; `stix2_validator` a mano (14 de 14 válidos) |
+| Descarga STIX sin red ni errores, en Chromium | ✅ | `tests/e2e/batch.e2e.js` |
+| Revisión de seguridad del PR9 sin hallazgos explotables | 👁️ | skill `security-review` sobre el diff |
 
 ## Pendiente
 

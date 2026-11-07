@@ -34,6 +34,10 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | Un lote para agotar memoria o colgar la pestaña | 50 correos y 100 MB en total; uno a uno, cediendo el hilo entre correos; un análisis nuevo aborta el lote en curso | `tests/unit/batch.test.js`, `tests/e2e/batch.e2e.js` |
 | Grafo y campañas con entradas mutadas o en otro orden | Funciones puras sobre `Map`/`Set`, sin red ni DNS; SVG con como mucho 150 nodos y tabla con 500 filas | `tests/fuzz/batch.test.js`, `tests/perf/perf.test.js` |
 | Campañas falsas por proveedores compartidos | Gmail y otros correos gratuitos, acortadores, dominios de seguimiento y dominios oficiales de marcas no cuentan como pista; los correos «probablemente legítimos» no entran | `tests/unit/campaigns.test.js`, `tests/unit/batch-samples.test.js` |
+| URLs construidas para colgar o engañar al desenvolverlas (15 niveles, 1 MB de base64, `%` roto, ciclos) | 10 saltos como máximo, conjunto de visitados, base64 de 8 KB como mucho y 3 decodificaciones; cada salto es más corto que el anterior, así que la cadena siempre acaba; nunca se visita nada | `tests/unit/url-intel.test.js` |
+| IP disfrazada que `new URL` ya normaliza (`3232235777`, `0xC0A80001`, `0300.0250.0.1`) | Se mira el host del texto original con un regex acotado a 300 caracteres | `tests/unit/url-intel.test.js` |
+| Valores del atacante dentro de un patrón STIX (`'`, `\`, `]`) o que rompan el JSON | Patrones con `\` y `'` escapados; un único `JSON.stringify`; validador propio y fuzzing con lotes mutados | `tests/unit/stix.test.js`, `tests/unit/stix-validate.test.js`, `tests/fuzz/batch.test.js` |
+| Un feed STIX que marque como maliciosos dominios legítimos | Indicadores solo para correos de phishing y nunca para marcas, acortadores, seguimiento, correo gratuito, redes sociales o alojamiento compartido | `tests/unit/stix.test.js` |
 
 ### Render (`src/ui/`)
 
@@ -41,6 +45,7 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | --- | --- | --- |
 | XSS con el HTML del correo | Solo `textContent`; el HTML se recorre sin crear nodos; ningún `innerHTML`, `document.write` ni `eval` en `src/` | `tests/unit/security.test.js` |
 | Trojan Source, RLO, invisibles | Se muestran como `⟦U+202E⟧` | `tests/unit/security.test.js` |
+| URLs del correo que se puedan pulsar en la vista «URLs» | Ningún `<a>`: todo texto defanged en `textContent` | `tests/unit/urls-ui.test.js`, `tests/e2e/a11y.e2e.js` |
 | Inyección en el grafo SVG por nombres de nodos (asuntos, dominios, nombres de fichero) | `svgEl()` con lista blanca de etiquetas y atributos (sin `<a>`, `<foreignObject>`, `href` ni `on*`); el texto en `textContent`; valores defanged | `tests/unit/graph-ui.test.js` |
 | Clickjacking | La página no se ejecuta dentro de un iframe | Revisión manual (`src/ui/app.js`) |
 | Veredicto engañoso | Estados de autenticación separados y nunca «verificado» sin comprobarlo | `tests/unit/auth-evaluate.test.js` |

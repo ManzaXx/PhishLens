@@ -7,7 +7,7 @@
 **¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
 
 [![Tests](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml/badge.svg)](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml)
-![Tests](https://img.shields.io/badge/tests-432%20%2B%2018%20e2e-15803d)
+![Tests](https://img.shields.io/badge/tests-586%20%2B%2033%20e2e-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
@@ -23,18 +23,18 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 
 ## ✨ Funcionalidades
 
-- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, IOCs, Campañas y ATT&CK, con la vista en la URL (`#analista/senales`).
-- **10 detectores y 80 reglas**: autenticación, remitente, cabeceras, ruta, estructura MIME, enlaces, dominios parecidos, adjuntos, HTML y lenguaje. Cada regla tiene su texto llano y su técnica ATT&CK.
+- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, URLs, IOCs, Campañas y ATT&CK, con la vista en la URL (`#analista/senales`).
+- **10 detectores y 86 reglas**: autenticación, remitente, cabeceras, ruta, estructura MIME, enlaces, dominios parecidos, adjuntos, HTML y lenguaje. Cada regla tiene su texto llano y su técnica ATT&CK.
 - **Informe explicado**: nota con semáforo, motivo principal, confianza del análisis, riesgo por categoría, combinaciones peligrosas y recomendaciones de qué hacer.
 - **Vista segura**: el email como texto plano, sin enlaces activos y con las frases de ingeniería social resaltadas.
 - **Ruta del email**: reconstruye los saltos `Received` con sus IPs.
 - **IOCs defanged** (`hxxp://evil[.]xyz`) con botón de copiar para pegarlos en un ticket.
 - **Varios correos a la vez**: suelta hasta 50 `.eml` (100 MB en total) y elige cuál ver. Un **grafo de IOCs** en SVG une correos, remitentes, dominios, IPs, URLs y adjuntos (con teclado y una tabla equivalente), y las **campañas** agrupan los correos que comparten infraestructura, un adjunto o la misma plantilla.
 - **MITRE ATT&CK**: cada señal enlazada a su técnica (T1566.002, T1036.007, T1684.001…), con su táctica y el motivo, según ATT&CK 20.1.
-- **Desenvuelve enlaces** de Microsoft Safe Links, Google y LinkedIn para analizar el destino real.
-- **Exportar** (JSON, copiar IOCs, imprimir) desde un menú accesible con teclado.
+- **URLs sin visitarlas**: desenvuelve redirecciones (Safe Links, Google, Facebook, LinkedIn, parámetros como `url` o `next`, base64 y codificación doble, hasta 10 saltos) y detecta IPs disfrazadas (`http://3232235777`), credenciales en el enlace, puertos raros y dominios con aspecto aleatorio. La vista **«URLs»** enseña la cadena de saltos sin que nada se pueda pulsar.
+- **Exportar** (JSON, **STIX 2.1**, copiar IOCs, imprimir) desde un menú accesible con teclado. El bundle STIX lleva observables, indicadores, técnicas ATT&CK y campañas con ids deterministas, y pasa el validador oficial de OASIS ([docs/stix.md](docs/stix.md)).
 - **Sistema de diseño propio** ([docs/design-system.md](docs/design-system.md)): tokens con contraste comprobado en claro y oscuro, objetivos táctiles de 44 px y sin scroll horizontal a 360 px, comprobados en un Chromium real.
-- **12 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
+- **13 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
 
 | Modo sencillo (oscuro) | Móvil | Email legítimo |
 |---|---|---|
@@ -52,9 +52,9 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 |---|---|---|
 | ![Grafo radial de IOCs de un lote de cuatro correos](docs/img/analista-grafo.png) | ![Campaña de cuatro correos con lo que tienen en común](docs/img/analista-campanas.png) | ![Selector del lote y aviso de campaña en el móvil](docs/img/movil-lote.png) |
 
-| IOCs | ATT&CK |
-|---|---|
-| ![IOCs defanged con dominios Unicode](docs/img/analista-iocs.png) | ![Técnicas ATT&CK](docs/img/analista-attack.png) |
+| URLs | IOCs | ATT&CK |
+|---|---|---|
+| ![Cadena de saltos de un enlace con redirección anidada](docs/img/analista-urls.png) | ![IOCs defanged con dominios Unicode](docs/img/analista-iocs.png) | ![Técnicas ATT&CK](docs/img/analista-attack.png) |
 
 ## 🔍 Qué detecta
 
@@ -64,7 +64,7 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 | **Remitente** | `Reply-To` y `Return-Path` de otro dominio, marca suplantada desde un dominio ajeno o un correo gratuito, letras cirílicas o griegas camufladas (`Pаypal`), caracteres invisibles, nombre visible con otra dirección (`"soporte@paypal.com" <x@evil.test>`), `Sender` de otro dominio sin firmar | T1684.001, T1027 |
 | **Cabeceras técnicas** | `Message-ID` de otro dominio, falta `Date` o `Message-ID`, fecha futura, `X-Mailer` de kits de phishing (PHPMailer…), varios `From` o cabeceras únicas repetidas | T1684.002 (varios `From`) |
 | **Ruta del correo** | IP privada en el salto de entrada, horas que retroceden, entrega de más de 24 h, más de 25 saltos, servidor que dice ser una marca (HELO) sin serlo | T1684.002 |
-| **Enlaces** | Texto que muestra otro dominio, IPs, acortadores, `@` que oculta el host, punycode, TLD baratos, login sin HTTPS, marca en la ruta, descarga directa de ejecutables, enlaces de seguimiento | T1566.002, T1204.001 |
+| **Enlaces** | Texto que muestra otro dominio, IPs (también disfrazadas en decimal, hex u octal), acortadores, `@` que oculta el host, usuario y contraseña en el enlace, punycode, TLD baratos, login sin HTTPS, marca en la ruta, descarga directa de ejecutables, enlaces de seguimiento, redirecciones anidadas o abiertas, puertos raros y dominios aleatorios | T1566.002, T1204.001 |
 | **Dominios parecidos** | Levenshtein y homoglifos (`0→o`, `1→l`, `rn→m`) frente a 37 marcas (22 españolas verificadas), confusables de Unicode UTS #39, dominios con alfabetos mezclados o enteros en cirílico (`аррӏе.com`), homógrafos con letras latinas raras o de otros alfabetos (`ɑpple.com`), subdominios engañosos (`paypal.com.cuenta-segura.test`), marca + palabra de acceso (combosquatting) | T1583.001 |
 | **Adjuntos** | Ejecutables, doble extensión (`factura.pdf.exe`), nombre invertido con RLO, y por dentro sin abrirlos: tipo real que no cuadra con la extensión, ZIP con programas o con contraseña, macros VBA, PDF que actúa al abrirse, HTML smuggling, imágenes de disco y accesos directos. SHA-256, SHA-1 y MD5 | T1566.001, T1204.002, T1036.007, T1036.002, T1036.008, T1027.006, T1027.013, T1553.005, T1059.005 |
 | **Contenido HTML** | Formularios dentro del email, JavaScript o iframes, enlaces `data:`, texto oculto para burlar filtros, emails que son solo una imagen | T1598, T1059.007, T1027 |
@@ -123,13 +123,14 @@ proyectoCiber/
 │   ├── data/                # Marcas, listas de referencia, patrones y mapa MITRE ATT&CK
 │   ├── parser/              # eml.js (RFC 5322 + MIME), received.js, html.js (sin DOM), url.js
 │   ├── detectors/           # 10 detectores con la misma interfaz: detect(email) -> Finding[]
-│   ├── intel/               # Extracción y "defang" de indicadores, hashes de adjuntos
+│   ├── intel/               # IOCs defanged, URLs desenvueltas, grafo, campañas y STIX 2.1
 │   ├── core/                # Modelo de hallazgo, motor y recomendaciones
 │   └── ui/                  # Render del informe, resaltado y controlador de la página
 ├── docs/                    # Arquitectura, ADRs, especificaciones y planes
 ├── SECURITY.md              # Modelo de amenazas y mitigaciones
-├── samples/                 # 7 emails .eml de ejemplo
-└── tests/                   # unit/ y helpers/ con node:test
+├── samples/                 # 13 emails .eml de ejemplo y un lote de campaña
+├── tools/                   # Muestras, capturas, matriz de cobertura y validador STIX
+└── tests/                   # unit/, e2e/, fuzz/ y perf/ con node:test
 ```
 
 ### Decisiones técnicas
@@ -152,7 +153,7 @@ npm run bench               # reescribe docs/benchmark.md
 npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
 ```
 
-GitHub Actions ejecuta todo en cada push (`.github/workflows/phishlens-tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 12 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
+GitHub Actions ejecuta todo en cada push (`.github/workflows/phishlens-tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 13 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
 
 ## 🌐 Publicar la demo
 
@@ -168,6 +169,7 @@ GitHub Pages en un repositorio privado requiere GitHub Pro. Sin Pro, puedes hace
 - Son heurísticas: una nota baja **no garantiza** que un email sea seguro, y un email legítimo mal configurado puede salir sospechoso.
 - No consulta servicios externos (listas negras, WHOIS, VirusTotal), porque eso exigiría enviar datos fuera del navegador.
 - Las campañas son una pista, no una prueba: se unen por cadena (A comparte algo con B y B con C) y solo entran los correos que no parecen legítimos.
+- Sin red no sabe la edad de un dominio ni desenvuelve un acortador (`bit.ly`, `t.co`): solo lo que va escrito dentro de la propia URL.
 - Sin red no consulta DNS: la firma DKIM y el SPF solo se verifican si pegas la clave o el registro. Detalles en [docs/limitations.md](docs/limitations.md).
 - Mira dentro de los adjuntos sin abrirlos, pero no descomprime nada: un PDF dentro de un ZIP o el contenido comprimido de un PDF no se revisan. Tampoco lee el formato `.msg` de Outlook.
 
@@ -176,7 +178,7 @@ GitHub Pages en un repositorio privado requiere GitHub Pro. Sin Pro, puedes hace
 - [x] Verificación de firmas DKIM con WebCrypto (2.2)
 - [ ] Extensión de navegador para analizar el email abierto en Gmail u Outlook
 - [x] Modo por lotes, grafo de IOCs y campañas (2.3)
-- [ ] Exportar IOCs en formato STIX 2.1
+- [x] URLs sin visitarlas y exportación STIX 2.1 (2.3)
 
 ## 📄 Licencia y aviso
 

@@ -59,3 +59,12 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 - **Sin DNS.** `resuelve-en` solo une el dominio del remitente con la IP del salto de entrada que figura en las cabeceras, no con lo que diría el DNS hoy.
 - **La plantilla** se compara por *shingles* de tres palabras; un kit que reescribe el texto con otras palabras no se reconoce, y los cuerpos de menos de 10 palabras no se comparan.
 - **Grafos grandes.** El SVG dibuja como mucho 150 nodos y la tabla 500 filas; con más, lo dicen en texto.
+
+## URLs y STIX
+
+- **Solo lo que está escrito.** Se desenvuelve lo que va dentro de la propia URL (parámetros, base64, codificación doble). Un acortador (`bit.ly`, `t.co`) o una redirección del servidor no se pueden seguir sin visitarlos, y PhishLens nunca visita nada.
+- **Sin edad de dominio.** No se sabe si un dominio se registró ayer: haría falta WHOIS o RDAP. En un lote, la vista «URLs» dice en cuántos correos aparece cada destino.
+- **Aspecto aleatorio** solo mira el nombre del dominio. Un camino aleatorio es lo normal en los enlaces de seguimiento de cualquier newsletter, así que se mide y se enseña, pero no puntúa.
+- **Indicadores STIX** solo para correos «Probable phishing» o «Phishing casi seguro» (y adjuntos con un hallazgo grave). Los dominios de marcas reales, acortadores, email marketing, correo gratuito, redes sociales y alojamiento compartido salen como observables, nunca como indicadores.
+- **Ids UUIDv5**, no UUIDv4: el validador de OASIS lo marca como aviso, pero es a propósito para que el mismo correo dé el mismo bundle.
+- **Importación en OpenCTI o MISP** pendiente de probar a mano una vez ([docs/stix.md](stix.md)).

@@ -1,13 +1,13 @@
 # Changelog
 
-## Sin publicar · 2.3.0 en desarrollo
+## 2.3.0 · 2026-11-07 · Threat Intel local
 
 Especificación en [docs/specs/2026-11-06-phishlens-2.3-design.md](docs/specs/2026-11-06-phishlens-2.3-design.md).
 
 ### Añadido
 - **Modo sencillo** por defecto: veredicto en una frase («Parece legítimo», «Ten cuidado», «No te fíes: es phishing») con el porqué, tres pasos de qué hacer y hasta cinco señales en lenguaje llano.
 - **Modo analista** con navegación lateral agrupada (Correo e Inteligencia) que pasa a barra horizontal en el móvil, y la vista en la URL (`#analista/<vista>`); el último modo elegido se recuerda.
-- **Texto llano por regla** (`finding.plain`) para las 80 reglas, sin jerga y de 140 caracteres como mucho, y `report.verdict` en el JSON.
+- **Texto llano por regla** (`finding.plain`) para las 86 reglas, sin jerga y de 140 caracteres como mucho, y `report.verdict` en el JSON.
 - **Sistema de diseño** ([docs/design-system.md](docs/design-system.md)): `tokens.css` con contraste ≥ 4,5 comprobado en claro y oscuro, escalas de espacio, tipo y radio, y componentes (`verdictCard`, `stepList`, `signalRow`, `findingCard`, `severityTag`, `meter`, `dataTable`, `chip`, `emptyState`, `navRail`, `modeSwitch`, `menuButton`).
 - **Menú Exportar** con el patrón ARIA de menú (flechas, Inicio, Fin, Escape) y «Analizar otro» como acción principal.
 - **E2E de diseño** a 360, 768 y 1280 px: sin scroll horizontal y objetivos táctiles de 44 px; axe, teclado y privacidad recorren los dos modos y todas las vistas.
@@ -22,9 +22,14 @@ Especificación en [docs/specs/2026-11-06-phishlens-2.3-design.md](docs/specs/20
 - **Campañas** (`src/intel/campaigns.js`): correos que comparten dominio de envío, IP de entrada, dominio de enlace, adjunto o plantilla (similitud de *shingles* ≥ 0,6), con la marca que suplantan y sus técnicas ATT&CK. Gmail, los acortadores, el seguimiento y los dominios oficiales de las marcas no unen campañas.
 - Vista **«Campañas»**, aviso de campaña en el modo sencillo y un **lote de ejemplo** de 4 correos.
 - Fuzzing del lote (`tests/fuzz/batch.test.js`): el grafo y las campañas no lanzan y no dependen del orden.
+- **URLs sin visitarlas** (`src/intel/url.js`): se desenvuelven las redirecciones dentro de la propia URL (parámetros como `url`, `next` o `redirect`, Google, Safe Links, Facebook, LinkedIn, base64 y codificación doble) con 10 saltos como máximo, y se detectan IPs disfrazadas (`http://3232235777`, hex, octal), credenciales, puertos raros y hosts con aspecto aleatorio.
+- **Seis reglas nuevas**: `links.nested-redirect`, `links.open-redirect`, `links.obfuscated-ip`, `links.credentials-in-url`, `links.high-entropy` y `links.non-standard-port` (86 reglas en total). El resto de reglas de enlaces mira ya el destino final.
+- Vista **«URLs»**: cada enlace con su cadena de saltos, su destino final y por qué es sospechoso; nada es clicable y todo va defanged. Muestra nueva **13 · Redirección anidada**.
+- **Exportar → Descargar STIX 2.1** ([docs/stix.md](docs/stix.md)): `email-message`, observables, `file` con sus hashes, `indicator`, `attack-pattern`, `campaign` y sus relaciones, con ids UUIDv5 deterministas (los observables, iguales a los de la librería oficial `stix2`). Con un lote se exporta el lote entero.
+- **Validador STIX propio** (`tools/stix-validate.mjs`), usado por los tests y el fuzzing. Los bundles de las muestras pasan además el validador oficial de OASIS sin errores.
 
 ### Cambiado
-- La portada saca sus cifras del código (10 detectores, 80 reglas, ATT&CK 20.1) y «Cómo funciona» explica el motor real: topes por categoría, combinaciones y confianza. Ya no habla de «leve 5, media 15, grave 30».
+- La portada saca sus cifras del código (10 detectores, 86 reglas, ATT&CK 20.1) y «Cómo funciona» explica el motor real: topes por categoría, combinaciones y confianza. Ya no habla de «leve 5, media 15, grave 30».
 - La cabecera es sólida y el informe deja de ser una región viva entera: un aviso corto anuncia el resultado al lector de pantalla y el foco va al título de cada vista nueva.
 - Un nombre como `factura.exe.` o `factura.exe ` se lee como lo lee Windows, sin los puntos ni espacios del final.
 - Los adjuntos salen de «Cabeceras y ruta» y pasan a su propia vista.

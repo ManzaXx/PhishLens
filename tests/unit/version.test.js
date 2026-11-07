@@ -15,3 +15,10 @@ test('versión coherente en package.json, reportToJson y CHANGELOG', () => {
   assert.equal(released[0].split(' ')[0], version, 'la primera versión publicada es la actual');
   assert.ok(headings.slice(1).every((h) => !h.startsWith('Sin publicar')), '«Sin publicar» va arriba del todo');
 });
+
+test('PhishLens 2.3.0 en package.json, package-lock.json y el JSON exportado', () => {
+  assert.equal(JSON.parse(read('package.json')).version, '2.3.0');
+  const lock = JSON.parse(read('package-lock.json'));
+  assert.equal(lock.version, '2.3.0');
+  assert.equal(lock.packages[''].version, '2.3.0');
+});
