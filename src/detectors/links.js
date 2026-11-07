@@ -1,7 +1,7 @@
 // Detector de enlaces engañosos o sospechosos.
 import { finding } from '../core/finding.js';
 import { parseUrl, registrableDomain } from '../parser/url.js';
-import { analyzeUrl } from '../intel/url.js';
+import { analyzeUrl, chainText } from '../intel/url.js';
 import { URL_SHORTENERS, SUSPICIOUS_TLDS, TRACKING_DOMAINS, DANGEROUS_EXTENSIONS, ARCHIVE_EXTENSIONS, MACRO_EXTENSIONS } from '../data/lists.js';
 import { BRANDS } from '../data/brands.js';
 import { isOfficialDomain } from './sender.js';
@@ -14,22 +14,6 @@ export const name = 'links';
 const DOMAIN_IN_TEXT = /\b((?:[a-z0-9-]{1,63}\.){1,10}[a-z]{2,24})\b/i;
 const MAX_TEXT = 300;
 const LOGIN_PATH = /(log[-_]?in|sign[-_]?in|acceso|cuenta|account|verif|password|contrase|banca|secure)/i;
-
-const MAX_EVIDENCE = 300;
-
-/** Un salto intermedio sin su query larga: «https://r.test/go?url=…». */
-function shortHop(href, nextVia) {
-  const u = new URL(href);
-  const name = nextVia?.startsWith('param:') ? nextVia.slice(6) : null;
-  return `${u.origin}${u.pathname}${u.search ? (name ? `?${name}=…` : '?…') : ''}`;
-}
-
-/** La cadena de saltos en una línea: «a → b → c». */
-export function chainText(analysis) {
-  const { hops } = analysis;
-  const text = hops.map((h, i) => (i < hops.length - 1 ? shortHop(h.href, hops[i + 1].via) : h.href)).join(' → ');
-  return text.length > MAX_EVIDENCE ? `${text.slice(0, MAX_EVIDENCE - 1)}…` : text;
-}
 
 /** Reglas de la URL desenvuelta (spec 2.3, §5.3). Cada una lleva la cadena como evidencia. */
 function urlChecks(a) {

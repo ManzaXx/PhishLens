@@ -2,7 +2,7 @@
 // tiene de raro. Todo va defanged y en textContent: nada de esta vista se puede pulsar.
 import { el, decimal } from '../dom.js';
 import { defang } from '../../intel/ioc.js';
-import { analyzeUrl } from '../../intel/url.js';
+import { analyzeUrl, shortHop } from '../../intel/url.js';
 import { emptyState } from '../components/empty-state.js';
 
 const LIMIT = 100;
@@ -44,16 +44,18 @@ function hostCounts(batch) {
 function card(a, shared) {
   const host = a.unicodeHost !== a.hostname ? `${defang(a.hostname)} (${defang(a.unicodeHost)})` : defang(a.hostname);
   const why = reasons(a);
+  // Los saltos intermedios van acortados (sin el base64 ni la query entera); el destino, completo.
+  const last = a.hops.length - 1;
   const hops = el('ol', { className: 'url-card__hops' },
     ...a.hops.map((h, i) => el('li', {},
-      el('span', { className: 'url-card__url', text: defang(h.href) }),
-      i > 0 ? el('span', { className: 'url-card__via', text: ` · ${viaText(h.via)}` }) : null)));
+      el('span', { className: 'url-card__url', text: defang(i < last ? shortHop(h.href, a.hops[i + 1].via) : h.href) }),
+      el('span', { className: 'url-card__via', text: ` · ${i === 0 ? 'enlace del correo' : viaText(h.via)}` }))));
   return el('article', { className: `url-card${why.length ? ' url-card--flagged' : ''}` },
     el('h3', { className: 'url-card__host', text: host }),
     el('dl', { className: 'url-card__facts' },
       el('dt', { text: 'Destino final' }), el('dd', { className: 'url-card__url', text: defang(a.final) }),
       el('dt', { text: 'Aleatoriedad' }), el('dd', { text: `dominio ${decimal(a.entropy.host.toFixed(1))} · ruta ${decimal(a.entropy.path.toFixed(1))} bits por carácter` })),
-    a.hops.length > 1 ? el('div', {}, el('p', { className: 'url-card__label', text: `Saltos (${a.hops.length - 1})` }), hops) : null,
+    a.hops.length > 1 ? el('div', {}, el('p', { className: 'url-card__label', text: `Cadena (${last} ${last === 1 ? 'salto' : 'saltos'})` }), hops) : null,
     el('p', { className: 'url-card__label', text: 'Por qué es sospechosa' }),
     why.length
       ? el('ul', { className: 'url-card__reasons' }, ...why.map((t) => el('li', { text: t })))

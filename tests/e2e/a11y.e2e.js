@@ -12,7 +12,7 @@ const noAxe = existsSync(AXE) ? false : `axe-core no está en ${AXE} (npm ci o A
 if (noAxe && process.env.CI) throw new Error(noAxe);
 const { browser, skip: noBrowser } = noAxe ? {} : await openBrowser();
 const skip = noAxe || noBrowser || false;
-const REPORTS = ['01-legitimo-newsletter', '03-phishing-banco', '06-phishing-factura-adjunto', '11-adjunto-tipo-falso', '12-pdf-activo-zip'];
+const REPORTS = ['01-legitimo-newsletter', '03-phishing-banco', '06-phishing-factura-adjunto', '11-adjunto-tipo-falso', '12-pdf-activo-zip', '13-redireccion-anidada'];
 let server;
 
 before(async () => {
@@ -208,7 +208,7 @@ test('impresión desde el modo sencillo: sale el informe completo del modo anali
   await page.emulateMedia({ media: 'print' });
   const visible = (sel) => page.locator(sel).evaluateAll((els) => els.filter((e) => e.offsetParent !== null || e.getClientRects().length).length);
   assert.equal(await visible('#report .finding'), 15, 'todas las señales');
-  for (const t of ['Resumen', 'Señales', 'Vista segura', 'Autenticación', 'Cabeceras y ruta', 'IOCs', 'ATT&CK']) {
+  for (const t of ['Resumen', 'Señales', 'Vista segura', 'Autenticación', 'Cabeceras y ruta', 'URLs', 'IOCs', 'ATT&CK']) {
     assert.ok(await page.locator('#report h2', { hasText: t }).count() >= 1, t);
   }
   await page.emulateMedia({ media: 'screen' });
@@ -232,5 +232,22 @@ test('modo analista recordado: la URL lo refleja y Atrás no lo pierde', { skip 
   await page.goBack();
   await page.locator('#report .view--resumen').waitFor();
   assert.equal(await page.evaluate(() => localStorage.getItem('phishlens-mode')), 'analyst');
+  await context.close();
+});
+
+test('vista «URLs» con teclado: se llega desde la navegación y ninguna URL es un enlace', { skip }, async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  page.setDefaultTimeout(5000);
+  await page.goto(`${server.url}/index.html#analista`);
+  await page.getByRole('button', { name: title('13-redireccion-anidada'), exact: true }).click();
+  const link = page.locator('#report nav a[href="#analista/urls"]');
+  await link.focus();
+  await page.keyboard.press('Enter');
+  await page.locator('#report .view--urls .url-card').first().waitFor();
+  assert.equal(await page.evaluate(() => document.activeElement.textContent), 'URLs');
+  assert.equal(await page.locator('#report .view--urls a').count(), 0);
+  assert.equal(await page.locator('#report .view--urls .url-card__hops li').count(), 3);
+  assert.ok(!/https?:\/\//.test(await page.locator('#report .view--urls').textContent()));
   await context.close();
 });

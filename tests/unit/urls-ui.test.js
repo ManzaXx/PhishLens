@@ -23,7 +23,12 @@ test('la muestra 13: cadena de 3 saltos, motivos y todo defanged, sin un solo en
   assert.equal(cards.length, 1);
   const hops = findAll(cards[0], (n) => n.localName === 'li' && n.parentNode?.classList?.contains('url-card__hops'));
   assert.equal(hops.length, 3);
+  assert.ok(hops[0].textContent.endsWith(' · enlace del correo'));
+  // Los saltos intermedios se acortan: el base64 entero no aporta nada y tapa la cadena.
+  assert.ok(hops[0].textContent.startsWith('hxxps://www[.]ayuntamiento-ejemplo[.]test/redir?url=…'), hops[0].textContent);
+  assert.ok(hops[1].textContent.startsWith('hxxps://acortar-enlaces[.]test/r?…'), hops[1].textContent);
   assert.ok(hops[1].textContent.includes('parámetro «url»'));
+  assert.ok(cards[0].textContent.includes('Cadena (2 saltos)'));
   assert.ok(hops[2].textContent.includes('base64'));
   const text = panel.textContent;
   assert.ok(text.includes('Destino final'));

@@ -8,7 +8,7 @@ import { DEFAULT_DETECTORS } from '../../src/core/engine.js';
 
 const { browser, skip } = await openBrowser();
 const WIDTHS = [360, 768, 1280];
-const IDS = ['01-legitimo-newsletter', '03-phishing-banco', '07-phishing-avanzado', '12-pdf-activo-zip'];
+const IDS = ['01-legitimo-newsletter', '03-phishing-banco', '07-phishing-avanzado', '12-pdf-activo-zip', '13-redireccion-anidada'];
 const title = (id) => SAMPLES.find((s) => s.id === id).title;
 let server;
 

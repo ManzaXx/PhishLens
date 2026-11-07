@@ -166,3 +166,19 @@ export function analyzeUrl(href) {
     flags: { nestedRedirect: hops.length - 1 >= 2, obfuscatedIp, credentials, highEntropy, openRedirect, nonStandardPort: port !== '' },
   };
 }
+
+const MAX_CHAIN = 300;
+
+/** Un salto intermedio sin su query larga: «https://r.test/go?url=…». nextVia: cómo se sacó el siguiente. */
+export function shortHop(href, nextVia) {
+  const u = new URL(href);
+  const name = nextVia?.startsWith('param:') ? nextVia.slice(6) : null;
+  return `${u.origin}${u.pathname}${u.search ? (name ? `?${name}=…` : '?…') : ''}`;
+}
+
+/** La cadena de saltos en una línea: «a → b → c», recortada a 300 caracteres. */
+export function chainText(analysis) {
+  const { hops } = analysis;
+  const text = hops.map((h, i) => (i < hops.length - 1 ? shortHop(h.href, hops[i + 1].via) : h.href)).join(' → ');
+  return text.length > MAX_CHAIN ? `${text.slice(0, MAX_CHAIN - 1)}…` : text;
+}
