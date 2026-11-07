@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node --test",
     "golden:update": "node tests/helpers/golden.js --write",
-    "fuzz": "FUZZ_ITER=20000 node --test tests/fuzz/fuzz.test.js tests/fuzz/files.test.js",
+    "fuzz": "FUZZ_ITER=20000 node --test tests/fuzz/fuzz.test.js tests/fuzz/files.test.js tests/fuzz/batch.test.js",
     "bench": "node --expose-gc tools/bench.mjs",
     "samples": "node tools/gen-samples.mjs",
     "test:e2e": "node --test tests/e2e/*.e2e.js",
