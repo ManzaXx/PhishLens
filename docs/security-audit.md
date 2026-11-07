@@ -61,6 +61,17 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | Descarga STIX sin red ni errores, en Chromium | ✅ | `tests/e2e/batch.e2e.js` |
 | Revisión de seguridad del PR9 sin hallazgos explotables | 👁️ | skill `security-review` sobre el diff |
 
+## 3.0
+
+| Punto | Estado | Prueba |
+| --- | --- | --- |
+| Historial apagado por defecto: sin base `phishlens` tras analizar correos y un lote | ✅ | `tests/e2e/history.e2e.js` |
+| El informe guardado no permite reconstruir el correo (prueba de propiedad, también en lo importado) | ✅ | `tests/unit/storage-schema.test.js` |
+| Import: `__proto__`, tipos inesperados, listas mal formadas, cadenas y ficheros enormes | ✅ | `tests/unit/storage-schema.test.js`, `tests/unit/storage-history.test.js` |
+| «Borrar todo» borra la base entera y lo comprueba | ✅ | `tests/e2e/history.e2e.js` |
+| Vista «Historial» sin `innerHTML`, sin enlaces y defanged; axe en claro y oscuro | ✅ | `tests/unit/history-ui.test.js`, `tests/e2e/history.e2e.js` |
+| Revisión de seguridad del PR10: dos hallazgos arreglados (el import podía meter el cuerpo del correo; listas mal formadas rompían la búsqueda) | ✅ | `tests/unit/storage-schema.test.js` |
+
 ## Pendiente
 
 - Probar la privacidad también en Firefox y WebKit.

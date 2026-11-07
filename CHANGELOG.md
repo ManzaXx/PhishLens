@@ -1,5 +1,14 @@
 # Changelog
 
+## Sin publicar · 3.0.0 en desarrollo
+
+Especificación en [docs/specs/2026-11-07-phishlens-3.0-design.md](docs/specs/2026-11-07-phishlens-3.0-design.md).
+
+### Añadido
+- **Historial local opcional** (apagado por defecto, [ADR 0004](docs/adr/0004-historial-local-opcional.md)): un interruptor en la portada guarda en IndexedDB el informe de cada análisis y de cada lote, nunca el correo. Hasta 500 análisis; los repetidos se actualizan.
+- Vista **«Historial»** en el modo analista: tabla paginada, búsqueda de un IOC en todo lo guardado, filtros por nivel, fecha y técnica, comparar dos análisis, abrir uno guardado, borrar uno o todo, y exportar o importar en `.json` (20 MB y 500 entradas como mucho, cada una validada).
+- `src/storage/` con su validador de esquema y su informe recortado, y e2e del historial (privacidad, recarga, borrar, exportar e importar, axe, teclado y diseño).
+
 ## 2.3.0 · 2026-11-07 · Threat Intel local
 
 Especificación en [docs/specs/2026-11-06-phishlens-2.3-design.md](docs/specs/2026-11-06-phishlens-2.3-design.md).

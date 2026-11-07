@@ -7,7 +7,7 @@
 **¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
 
 [![Tests](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml/badge.svg)](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml)
-![Tests](https://img.shields.io/badge/tests-589%20%2B%2033%20e2e-15803d)
+![Tests](https://img.shields.io/badge/tests-621%20%2B%2043%20e2e-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
@@ -23,7 +23,7 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 
 ## ✨ Funcionalidades
 
-- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, URLs, IOCs, Campañas y ATT&CK, con la vista en la URL (`#analista/senales`).
+- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, URLs, IOCs, Campañas, ATT&CK e Historial, con la vista en la URL (`#analista/senales`).
 - **10 detectores y 86 reglas**: autenticación, remitente, cabeceras, ruta, estructura MIME, enlaces, dominios parecidos, adjuntos, HTML y lenguaje. Cada regla tiene su texto llano y su técnica ATT&CK.
 - **Informe explicado**: nota con semáforo, motivo principal, confianza del análisis, riesgo por categoría, combinaciones peligrosas y recomendaciones de qué hacer.
 - **Vista segura**: el email como texto plano, sin enlaces activos y con las frases de ingeniería social resaltadas.
@@ -34,6 +34,7 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 - **URLs sin visitarlas**: desenvuelve redirecciones (Safe Links, Google, Facebook, LinkedIn, parámetros como `url` o `next`, base64 y codificación doble, hasta 10 saltos) y detecta IPs disfrazadas (`http://3232235777`), credenciales en el enlace, puertos raros y dominios con aspecto aleatorio. La vista **«URLs»** enseña la cadena de saltos sin que nada se pueda pulsar.
 - **Exportar** (JSON, **STIX 2.1**, copiar IOCs, imprimir) desde un menú accesible con teclado. El bundle STIX lleva observables, indicadores, técnicas ATT&CK y campañas con ids deterministas, y pasa el validador oficial de OASIS ([docs/stix.md](docs/stix.md)).
 - **Sistema de diseño propio** ([docs/design-system.md](docs/design-system.md)): tokens con contraste comprobado en claro y oscuro, objetivos táctiles de 44 px y sin scroll horizontal a 360 px, comprobados en un Chromium real.
+- **Historial opcional en el navegador** (apagado por defecto): guarda el informe de cada análisis, nunca el correo. Busca un IOC en todo lo guardado, filtra por nivel, fecha o técnica, compara dos análisis y exporta o importa el historial en `.json`. «Borrar todo» borra la base entera.
 - **13 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
 
 | Modo sencillo (oscuro) | Móvil | Email legítimo |
@@ -55,6 +56,10 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 | URLs | IOCs | ATT&CK |
 |---|---|---|
 | ![Cadena de saltos de un enlace con redirección anidada](docs/img/analista-urls.png) | ![IOCs defanged con dominios Unicode](docs/img/analista-iocs.png) | ![Técnicas ATT&CK](docs/img/analista-attack.png) |
+
+| Historial | Historial en el móvil | |
+|---|---|---|
+| ![Historial con búsqueda, filtros y dos análisis marcados para comparar](docs/img/analista-historial.png) | ![Historial en el móvil, tema oscuro](docs/img/movil-historial.png) | |
 
 ## 🔍 Qué detecta
 

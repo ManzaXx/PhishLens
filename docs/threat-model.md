@@ -59,6 +59,14 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | Un fallo futuro que inserte HTML | Trusted Types (`require-trusted-types-for 'script'; trusted-types 'none'`) | `tests/unit/security.test.js` |
 | Worker sin CSP | `worker-src 'none'`, ver [ADR 0003](adr/0003-sin-web-worker.md) | `tests/unit/security.test.js` |
 
+### Historial (`src/storage/`)
+
+| Riesgo | Mitigación | Prueba |
+| --- | --- | --- |
+| Datos del correo guardados sin querer | Apagado por defecto: sin el interruptor no se abre IndexedDB. `slimReport` quita el cuerpo, el HTML, las cabeceras en bruto y los bytes de los adjuntos, y recorta a 40 caracteres la evidencia de las reglas de lenguaje y HTML. `validateEntry` vuelve a recortar todo lo que llega de un fichero o de otra pestaña | `tests/unit/storage-schema.test.js` (prueba de propiedad), `tests/e2e/history.e2e.js` (`indexedDB.databases()` sin `phishlens` con el historial apagado) |
+| Entradas manipuladas (otra pestaña, una extensión, un fichero importado) | `JSON.parse` con reviver que descarta `__proto__`, `constructor` y `prototype`; copia limpia solo con objetos planos; esquema propio (UUID, fecha ISO, nivel, puntuación, 500 hallazgos, listas de técnicas e IOCs, cadenas de 10.000 caracteres, 1 MB por entrada); importación de 20 MB y 500 entradas como mucho; todo se pinta con `textContent` y defanged | `tests/unit/storage-schema.test.js`, `tests/unit/storage-history.test.js`, `tests/unit/history-ui.test.js` |
+| Borrado parcial que deja restos | «Borrar todo» usa `indexedDB.deleteDatabase` y no la vuelve a crear hasta el siguiente análisis guardado | `tests/unit/history-control.test.js`, `tests/e2e/history.e2e.js` |
+
 ### Cadena de suministro
 
 | Riesgo | Mitigación | Prueba |

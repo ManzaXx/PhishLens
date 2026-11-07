@@ -69,3 +69,13 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 - **Indicadores STIX** solo para correos «Probable phishing» o «Phishing casi seguro» (y adjuntos con un hallazgo grave). Los dominios de marcas reales, acortadores, email marketing, correo gratuito, redes sociales, alojamiento compartido e infraestructura de correo compartida (SES, Mimecast, Outlook…) salen como observables, nunca como indicadores. De las IP de las cabeceras `Received` solo la de entrada es indicador, y no si es de un gran proveedor. Las direcciones de correo de una marca o de un proveedor tampoco lo son; las de correo gratuito sí, porque la cuenta la abrió el atacante.
 - **Ids UUIDv5**, no UUIDv4: el validador de OASIS lo marca como aviso, pero es a propósito para que el mismo correo dé el mismo bundle.
 - **Importación en OpenCTI o MISP** pendiente de probar a mano una vez ([docs/stix.md](stix.md)).
+
+## Historial
+
+- **Opcional y apagado por defecto.** Con el interruptor apagado no se crea la base de datos.
+- **Qué se guarda:** el informe (nivel, puntuación, hallazgos, técnicas, IOCs, remitente y asunto) y el SHA-256 del texto analizado. **Qué no:** el cuerpo, el HTML, las cabeceras en bruto ni los bytes de los adjuntos. La evidencia de las reglas de lenguaje y HTML se recorta a 40 caracteres.
+- **Un análisis guardado no se puede volver a analizar** ni verificar su DKIM: el correo no está.
+- **500 análisis como mucho.** Al pasar, se borra el más antiguo y se avisa.
+- **Sin cifrado.** Lo guardado está en el perfil del navegador: quien use ese perfil lo puede ver. La exportación `.json` tampoco va cifrada.
+- **Ventana privada o almacenamiento bloqueado:** el historial se apaga y lo dice; el análisis sigue funcionando.
+- **Las reglas propias del PR13** no podrán mirar el cuerpo de un análisis guardado, porque no está.
