@@ -11,6 +11,8 @@ import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { mutate } from './mutate.js';
 import { rng, pick } from '../helpers/rng.js';
 import { shuffle } from '../helpers/batch.js';
+import { toStixBundle } from '../../src/intel/stix.js';
+import { validateBundle } from '../../tools/stix-validate.mjs';
 
 const ITER = Math.max(20, Math.round(Number(process.env.FUZZ_ITER ?? 2000) / 20));
 const SEED = Number(process.env.FUZZ_SEED ?? 20261107);
@@ -53,5 +55,11 @@ test(`fuzz del lote: ${ITER} lotes de 2 a 20 correos mutados`, () => {
     assert.deepEqual(buildGraph(again), graph, `lote ${i}: el grafo depende del orden`);
     assert.deepEqual(layoutGraph(buildGraph(again)), layout, `lote ${i}: la disposición depende del orden`);
     assert.deepEqual(findCampaigns(again), campaigns, `lote ${i}: las campañas dependen del orden`);
+    // STIX: todo lote da un bundle válido que sobrevive a JSON.
+    const now = new Date(Date.UTC(2026, 10, 7));
+    const bundle = toStixBundle(entries, { campaigns, now });
+    assert.deepEqual(validateBundle(bundle), [], `lote ${i}: STIX no válido`);
+    assert.deepEqual(JSON.parse(JSON.stringify(bundle)), bundle, `lote ${i}: STIX no sobrevive a JSON`);
+    assert.deepEqual(toStixBundle(again, { campaigns: findCampaigns(again), now }), bundle, `lote ${i}: STIX depende del orden`);
   }
 });
