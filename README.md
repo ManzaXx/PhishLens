@@ -23,17 +23,18 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 
 ## ✨ Funcionalidades
 
-- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, IOCs y ATT&CK, con la vista en la URL (`#analista/senales`).
+- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, IOCs, Campañas y ATT&CK, con la vista en la URL (`#analista/senales`).
 - **10 detectores y 80 reglas**: autenticación, remitente, cabeceras, ruta, estructura MIME, enlaces, dominios parecidos, adjuntos, HTML y lenguaje. Cada regla tiene su texto llano y su técnica ATT&CK.
 - **Informe explicado**: nota con semáforo, motivo principal, confianza del análisis, riesgo por categoría, combinaciones peligrosas y recomendaciones de qué hacer.
 - **Vista segura**: el email como texto plano, sin enlaces activos y con las frases de ingeniería social resaltadas.
 - **Ruta del email**: reconstruye los saltos `Received` con sus IPs.
 - **IOCs defanged** (`hxxp://evil[.]xyz`) con botón de copiar para pegarlos en un ticket.
+- **Varios correos a la vez**: suelta hasta 50 `.eml` (100 MB en total) y elige cuál ver. Un **grafo de IOCs** en SVG une correos, remitentes, dominios, IPs, URLs y adjuntos (con teclado y una tabla equivalente), y las **campañas** agrupan los correos que comparten infraestructura, un adjunto o la misma plantilla.
 - **MITRE ATT&CK**: cada señal enlazada a su técnica (T1566.002, T1036.007, T1684.001…), con su táctica y el motivo, según ATT&CK 20.1.
 - **Desenvuelve enlaces** de Microsoft Safe Links, Google y LinkedIn para analizar el destino real.
 - **Exportar** (JSON, copiar IOCs, imprimir) desde un menú accesible con teclado.
 - **Sistema de diseño propio** ([docs/design-system.md](docs/design-system.md)): tokens con contraste comprobado en claro y oscuro, objetivos táctiles de 44 px y sin scroll horizontal a 360 px, comprobados en un Chromium real.
-- **10 emails de ejemplo** que se cargan con un clic.
+- **12 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
 
 | Modo sencillo (oscuro) | Móvil | Email legítimo |
 |---|---|---|
@@ -46,6 +47,10 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 | Vista segura | Cabeceras y ruta | Adjuntos |
 |---|---|---|
 | ![Vista segura con frases resaltadas](docs/img/analista-vista-segura.png) | ![Ruta Received con avisos por salto](docs/img/analista-cabeceras.png) | ![Adjuntos por dentro: PDF activo y ZIP con contraseña](docs/img/analista-adjuntos.png) |
+
+| Grafo de IOCs del lote | Campañas | Lote en el móvil |
+|---|---|---|
+| ![Grafo radial de IOCs de un lote de cuatro correos](docs/img/analista-grafo.png) | ![Campaña de cuatro correos con lo que tienen en común](docs/img/analista-campanas.png) | ![Selector del lote y aviso de campaña en el móvil](docs/img/movil-lote.png) |
 
 | IOCs | ATT&CK |
 |---|---|
@@ -147,7 +152,7 @@ npm run bench               # reescribe docs/benchmark.md
 npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
 ```
 
-GitHub Actions ejecuta todo en cada push (`.github/workflows/phishlens-tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 12 muestras de principio a fin y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
+GitHub Actions ejecuta todo en cada push (`.github/workflows/phishlens-tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 12 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
 
 ## 🌐 Publicar la demo
 
@@ -162,6 +167,7 @@ GitHub Pages en un repositorio privado requiere GitHub Pro. Sin Pro, puedes hace
 
 - Son heurísticas: una nota baja **no garantiza** que un email sea seguro, y un email legítimo mal configurado puede salir sospechoso.
 - No consulta servicios externos (listas negras, WHOIS, VirusTotal), porque eso exigiría enviar datos fuera del navegador.
+- Las campañas son una pista, no una prueba: se unen por cadena (A comparte algo con B y B con C) y solo entran los correos que no parecen legítimos.
 - Sin red no consulta DNS: la firma DKIM y el SPF solo se verifican si pegas la clave o el registro. Detalles en [docs/limitations.md](docs/limitations.md).
 - Mira dentro de los adjuntos sin abrirlos, pero no descomprime nada: un PDF dentro de un ZIP o el contenido comprimido de un PDF no se revisan. Tampoco lee el formato `.msg` de Outlook.
 
@@ -169,7 +175,7 @@ GitHub Pages en un repositorio privado requiere GitHub Pro. Sin Pro, puedes hace
 
 - [x] Verificación de firmas DKIM con WebCrypto (2.2)
 - [ ] Extensión de navegador para analizar el email abierto en Gmail u Outlook
-- [ ] Modo por lotes para analizar varios `.eml` a la vez
+- [x] Modo por lotes, grafo de IOCs y campañas (2.3)
 - [ ] Exportar IOCs en formato STIX 2.1
 
 ## 📄 Licencia y aviso

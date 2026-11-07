@@ -50,3 +50,12 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 - **La confianza mide carencias, no aciertos.** Una confianza alta dice que se pudo revisar casi todo, no que el veredicto sea correcto.
 - No se consultan listas negras, WHOIS ni servicios de reputación.
 - No se analiza el formato `.msg` de Outlook.
+
+## Lotes y campañas
+
+- **El lote vive en memoria** mientras la pestaña esté abierta: al recargar se pierde. El historial persistente llegará en la 3.0.
+- **Las campañas son una pista.** Se unen por cadena: si A comparte el dominio con B y B el adjunto con C, los tres salen juntos aunque A y C no compartan nada. Cada campaña dice qué une a cada par.
+- **Solo los correos que no parecen legítimos** entran en una campaña, y los proveedores compartidos (correo gratuito, acortadores, seguimiento, dominios oficiales de marcas) no cuentan como pista.
+- **Sin DNS.** `resuelve-en` solo une el dominio del remitente con la IP del salto de entrada que figura en las cabeceras, no con lo que diría el DNS hoy.
+- **La plantilla** se compara por *shingles* de tres palabras; un kit que reescribe el texto con otras palabras no se reconoce, y los cuerpos de menos de 10 palabras no se comparan.
+- **Grafos grandes.** El SVG dibuja como mucho 150 nodos y la tabla 500 filas; con más, lo dicen en texto.

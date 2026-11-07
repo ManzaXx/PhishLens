@@ -31,6 +31,9 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | Adjuntos construidos para colgar o engañar a los lectores (ZIP con un EOCD que promete 65.535 entradas, FAT en bucle, offsets fuera del fichero, 10 MB de `/` en un PDF) | Lectores de solo lectura en `src/parser/files/` sobre un lector acotado que devuelve `null` fuera de rango; topes de 1.000 entradas y 4.096 sectores; ciclos cortados con un conjunto de visitados; un solo recorrido lineal en el PDF | `tests/fuzz/files.test.js` (2.000 adjuntos mutados y casos fijos adversarios), `tests/unit/files-*.test.js` |
 | Un adjunto que dice ser otra cosa (`factura.pdf` que es un `.exe`, `factura.exe.`) | Tipo real por bytes mágicos y extensión leída como la lee Windows (sin puntos ni espacios finales) | `tests/unit/attachments.test.js` |
 | Nombres hostiles dentro de un ZIP (`../../x.exe`, RLO, CP437, 64 KB) | Recortados a 260 caracteres y pintados con `el()`, que revela los caracteres invisibles | `tests/unit/files-zip.test.js` |
+| Un lote para agotar memoria o colgar la pestaña | 50 correos y 100 MB en total; uno a uno, cediendo el hilo entre correos; un análisis nuevo aborta el lote en curso | `tests/unit/batch.test.js`, `tests/e2e/batch.e2e.js` |
+| Grafo y campañas con entradas mutadas o en otro orden | Funciones puras sobre `Map`/`Set`, sin red ni DNS; SVG con como mucho 150 nodos y tabla con 500 filas | `tests/fuzz/batch.test.js`, `tests/perf/perf.test.js` |
+| Campañas falsas por proveedores compartidos | Gmail y otros correos gratuitos, acortadores, dominios de seguimiento y dominios oficiales de marcas no cuentan como pista; los correos «probablemente legítimos» no entran | `tests/unit/campaigns.test.js`, `tests/unit/batch-samples.test.js` |
 
 ### Render (`src/ui/`)
 
@@ -38,6 +41,7 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | --- | --- | --- |
 | XSS con el HTML del correo | Solo `textContent`; el HTML se recorre sin crear nodos; ningún `innerHTML`, `document.write` ni `eval` en `src/` | `tests/unit/security.test.js` |
 | Trojan Source, RLO, invisibles | Se muestran como `⟦U+202E⟧` | `tests/unit/security.test.js` |
+| Inyección en el grafo SVG por nombres de nodos (asuntos, dominios, nombres de fichero) | `svgEl()` con lista blanca de etiquetas y atributos (sin `<a>`, `<foreignObject>`, `href` ni `on*`); el texto en `textContent`; valores defanged | `tests/unit/graph-ui.test.js` |
 | Clickjacking | La página no se ejecuta dentro de un iframe | Revisión manual (`src/ui/app.js`) |
 | Veredicto engañoso | Estados de autenticación separados y nunca «verificado» sin comprobarlo | `tests/unit/auth-evaluate.test.js` |
 

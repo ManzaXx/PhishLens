@@ -15,7 +15,7 @@ ui ──▶ core ──▶ detectors · auth · intel ──▶ parser ──�
 | `src/parser/` | RFC 5322 + MIME (`eml.js`), cabeceras `Received` (`received.js`), HTML sin DOM (`html.js`), URLs (`url.js`) | `data`, `lib` |
 | `src/detectors/` | Un fichero por familia de señales, todos con `detect(email) → Finding[]` | `core/finding.js`, `parser`, `data`, `lib` |
 | `src/auth/` | Autenticación verificada / declarada / no verificable (llega en el PR 2 de la 2.2) | `core/finding.js`, `parser`, `data`, `lib` |
-| `src/intel/` | Indicadores de compromiso; en la 2.3, grafo y campañas | `parser`, `data`, `lib` |
+| `src/intel/` | Indicadores de compromiso (`ioc.js`), grafo del lote (`graph.js`), su disposición radial (`layout.js`), huella de plantilla (`kit.js`) y campañas (`campaigns.js`) | `parser`, `data`, `lib`, los niveles de `core/scoring.js` |
 | `src/core/` | Modelo de hallazgo, motor, recomendaciones; en la 2.2, puntuación contextual | todo salvo `ui` |
 | `src/ui/` | Único código que toca el DOM; todo el contenido del correo se inserta con `textContent` (`ui/dom.js`). Dentro: `components/` (piezas sin estado que solo importan `dom.js`, otros componentes y `data/`), `panels/` (cada vista del modo analista), `views/` (modo sencillo y analista), `route.js` (rutas `#analista/<vista>`, funciones puras) y `app.js` (eventos) | todo |
 
@@ -27,6 +27,8 @@ Nada fuera de `src/ui/` usa `document` ni `window`, así que todo el motor se pr
 2. `analyze(email)` ejecuta cada detector. Si uno falla, se registra en `errors` y el resto sigue.
 3. El informe reúne hallazgos, técnicas ATT&CK e IOCs.
 4. `renderReport()` lo pinta sin interpretar nunca el HTML del correo.
+
+Con varios correos, `analyzeBatch()` (`src/core/batch.js`) repite los pasos 1–3 con cada uno, cediendo el hilo entre correos; luego `buildGraph()` y `findCampaigns()` trabajan sobre los informes y `renderReport()` recibe el lote como contexto (`options.batch`).
 
 ## Objeto email
 

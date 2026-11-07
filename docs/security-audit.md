@@ -49,6 +49,11 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | Ningún fuente con caracteres bidireccionales literales (Trojan Source) | ✅ | `tests/unit/structure.test.js` |
 | `src/parser/files/` solo importa de `lib/`, `data/` y otros lectores | ✅ | `tests/unit/structure.test.js` |
 | Revisión de seguridad del PR7 sin hallazgos explotables | 👁️ | skill `security-review` sobre el diff |
+| Lote: 50 correos y 100 MB, repetidos, archivos que no son `.eml` y análisis abortado | ✅ | `tests/unit/batch.test.js`, `tests/e2e/batch.e2e.js` |
+| Grafo SVG sin `innerHTML` y con lista blanca de etiquetas y atributos | ✅ | `tests/unit/graph-ui.test.js` |
+| Grafo y campañas independientes del orden y sin lanzar con correos mutados | ✅ | `tests/fuzz/batch.test.js` |
+| Privacidad con un lote de 10 correos por todas las vistas, en claro y oscuro | ✅ | `tests/e2e/batch.e2e.js` |
+| Revisión de seguridad del PR8 sin hallazgos explotables | 👁️ | skill `security-review` sobre el diff |
 
 ## Pendiente
 

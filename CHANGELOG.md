@@ -17,6 +17,11 @@ Especificación en [docs/specs/2026-11-06-phishlens-2.3-design.md](docs/specs/20
 - **SHA-1 y MD5** de cada adjunto, además de SHA-256, en el informe y en los IOCs.
 - Vista **«Adjuntos»** en el modo analista y dos muestras nuevas: un `factura.pdf` que es un ejecutable y un correo con un PDF activo y un ZIP con contraseña (construidas byte a byte, sin código).
 - Fuzzing por formato de adjunto (`tests/fuzz/files.test.js`).
+- **Lotes**: hasta 50 `.eml` y 100 MB a la vez, analizados uno a uno cediendo el hilo entre correos, con un selector para ver cada uno. Los repetidos cuentan una vez y se dice qué archivos se saltan y por qué.
+- **Grafo de IOCs** determinista (`src/intel/graph.js`): correos, direcciones, dominios, IPs, URLs y hashes unidos por `envía`, `enlaza`, `adjunta`, `resuelve-en` y `responde-a`, dibujado en SVG con una disposición radial, recorrible con el teclado y con una tabla equivalente.
+- **Campañas** (`src/intel/campaigns.js`): correos que comparten dominio de envío, IP de entrada, dominio de enlace, adjunto o plantilla (similitud de *shingles* ≥ 0,6), con la marca que suplantan y sus técnicas ATT&CK. Gmail, los acortadores, el seguimiento y los dominios oficiales de las marcas no unen campañas.
+- Vista **«Campañas»**, aviso de campaña en el modo sencillo y un **lote de ejemplo** de 4 correos.
+- Fuzzing del lote (`tests/fuzz/batch.test.js`): el grafo y las campañas no lanzan y no dependen del orden.
 
 ### Cambiado
 - La portada saca sus cifras del código (10 detectores, 80 reglas, ATT&CK 20.1) y «Cómo funciona» explica el motor real: topes por categoría, combinaciones y confianza. Ya no habla de «leve 5, media 15, grave 30».
