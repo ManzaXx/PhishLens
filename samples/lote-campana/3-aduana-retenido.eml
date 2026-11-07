@@ -1,0 +1,37 @@
+Authentication-Results: mx.example.com;
+ spf=fail smtp.mailfrom=seguimiento-paquete.test;
+ dkim=none;
+ dmarc=fail header.from=seguimiento-paquete.test
+Received: from seguimiento-paquete.test (unknown [198.51.100.40]) by mx.example.com; Wed, 04 Nov 2026 16:05:00 +0100
+Return-Path: <rebotes@seguimiento-paquete.test>
+From: "Correos" <aduanas@seguimiento-paquete.test>
+To: pablo@example.com
+Subject: Su paquete está retenido en aduana
+Date: Wed, 04 Nov 2026 16:05:00 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lc-3"
+
+--lc-3
+Content-Type: text/plain; charset=utf-8
+
+Estimado Ana:
+
+Su paquete con número de seguimiento ES20488172 está retenido en nuestra oficina de distribución
+por gastos de aduana pendientes. Para recibirlo debe abonar 2,99 EUR antes de 48 horas
+o será devuelto al remitente. Pulse en el enlace para pagar y confirme su dirección de entrega.
+
+Gracias por confiar en nuestro servicio de envíos.
+
+https://aduana-pago.test/pagar?ref=ES20488172
+
+--lc-3
+Content-Type: application/pdf; name="aviso-entrega.pdf"
+Content-Disposition: attachment; filename="aviso-entrega.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKMSAwIG9iaiA8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4gZW5kb2Jq
+CjIgMCBvYmogPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFtdIC9Db3VudCAwID4+IGVuZG9iagolIFBo
+aXNoTGVuczogbXVlc3RyYSBpbm9mZW5zaXZhLCBzaW4gY29udGVuaWRvIGFjdGl2by4KdHJhaWxl
+ciA8PCAvUm9vdCAxIDAgUiA+PgolJUVPRg==
+
+--lc-3--

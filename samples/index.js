@@ -15,3 +15,15 @@ export const SAMPLES = [
   { id: '11-adjunto-tipo-falso', title: 'Adjunto con tipo falso', file: '11-adjunto-tipo-falso.eml' },
   { id: '12-pdf-activo-zip', title: 'PDF activo y ZIP cifrado', file: '12-pdf-activo-zip.eml' },
 ];
+
+// Lotes de ejemplo: varios correos que se analizan juntos (grafo y campañas).
+export const BATCHES = [
+  {
+    id: 'lote-campana',
+    title: 'Lote de campaña (4 correos)',
+    files: [
+      'lote-campana/1-entrega-fallida.eml', 'lote-campana/2-aviso-adjunto.eml',
+      'lote-campana/3-aduana-retenido.eml', 'lote-campana/4-aduana-recordatorio.eml',
+    ],
+  },
+];

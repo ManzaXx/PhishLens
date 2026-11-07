@@ -1,0 +1,32 @@
+Authentication-Results: mx.example.com;
+ spf=fail smtp.mailfrom=correos-envios.test;
+ dkim=none;
+ dmarc=fail header.from=correos-envios.test
+Received: from correos-envios.test (unknown [203.0.113.7]) by mx.example.com; Tue, 03 Nov 2026 11:40:00 +0100
+Return-Path: <rebotes@correos-envios.test>
+From: "Correos" <notificaciones@correos-envios.test>
+To: pablo@example.com
+Subject: Aviso de llegada de su paquete
+Date: Tue, 03 Nov 2026 11:40:00 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lc-2"
+
+--lc-2
+Content-Type: text/plain; charset=utf-8
+
+Buenos días:
+
+Le enviamos el aviso de llegada de su paquete.
+Imprímalo y preséntelo en su oficina en un plazo de 3 días.
+
+--lc-2
+Content-Type: application/pdf; name="aviso-entrega.pdf"
+Content-Disposition: attachment; filename="aviso-entrega.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKMSAwIG9iaiA8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4gZW5kb2Jq
+CjIgMCBvYmogPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFtdIC9Db3VudCAwID4+IGVuZG9iagolIFBo
+aXNoTGVuczogbXVlc3RyYSBpbm9mZW5zaXZhLCBzaW4gY29udGVuaWRvIGFjdGl2by4KdHJhaWxl
+ciA8PCAvUm9vdCAxIDAgUiA+PgolJUVPRg==
+
+--lc-2--

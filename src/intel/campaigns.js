@@ -90,7 +90,7 @@ export function findCampaigns(entries) {
         .filter((c) => c.emails.length >= 2),
       ...kitPairs.filter((p) => inside.has(p.emails[0])),
     ].sort((a, b) => cmp(a.kind, b.kind) || cmp(a.type, b.type) || cmp(a.value, b.value) || cmp(a.emails.join(), b.emails.join()));
-    const brands = [...new Set(group.flatMap((e) => (e.report.findings ?? []).map((f) => f.brand?.name).filter(Boolean)))].sort(cmp);
+    const brands = [...new Set(group.flatMap((e) => (e.report.findings ?? []).map((f) => f.brand).filter((b) => typeof b === 'string' && b)))].sort(cmp);
     const techniques = [...new Map(group.flatMap((e) => e.report.techniques ?? []).map((t) => [t.id, t])).values()].sort((a, b) => cmp(a.id, b.id));
     const level = SEVERITY.find((l) => group.some((e) => e.report.level === l));
     return { id: `campaign:${sha256(keys.join(',')).slice(0, 16)}`, emails: keys, reasons, brands, techniques, level };

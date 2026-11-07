@@ -1,0 +1,379 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "email:859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+        "type": "email",
+        "value": "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+        "label": "Aviso de llegada de su paquete",
+        "emails": [
+          "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b"
+        ]
+      },
+      {
+        "id": "email:93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a",
+        "type": "email",
+        "value": "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a",
+        "label": "Su paquete está retenido en aduana",
+        "emails": [
+          "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a"
+        ]
+      },
+      {
+        "id": "email:abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3",
+        "type": "email",
+        "value": "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3",
+        "label": "RE: Su paquete está retenido en aduana",
+        "emails": [
+          "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3"
+        ]
+      },
+      {
+        "id": "email:d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7",
+        "type": "email",
+        "value": "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7",
+        "label": "Su envío no ha podido ser entregado",
+        "emails": [
+          "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+        ]
+      },
+      {
+        "id": "address:aduanas@seguimiento-paquete.test",
+        "type": "address",
+        "value": "aduanas@seguimiento-paquete.test",
+        "label": "aduanas@seguimiento-paquete.test",
+        "emails": [
+          "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a"
+        ]
+      },
+      {
+        "id": "address:avisos@correos-envios.test",
+        "type": "address",
+        "value": "avisos@correos-envios.test",
+        "label": "avisos@correos-envios.test",
+        "emails": [
+          "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+        ]
+      },
+      {
+        "id": "address:clientes@aduana-envio.test",
+        "type": "address",
+        "value": "clientes@aduana-envio.test",
+        "label": "clientes@aduana-envio.test",
+        "emails": [
+          "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3"
+        ]
+      },
+      {
+        "id": "address:notificaciones@correos-envios.test",
+        "type": "address",
+        "value": "notificaciones@correos-envios.test",
+        "label": "notificaciones@correos-envios.test",
+        "emails": [
+          "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b"
+        ]
+      },
+      {
+        "id": "domain:aduana-envio.test",
+        "type": "domain",
+        "value": "aduana-envio.test",
+        "label": "aduana-envio.test",
+        "emails": [
+          "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3"
+        ]
+      },
+      {
+        "id": "domain:aduana-pago.test",
+        "type": "domain",
+        "value": "aduana-pago.test",
+        "label": "aduana-pago.test",
+        "emails": [
+          "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a"
+        ]
+      },
+      {
+        "id": "domain:correos-envios.test",
+        "type": "domain",
+        "value": "correos-envios.test",
+        "label": "correos-envios.test",
+        "emails": [
+          "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+          "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+        ]
+      },
+      {
+        "id": "domain:pago-aduanas-es.test",
+        "type": "domain",
+        "value": "pago-aduanas-es.test",
+        "label": "pago-aduanas-es.test",
+        "emails": [
+          "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3"
+        ]
+      },
+      {
+        "id": "domain:pago-correos-envios.test",
+        "type": "domain",
+        "value": "pago-correos-envios.test",
+        "label": "pago-correos-envios.test",
+        "emails": [
+          "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+        ]
+      },
+      {
+        "id": "domain:seguimiento-paquete.test",
+        "type": "domain",
+        "value": "seguimiento-paquete.test",
+        "label": "seguimiento-paquete.test",
+        "emails": [
+          "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a"
+        ]
+      },
+      {
+        "id": "ip:192.0.2.91",
+        "type": "ip",
+        "value": "192.0.2.91",
+        "label": "192.0.2.91",
+        "emails": [
+          "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3"
+        ]
+      },
+      {
+        "id": "ip:198.51.100.40",
+        "type": "ip",
+        "value": "198.51.100.40",
+        "label": "198.51.100.40",
+        "emails": [
+          "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a"
+        ]
+      },
+      {
+        "id": "ip:203.0.113.7",
+        "type": "ip",
+        "value": "203.0.113.7",
+        "label": "203.0.113.7",
+        "emails": [
+          "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+          "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+        ]
+      },
+      {
+        "id": "url:https://aduana-pago.test/pagar?ref=ES20488172",
+        "type": "url",
+        "value": "https://aduana-pago.test/pagar?ref=ES20488172",
+        "label": "https://aduana-pago.test/pagar?ref=ES20488172",
+        "emails": [
+          "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a"
+        ]
+      },
+      {
+        "id": "url:https://pago-aduanas-es.test/p?ref=ES77310094",
+        "type": "url",
+        "value": "https://pago-aduanas-es.test/p?ref=ES77310094",
+        "label": "https://pago-aduanas-es.test/p?ref=ES77310094",
+        "emails": [
+          "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3"
+        ]
+      },
+      {
+        "id": "url:https://pago-correos-envios.test/franqueo?id=55102",
+        "type": "url",
+        "value": "https://pago-correos-envios.test/franqueo?id=55102",
+        "label": "https://pago-correos-envios.test/franqueo?id=55102",
+        "emails": [
+          "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+        ]
+      },
+      {
+        "id": "hash:a5730fa087dfefd972a63b5a4d0057cf340876e8dcee8c99a391056ea0d861f0",
+        "type": "hash",
+        "value": "a5730fa087dfefd972a63b5a4d0057cf340876e8dcee8c99a391056ea0d861f0",
+        "label": "aviso-entrega.pdf",
+        "emails": [
+          "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+          "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "address:aduanas@seguimiento-paquete.test",
+        "to": "email:93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a",
+        "type": "envía"
+      },
+      {
+        "from": "address:avisos@correos-envios.test",
+        "to": "email:d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7",
+        "type": "envía"
+      },
+      {
+        "from": "address:clientes@aduana-envio.test",
+        "to": "email:abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3",
+        "type": "envía"
+      },
+      {
+        "from": "address:notificaciones@correos-envios.test",
+        "to": "email:859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+        "type": "envía"
+      },
+      {
+        "from": "domain:aduana-envio.test",
+        "to": "email:abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3",
+        "type": "envía"
+      },
+      {
+        "from": "domain:aduana-envio.test",
+        "to": "ip:192.0.2.91",
+        "type": "resuelve-en"
+      },
+      {
+        "from": "domain:correos-envios.test",
+        "to": "email:859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+        "type": "envía"
+      },
+      {
+        "from": "domain:correos-envios.test",
+        "to": "email:d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7",
+        "type": "envía"
+      },
+      {
+        "from": "domain:correos-envios.test",
+        "to": "ip:203.0.113.7",
+        "type": "resuelve-en"
+      },
+      {
+        "from": "domain:seguimiento-paquete.test",
+        "to": "email:93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a",
+        "type": "envía"
+      },
+      {
+        "from": "domain:seguimiento-paquete.test",
+        "to": "ip:198.51.100.40",
+        "type": "resuelve-en"
+      },
+      {
+        "from": "email:859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+        "to": "hash:a5730fa087dfefd972a63b5a4d0057cf340876e8dcee8c99a391056ea0d861f0",
+        "type": "adjunta"
+      },
+      {
+        "from": "email:93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a",
+        "to": "hash:a5730fa087dfefd972a63b5a4d0057cf340876e8dcee8c99a391056ea0d861f0",
+        "type": "adjunta"
+      },
+      {
+        "from": "email:93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a",
+        "to": "url:https://aduana-pago.test/pagar?ref=ES20488172",
+        "type": "enlaza"
+      },
+      {
+        "from": "email:abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3",
+        "to": "url:https://pago-aduanas-es.test/p?ref=ES77310094",
+        "type": "enlaza"
+      },
+      {
+        "from": "email:d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7",
+        "to": "url:https://pago-correos-envios.test/franqueo?id=55102",
+        "type": "enlaza"
+      },
+      {
+        "from": "url:https://aduana-pago.test/pagar?ref=ES20488172",
+        "to": "domain:aduana-pago.test",
+        "type": "enlaza"
+      },
+      {
+        "from": "url:https://pago-aduanas-es.test/p?ref=ES77310094",
+        "to": "domain:pago-aduanas-es.test",
+        "type": "enlaza"
+      },
+      {
+        "from": "url:https://pago-correos-envios.test/franqueo?id=55102",
+        "to": "domain:pago-correos-envios.test",
+        "type": "enlaza"
+      }
+    ]
+  },
+  "campaigns": [
+    {
+      "id": "campaign:28f6aa8a21052e4c",
+      "name": "Campaña 1",
+      "emails": [
+        "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+        "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a",
+        "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3",
+        "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+      ],
+      "reasons": [
+        {
+          "kind": "hash",
+          "type": "sha256",
+          "value": "a5730fa087dfefd972a63b5a4d0057cf340876e8dcee8c99a391056ea0d861f0",
+          "emails": [
+            "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+            "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a"
+          ]
+        },
+        {
+          "kind": "infra",
+          "type": "entry-ip",
+          "value": "203.0.113.7",
+          "emails": [
+            "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+            "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+          ]
+        },
+        {
+          "kind": "infra",
+          "type": "sender-domain",
+          "value": "correos-envios.test",
+          "emails": [
+            "859d26d675a4b42c179e3e01dadf5908af872e90d74d87917ba92aa7ddcc088b",
+            "d90d452885f0f9256bb3800b713926784aa8a8ac373c5ded740ebdfd7dcc1cd7"
+          ]
+        },
+        {
+          "kind": "kit",
+          "type": "template",
+          "value": "0.89",
+          "emails": [
+            "93ff95159dbbc826d06bebc28f172a054b284e7dbc49372d2edd5d574e7f231a",
+            "abf4f8b7b05a9b3da17ebe9dc8b48b0f0d6f668c5b866be076af1b2756be50b3"
+          ]
+        }
+      ],
+      "brands": [
+        "Correos"
+      ],
+      "techniques": [
+        {
+          "id": "T1204",
+          "name": "User Execution",
+          "tactic": "Execution",
+          "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        },
+        {
+          "id": "T1583.001",
+          "name": "Acquire Infrastructure: Domains",
+          "tactic": "Resource Development",
+          "why": "El atacante registró un dominio que imita a uno legítimo.",
+          "url": "https://attack.mitre.org/techniques/T1583/001/"
+        },
+        {
+          "id": "T1684.001",
+          "name": "Social Engineering: Impersonation",
+          "tactic": "Stealth",
+          "why": "El remitente se hace pasar por una marca o persona de confianza.",
+          "url": "https://attack.mitre.org/techniques/T1684/001/"
+        },
+        {
+          "id": "T1684.002",
+          "name": "Social Engineering: Email Spoofing",
+          "tactic": "Stealth",
+          "why": "Las cabeceras del correo están falseadas para fingir otro origen.",
+          "url": "https://attack.mitre.org/techniques/T1684/002/"
+        }
+      ],
+      "level": "critical"
+    }
+  ]
+}

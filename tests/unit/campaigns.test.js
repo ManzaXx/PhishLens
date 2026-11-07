@@ -59,7 +59,7 @@ test('proveedores grandes y correos legítimos no forman campaña', () => {
 });
 
 test('IP de entrada y dominio de enlace también unen; la marca, las técnicas y el nivel salen de los correos', () => {
-  const brand = { name: 'Correos', domains: ['correos.es'] };
+  const brand = 'Correos'; // finding.brand es el nombre de la marca
   const list = [
     entry({ key: 'P', level: 'suspicious', findings: [{ brand }], techniques: [{ id: 'T1566.002', name: 'Spearphishing Link' }],
       email: { from: { address: 'p@a.test' }, route: [{ ip: '203.0.113.7', entry: true }] } }),

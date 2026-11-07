@@ -1,0 +1,24 @@
+Authentication-Results: mx.example.com;
+ spf=fail smtp.mailfrom=correos-envios.test;
+ dkim=none;
+ dmarc=fail header.from=correos-envios.test
+Received: from correos-envios.test (unknown [203.0.113.7]) by mx.example.com; Mon, 02 Nov 2026 09:12:00 +0100
+Return-Path: <rebotes@correos-envios.test>
+From: "Correos" <avisos@correos-envios.test>
+To: pablo@example.com
+Subject: Su envío no ha podido ser entregado
+Date: Mon, 02 Nov 2026 09:12:00 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lc-1"
+
+--lc-1
+Content-Type: text/plain; charset=utf-8
+
+Hola:
+
+Hemos intentado entregar su envío pero faltan 1,99 EUR de franqueo.
+Abone el importe hoy mismo para programar una nueva entrega.
+
+https://pago-correos-envios.test/franqueo?id=55102
+
+--lc-1--

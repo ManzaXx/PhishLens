@@ -1,0 +1,27 @@
+Authentication-Results: mx.example.com;
+ spf=fail smtp.mailfrom=aduana-envio.test;
+ dkim=none;
+ dmarc=fail header.from=aduana-envio.test
+Received: from aduana-envio.test (unknown [192.0.2.91]) by mx.example.com; Thu, 05 Nov 2026 08:20:00 +0100
+Return-Path: <rebotes@aduana-envio.test>
+From: "Correos" <clientes@aduana-envio.test>
+To: pablo@example.com
+Subject: RE: Su paquete está retenido en aduana
+Date: Thu, 05 Nov 2026 08:20:00 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lc-4"
+
+--lc-4
+Content-Type: text/plain; charset=utf-8
+
+Estimado Luis Pérez:
+
+Su paquete con número de seguimiento ES77310094 está retenido en nuestra oficina de distribución
+por gastos de aduana pendientes. Para recibirlo debe abonar 3,49 EUR antes de 48 horas
+o será devuelto al remitente. Pulse en el enlace para pagar y confirme su dirección de entrega.
+
+Gracias por confiar en nuestro servicio de envíos.
+
+https://pago-aduanas-es.test/p?ref=ES77310094
+
+--lc-4--

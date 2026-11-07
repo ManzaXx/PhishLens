@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { SAMPLES } from '../../samples/index.js';
+import { SAMPLES, BATCHES } from '../../samples/index.js';
 import { analyzeInput } from '../../src/core/engine.js';
 
 const expected = {
@@ -56,7 +56,7 @@ test('las muestras legítimas no tienen ningún punto', () => {
 
 test('samples/data.js está sincronizado con los .eml (npm run samples)', async () => {
   const { SAMPLE_TEXTS } = await import('../../samples/data.js');
-  assert.deepEqual(Object.keys(SAMPLE_TEXTS).sort(), SAMPLES.map((s) => s.id).sort());
+  assert.deepEqual(Object.keys(SAMPLE_TEXTS).sort(), [...SAMPLES.map((s) => s.id), ...BATCHES.flatMap((b) => b.files)].sort());
   for (const sample of SAMPLES) {
     const raw = readFileSync(new URL(`../../samples/${sample.file}`, import.meta.url), 'utf8');
     assert.equal(SAMPLE_TEXTS[sample.id], raw, sample.id);
