@@ -231,3 +231,24 @@ test('el foco se ve en todos los tipos de nodo, también en las IP', { skip }, a
   for (const [type, s] of seen) assert.notEqual(s.stroke, s.fill, `${type}: el anillo de foco tiene el color del relleno`);
   await context.close();
 });
+
+test('Exportar → STIX 2.1 con un lote: descarga un bundle válido con la campaña, sin red', { skip }, async () => {
+  const { validateBundle } = await import('../../tools/stix-validate.mjs');
+  const w = await watchedPage(browser, server.url, {});
+  w.page.setDefaultTimeout(5000);
+  await w.page.goto(`${server.url}/index.html`);
+  await loadLot(w.page);
+  await w.page.locator('#report [aria-haspopup="menu"]').click();
+  const [download] = await Promise.all([
+    w.page.waitForEvent('download'),
+    w.page.getByRole('menuitem', { name: 'Descargar STIX 2.1' }).click(),
+  ]);
+  assert.match(download.suggestedFilename(), /^phishlens-stix-\d{4}-\d\d-\d\d\.json$/);
+  const bundle = JSON.parse(readFileSync(await download.path(), 'utf8'));
+  assert.deepEqual(validateBundle(bundle), []);
+  assert.equal(bundle.objects.filter((o) => o.type === 'campaign').length, 1);
+  assert.equal(bundle.objects.filter((o) => o.type === 'email-message').length, 4);
+  assert.deepEqual(w.external, [], 'peticiones fuera del origen');
+  assert.deepEqual(w.errors, [], 'errores de JavaScript');
+  await w.context.close();
+});

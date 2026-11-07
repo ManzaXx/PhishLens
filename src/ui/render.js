@@ -2,14 +2,16 @@
 // (src/ui/dom.js): nunca se interpreta como HTML ni se generan enlaces clicables a partir del email.
 import { el } from './dom.js';
 import { iocsToText } from '../intel/ioc.js';
+import { toStixBundle } from '../intel/stix.js';
 import { modeSwitch } from './components/mode-switch.js';
 import { menuButton } from './components/menu-button.js';
 import { batchBar } from './components/batch-bar.js';
 import { renderSimple } from './views/simple.js';
 import { renderAnalyst, renderPrint } from './views/analyst.js';
 
-const EXPORT_ITEMS = [
+export const EXPORT_ITEMS = [
   { action: 'export-json', text: 'Descargar informe (JSON)' },
+  { action: 'export-stix', text: 'Descargar STIX 2.1' },
   { action: 'copy-iocs', text: 'Copiar IOCs' },
   { action: 'print', text: 'Imprimir' },
 ];
@@ -58,3 +60,9 @@ export function reportToJson(report) {
 }
 
 export { iocsToText };
+
+/** STIX 2.1 de un correo o de un lote: el texto JSON (lo único que se serializa) y cuántos objetos lleva. */
+export function stixJson(entries, { campaigns = [], now = new Date() } = {}) {
+  const bundle = toStixBundle(entries, { campaigns, now });
+  return { json: JSON.stringify(bundle, null, 2), count: bundle.objects.length };
+}

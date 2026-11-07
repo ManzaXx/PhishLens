@@ -113,6 +113,8 @@ test('teclado: cargar una muestra, pasar al modo analista, cambiar de vista y ab
   await page.keyboard.press('Enter');
   assert.equal((await active()).text, 'Descargar informe (JSON)');
   await page.keyboard.press('ArrowDown');
+  assert.equal((await active()).text, 'Descargar STIX 2.1');
+  await page.keyboard.press('ArrowDown');
   assert.equal((await active()).text, 'Copiar IOCs');
   await page.keyboard.press('Escape');
   assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-haspopup')), 'menu');
@@ -176,7 +178,10 @@ test('menú Exportar: se abre con teclado, las flechas se mueven y Escape vuelve
   const focused = () => page.evaluate(() => document.activeElement?.textContent);
   assert.equal(await focused(), 'Descargar informe (JSON)');
   await page.keyboard.press('ArrowDown');
+  assert.equal(await focused(), 'Descargar STIX 2.1');
+  await page.keyboard.press('ArrowDown');
   assert.equal(await focused(), 'Copiar IOCs');
+  await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowUp');
   assert.equal(await focused(), 'Imprimir');

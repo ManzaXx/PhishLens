@@ -5,7 +5,7 @@ import { buildGraph } from '../intel/graph.js';
 import { findCampaigns } from '../intel/campaigns.js';
 import { SAMPLES, BATCHES } from '../../samples/index.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
-import { renderReport, setPrintReport, reportToJson, iocsToText } from './render.js';
+import { renderReport, setPrintReport, reportToJson, iocsToText, stixJson } from './render.js';
 import { FACTS, levelLegend } from '../core/facts.js';
 import { menuKey } from './components/menu-button.js';
 import { graphKey } from './components/graph.js';
@@ -600,19 +600,29 @@ function onReportAction(e) {
   if (action === 'eval-spf') evalSpf();
   if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || 'Sin IOCs');
   if (action === 'print') window.print();
-  if (action === 'export-json') {
-    const blob = new Blob([reportToJson(state.lastReport)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `phishlens-informe-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  if (action === 'export-json') download(reportToJson(state.lastReport), 'informe');
+  if (action === 'export-stix') {
+    // Con un lote se exporta el lote entero con sus campañas; si no, lo que está abierto.
+    const entries = state.batch?.entries ?? [{ key: 'actual', name: 'actual', report: state.lastReport }];
+    const { json, count } = stixJson(entries, { campaigns: state.batch?.campaigns ?? [] });
+    download(json, 'stix');
+    announce(`STIX descargado: ${count} objetos.`);
   }
   if (action === 'new') {
     reportBox.hidden = true;
     $('#analizar').scrollIntoView({ block: 'start' });
     tabs.find((t) => t.getAttribute('aria-selected') === 'true').focus();
   }
+}
+
+/** Descarga un texto JSON como fichero, sin red (Blob local). */
+function download(json, kind) {
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `phishlens-${kind}-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 // ---------- Portada: cifras y escala sacadas del código ----------
