@@ -17,7 +17,9 @@ export function navRail({ groups, current, counts = {} }) {
         el('span', { text: view.label }),
         count != null ? el('span', { className: 'nav-rail__count', text: String(count) }) : null)));
     }
-    nav.append(el('div', { className: 'nav-rail__group' }, el('h3', { className: 'nav-rail__title', text: group.label }), list));
+    // Un grupo de una sola vista con su mismo nombre no repite el título.
+    const alone = group.views.length === 1 && group.views[0].label === group.label;
+    nav.append(el('div', { className: 'nav-rail__group' }, alone ? null : el('h3', { className: 'nav-rail__title', text: group.label }), list));
   }
   return nav;
 }

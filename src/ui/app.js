@@ -199,10 +199,8 @@ async function historyAction(action, target) {
   }
   if (action === 'history-clear-confirm') {
     reportBox.querySelector('.history__dialog')?.close();
-    await h.clear().catch(() => {});
-    // Se reabre la base vacía para seguir guardando si el historial sigue encendido.
-    historyControl.disable();
-    await historyControl.enable();
+    // Borra la base entera; si el historial sigue encendido, el siguiente análisis la vuelve a crear.
+    await historyControl.clear().catch(() => {});
     state.historyData = null;
     state.historyQuery = { filters: {}, offset: 0 };
     await refreshHistory();

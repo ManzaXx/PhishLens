@@ -73,3 +73,30 @@ test('búsqueda, filtros, comparación y resultado de importar', () => {
     assert.ok(find(panel, (n) => n.localName === 'label' && n.getAttribute('for') === id), `etiqueta de ${id}`);
   }
 });
+
+test('crítica de diseño: «Historial» ocupa todo el ancho, sin el lateral ni el aviso del informe de fondo', async () => {
+  const { renderAnalyst } = await import('../../src/ui/views/analyst.js');
+  const { renderReport } = await import('../../src/ui/render.js');
+  const opts = { historyEnabled: true, history: data({ page: { items: [entry(1)], total: 1, skipped: 0, offset: 0 } }) };
+  const wide = renderAnalyst(r03, 'historial', opts);
+  assert.equal(find(wide, (n) => n.localName === 'aside'), null, 'sin lateral de contexto');
+  assert.match(attr(wide, 'class'), /analyst--wide/);
+  assert.ok(find(renderAnalyst(r03, 'senales', opts), (n) => n.localName === 'aside'), 'las demás vistas lo conservan');
+  const box = document.createElement('div');
+  renderReport(box, r03, { mode: 'analyst', view: 'historial', savedNote: 'Informe guardado', ...opts });
+  assert.equal(find(box, (n) => attr(n, 'class') === 'saved-note'), null);
+  renderReport(box, r03, { mode: 'analyst', view: 'senales', savedNote: 'Informe guardado', ...opts });
+  assert.ok(find(box, (n) => attr(n, 'class') === 'saved-note'));
+});
+
+test('crítica de diseño: un grupo con una sola vista del mismo nombre no repite el título', async () => {
+  const { navRail } = await import('../../src/ui/components/nav-rail.js');
+  const nav = navRail({ groups: [{ label: 'Correo', views: [{ id: 'resumen', label: 'Resumen' }] }, { label: 'Historial', views: [{ id: 'historial', label: 'Historial' }] }], current: 'resumen' });
+  assert.deepEqual(findAll(nav, (n) => attr(n, 'class') === 'nav-rail__title').map(text), ['Correo']);
+});
+
+test('crítica de diseño: el nombre del fichero va bajo el asunto, sin columna propia', () => {
+  const panel = historyPanel(r03, { history: data({ page: { items: [entry(1), { ...entry(2), name: null }], total: 2, skipped: 0, offset: 0 } }) });
+  assert.deepEqual(findAll(panel, (n) => n.localName === 'th' && n.parentNode?.parentNode?.localName === 'thead').map(text), ['Fecha', 'Remitente', 'Asunto', 'Nivel', 'Acciones']);
+  assert.equal(findAll(panel, (n) => attr(n, 'class') === 'history__name').map(text).join(), 'correo-1.eml');
+});

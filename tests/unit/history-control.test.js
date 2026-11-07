@@ -91,3 +91,21 @@ test('avisa cuando borra el más antiguo', async () => {
   for (let i = 0; i <= 500; i++) await ctl.record({ ...base, value: `${base.value}\n${i}` }, report);
   assert.deepEqual(events, [1]);
 });
+
+test('«Borrar todo» deja la base cerrada y borrada; el siguiente análisis la vuelve a abrir', async () => {
+  let destroyed = 0;
+  const backend = memoryBackend();
+  const destroy = backend.destroy;
+  backend.destroy = async () => { destroyed++; return destroy(); };
+  const { ctl, opened } = control({ backend });
+  await ctl.enable();
+  await ctl.record(input('03-phishing-banco'), analyzeInput(input('03-phishing-banco')), 'x.eml');
+  await ctl.clear();
+  assert.equal(destroyed, 1);
+  assert.equal(ctl.history(), null, 'sin conexión abierta tras borrar');
+  assert.equal(ctl.enabled(), true, 'el interruptor sigue encendido');
+  assert.equal(opened(), 1);
+  await ctl.record(input('04-phishing-correos'), analyzeInput(input('04-phishing-correos')), 'y.eml');
+  assert.equal(opened(), 2);
+  assert.equal((await ctl.history().list()).total, 1);
+});

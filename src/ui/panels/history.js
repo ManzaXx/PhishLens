@@ -59,16 +59,16 @@ function table(items, selected) {
     return [
       when(e.savedAt),
       defang(e.report.email?.from?.address ?? '—'),
-      e.report.email?.subject ?? '—',
+      el('span', { className: 'history__subject' }, e.report.email?.subject ?? '—',
+        e.name ? el('span', { className: 'history__name', text: e.name }) : null),
       el('span', { className: `level-tag level-tag--${e.report.level}`, text: levelLabel(e.report.level) }),
-      e.name ?? '—',
       el('span', { className: 'history__row-actions' },
         button('Abrir', 'history-open', { 'data-id': e.id }),
         button('Borrar', 'history-delete', { 'data-id': e.id, 'aria-label': `Borrar ${e.name ?? 'este análisis'}` }),
-        box),
+        el('label', { className: 'history__compare-pick' }, box, el('span', { text: 'Comparar', attrs: { 'aria-hidden': 'true' } }))),
     ];
   });
-  return dataTable({ caption: 'Análisis guardados', columns: ['Fecha', 'Remitente', 'Asunto', 'Nivel', 'Nombre', 'Acciones'], rows, className: 'history__table' });
+  return dataTable({ caption: 'Análisis guardados', columns: ['Fecha', 'Remitente', 'Asunto', 'Nivel', 'Acciones'], rows, className: 'history__table' });
 }
 
 function pager({ offset = 0, total, items }) {

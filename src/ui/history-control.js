@@ -10,6 +10,7 @@ import { HISTORY_KEY, historyEnabled } from './route.js';
  */
 export function createHistoryControl({ storage, factory, version, open = () => idbBackend(factory) }) {
   let history = null;
+  let on = false;
   let unavailable = false;
   let opening = null;
   const listeners = new Map();
@@ -21,6 +22,7 @@ export function createHistoryControl({ storage, factory, version, open = () => i
   };
   const fail = () => {
     unavailable = true;
+    on = false;
     history = null;
     emit('unavailable');
   };
@@ -42,7 +44,8 @@ export function createHistoryControl({ storage, factory, version, open = () => i
   }
 
   async function guard(fn) {
-    if (!history) return;
+    // Tras «Borrar todo» no hay conexión: la base se vuelve a crear con el siguiente análisis.
+    if (!on || !(await connect())) return;
     try {
       const out = await fn(history);
       const evicted = out?.evicted ?? 0;
@@ -58,23 +61,33 @@ export function createHistoryControl({ storage, factory, version, open = () => i
       if (!listeners.has(event)) listeners.set(event, []);
       listeners.get(event).push(fn);
     },
-    enabled: () => !unavailable && history !== null,
+    enabled: () => !unavailable && on,
     unavailable: () => unavailable,
     history: () => history,
     /** Al cargar la página: si el historial estaba encendido, abre la base. */
     async ready() {
-      if (historyEnabled(storage)) await connect();
+      if (historyEnabled(storage)) on = await connect();
     },
     async enable() {
       unavailable = false;
       if (!(await connect())) return { ok: false, reason: 'unavailable' };
+      on = true;
       remember('on');
       emit('change');
       return { ok: true };
     },
     disable() {
       remember('off');
+      on = false;
       history = null;
+      emit('change');
+    },
+    /** «Borrar todo»: borra la base entera y no la reabre hasta que haya algo que guardar. */
+    async clear() {
+      if (!history) return;
+      const h = history;
+      history = null;
+      await h.clear();
       emit('change');
     },
     record: (input, report, name = null) => guard((h) => h.save({ kind: input.kind, value: input.value, name, report })),

@@ -74,6 +74,8 @@ export function renderAnalyst(report, view, options = {}) {
   const panel = el('section', { className: `view view--${current}`, attrs: { 'aria-labelledby': id } },
     el('h2', { className: 'view__title', text: VIEW_LABELS[current], attrs: { id, tabindex: '-1' } }),
     PANELS.get(current)(report, options));
+  // El historial no habla del informe de fondo: ocupa todo el ancho, sin su lateral.
+  if (current === 'historial') return el('div', { className: 'analyst analyst--wide' }, navRail({ groups, current, counts }), panel);
   return el('div', { className: 'analyst' }, navRail({ groups, current, counts }), panel, sidebar(report));
 }
 
