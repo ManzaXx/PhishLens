@@ -1,7 +1,7 @@
 // Historial (spec 3.0, §2): una entrada por correo analizado, sin el correo. Deduplica por SHA-256,
 // guarda como mucho 500 y valida todo lo que lee, porque la base o el fichero importado pueden venir tocados.
 import { sha256 } from '../lib/sha256.js';
-import { slimReport, validateEntry, safeParse } from './schema.js';
+import { slimReport, validateEntry, validateBatch, safeParse } from './schema.js';
 
 export const HISTORY_MAX = 500;
 export const IMPORT_MAX_BYTES = 20 * 1024 * 1024;
@@ -160,7 +160,26 @@ export function createHistory(backend, { now = () => new Date(), uuid = () => cr
     return { imported, rejected };
   }
 
+  /** Lotes guardados, el más reciente primero; uno mal formado se salta. */
+  async function batches({ limit = 20 } = {}) {
+    const ok = [];
+    for (const raw of await backend.getAll('batches')) {
+      const res = validateBatch(raw);
+      if (res.ok) ok.push(res.batch);
+    }
+    return ok.sort((a, b) => (a.savedAt < b.savedAt ? 1 : a.savedAt > b.savedAt ? -1 : a.id < b.id ? -1 : 1)).slice(0, limit);
+  }
+
+  async function findBySha256(sha) {
+    if (typeof sha !== 'string' || !/^[0-9a-f]{64}$/.test(sha)) return null;
+    const raw = await backend.getByIndex('analyses', 'sha256', sha);
+    if (raw === undefined) return null;
+    const res = validateEntry(raw);
+    return res.ok ? res.entry : null;
+  }
+
   return {
+    batches, findBySha256,
     save, saveBatch, list, get, searchIoc, compare, exportJson, importJson,
     remove: (id) => backend.delete('analyses', String(id)),
     clear: () => backend.destroy(),

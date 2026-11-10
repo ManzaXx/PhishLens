@@ -13,8 +13,12 @@ export function createHistoryControl({ storage, factory, version, open = () => i
   let on = false;
   let unavailable = false;
   let opening = null;
+  let revision = 0;
   const listeners = new Map();
-  const emit = (event, value) => { for (const fn of listeners.get(event) ?? []) fn(value); };
+  const emit = (event, value) => {
+    if (event === 'change' || event === 'unavailable') revision++;
+    for (const fn of listeners.get(event) ?? []) fn(value);
+  };
   const remember = (value) => {
     try {
       storage?.setItem(HISTORY_KEY, value);
@@ -70,6 +74,8 @@ export function createHistoryControl({ storage, factory, version, open = () => i
     enabled: () => !unavailable && on,
     unavailable: () => unavailable,
     history: () => history,
+    /** Sube cada vez que cambia lo guardado: el panel memoriza sus cifras por revisión. */
+    revision: () => revision,
     /** Al cargar la página: si el historial estaba encendido, abre la base. */
     async ready() {
       if (historyEnabled(storage)) on = await connect();

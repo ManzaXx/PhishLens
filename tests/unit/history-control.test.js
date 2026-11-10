@@ -135,3 +135,17 @@ test('revisión final: ensure() reabre la base tras «Borrar todo» para poder i
   assert.equal(await ctl.ensure(), false, 'apagado no abre nada');
   assert.equal(ctl.history(), null);
 });
+
+test('panel: revision() sube al guardar, al borrar todo y al apagar', async () => {
+  const { ctl } = control();
+  await ctl.enable();
+  const r0 = ctl.revision();
+  await ctl.record(input('03-phishing-banco'), analyzeInput(input('03-phishing-banco')), 'x.eml');
+  const r1 = ctl.revision();
+  assert.ok(r1 > r0);
+  await ctl.clear();
+  const r2 = ctl.revision();
+  assert.ok(r2 > r1);
+  ctl.disable();
+  assert.ok(ctl.revision() > r2);
+});

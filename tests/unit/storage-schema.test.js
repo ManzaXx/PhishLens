@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { SAMPLES } from '../../samples/index.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { analyzeInput } from '../../src/core/engine.js';
-import { slimReport, validateEntry, safeParse } from '../../src/storage/schema.js';
+import { slimReport, validateEntry, validateBatch, safeParse } from '../../src/storage/schema.js';
 import { rng, pick } from '../helpers/rng.js';
 
 const report = (id) => analyzeInput({ kind: 'eml', value: SAMPLE_TEXTS[id] });
@@ -128,4 +128,16 @@ test('revisión final: una entrada sin veredicto válido se rechaza (si no, abri
   assert.match(validateEntry({ ...base, report: { ...ok, verdict: 'x' } }).error, /report\.verdict/);
   assert.match(validateEntry({ ...base, report: { ...ok, verdict: { ...verdict, top: {} } } }).error, /report\.verdict/);
   assert.match(validateEntry({ ...base, report: { ...ok, auth: 'x' } }).error, /report\.auth/);
+});
+
+test('panel: validateBatch acepta un lote bueno y rechaza tipos raros, cadenas largas y __proto__', () => {
+  const ok = { id: '00000000-0000-4000-8000-000000000009', savedAt: '2026-11-07T10:00:00.000Z', emails: ['a'.repeat(64)], campaigns: [{ id: 'c', name: 'C', reasons: ['r'], techniques: [], emails: ['a'.repeat(64)] }] };
+  assert.equal(validateBatch(ok).ok, true);
+  assert.equal(validateBatch({ ...ok, campaigns: 'x' }).ok, false);
+  assert.equal(validateBatch({ ...ok, emails: [1] }).ok, false);
+  assert.equal(validateBatch({ ...ok, savedAt: 'ayer' }).ok, false);
+  assert.equal(validateBatch({ ...ok, campaigns: [{ ...ok.campaigns[0], name: 'x'.repeat(10001) }] }).ok, false);
+  const polluted = validateBatch(safeParse('{"id":"00000000-0000-4000-8000-000000000009","savedAt":"2026-11-07T10:00:00.000Z","emails":[],"campaigns":[],"__proto__":{"x":1}}'));
+  assert.equal(polluted.ok, true);
+  assert.equal({}.x, undefined);
 });

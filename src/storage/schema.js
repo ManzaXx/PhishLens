@@ -72,6 +72,26 @@ export function safeParse(text) {
 
 const fail = (error) => ({ ok: false, error });
 
+/** Valida un registro de lote (`batches`): ids, fecha, listas de hashes y campañas. Devuelve una copia limpia. */
+export function validateBatch(value) {
+  if (!isObj(value)) return fail('el lote no es un objeto');
+  let b;
+  try {
+    b = clean(value, 0, 'reject');
+  } catch (e) {
+    return fail(`lote: ${e.message}`);
+  }
+  const texts = (v) => Array.isArray(v) && v.every((x) => typeof x === 'string');
+  if (typeof b.id !== 'string' || !b.id) return fail('id: falta');
+  if (typeof b.savedAt !== 'string' || !ISO.test(b.savedAt)) return fail('savedAt: no es una fecha ISO');
+  if (!texts(b.emails)) return fail('emails: lista de textos');
+  if (!Array.isArray(b.campaigns) || b.campaigns.length > 200) return fail('campaigns: lista de 200 como mucho');
+  for (const [i, c] of b.campaigns.entries()) {
+    if (!isObj(c) || typeof c.name !== 'string' || !texts(c.emails) || !texts(c.reasons ?? [])) return fail(`campaigns[${i}]: campaña mal formada`);
+  }
+  return { ok: true, batch: b };
+}
+
 /** Valida una entrada del historial y devuelve una copia nueva y limpia. */
 export function validateEntry(value) {
   if (!isObj(value)) return fail('la entrada no es un objeto');

@@ -153,3 +153,22 @@ test('Review Focus 4: importar parcialmente roto, repetidos y demasiado grande',
   await assert.rejects(history.importJson('{no'), /JSON/);
   assert.ok(typeof schema.safeParse === 'function');
 });
+
+test('panel: batches() da los lotes más recientes primero y salta los mal formados', async () => {
+  const { history, backend } = setup();
+  const a = await history.saveBatch({ entries: [{ ...input('03-phishing-banco'), name: 'a.eml' }], campaigns: [] });
+  const b = await history.saveBatch({ entries: [{ ...input('04-phishing-correos'), name: 'b.eml' }], campaigns: [{ id: 'c', name: 'Campaña 1', reasons: ['x'], techniques: [], emails: ['b.eml'] }] });
+  await backend.put('batches', { id: 'roto', savedAt: '2026-12-01T00:00:00.000Z', emails: [], campaigns: 'x' });
+  const list = await history.batches();
+  assert.deepEqual(list.map((x) => x.id), [b.id, a.id]);
+  assert.equal(list[0].campaigns[0].emails.length, 1);
+  assert.equal((await history.batches({ limit: 1 })).length, 1);
+});
+
+test('panel: findBySha256() devuelve la entrada validada o null', async () => {
+  const { history } = setup();
+  const { entry } = await history.save(input('03-phishing-banco'));
+  assert.equal((await history.findBySha256(entry.sha256)).id, entry.id);
+  assert.equal(await history.findBySha256('f'.repeat(64)), null);
+  assert.equal(await history.findBySha256('no es un hash'), null);
+});
