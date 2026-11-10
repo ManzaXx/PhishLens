@@ -3,6 +3,7 @@
 // manipulado por otra pestaña, una extensión o un fichero viejo.
 import { LEVELS } from '../core/scoring.js';
 import { SEVERITY_ORDER } from '../core/finding.js';
+import { MAX_NOTES } from '../intel/forensic.js';
 
 export const MAX_STRING = 10000;
 export const MAX_ENTRY_BYTES = 1024 * 1024;
@@ -108,6 +109,9 @@ export function validateEntry(value) {
   if (!KINDS.has(entry.kind)) return fail('kind: debe ser eml, text o url');
   if (typeof entry.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(entry.sha256)) return fail('sha256: 64 caracteres hexadecimales');
   if (entry.name != null && (typeof entry.name !== 'string' || entry.name.length > 260)) return fail('name: texto de 260 caracteres como mucho');
+  // Notas del analista (informe forense): texto libre, nunca se interpreta.
+  if (entry.notes != null && (typeof entry.notes !== 'string' || entry.notes.length > MAX_NOTES)) return fail(`notes: texto de ${MAX_NOTES} caracteres como mucho`);
+  entry.notes = entry.notes ?? null;
   const r = entry.report;
   if (!isObj(r)) return fail('report: no es un objeto');
   if (!LEVEL_SET.has(r.level)) return fail('report.level: nivel desconocido');

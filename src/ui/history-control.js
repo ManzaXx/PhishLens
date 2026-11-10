@@ -58,7 +58,7 @@ export function createHistoryControl({ storage, factory, version, open = () => i
         const evicted = out?.evicted ?? 0;
         if (evicted) emit('evicted', evicted);
         emit('change');
-        return;
+        return out;
       } catch {
         history = null;
         if (attempt === 1 || !(await connect())) break;
@@ -106,6 +106,8 @@ export function createHistoryControl({ storage, factory, version, open = () => i
       emit('change');
     },
     record: (input, report, name = null) => guard((h) => h.save({ kind: input.kind, value: input.value, name, report })),
+    /** Notas del analista del análisis con ese SHA-256. Apagado no abre nada. */
+    saveNotes: async (sha, notes) => (on ? (await guard((h) => h.setNotes(sha, notes))) === true : false),
     /** batch: {entries: [{key, name, report}], campaigns}; texts: clave → texto del correo. */
     recordBatch: (batch, texts) => { const names = hashNames(batch); return guard((h) => h.saveBatch({
       entries: batch.entries.map((e) => ({ kind: 'eml', value: texts.get(e.key) ?? '', name: e.name, report: e.report })),

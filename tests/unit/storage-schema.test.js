@@ -141,3 +141,11 @@ test('panel: validateBatch acepta un lote bueno y rechaza tipos raros, cadenas l
   assert.equal(polluted.ok, true);
   assert.equal({}.x, undefined);
 });
+
+test('informe forense: notes de 5000 pasa, 5001 o un número no pasan, y sin notes queda null', () => {
+  const r = report('03-phishing-banco');
+  assert.equal(validateEntry(entryOf(r, { notes: 'x'.repeat(5000) })).ok, true);
+  assert.equal(validateEntry(entryOf(r, { notes: 'x'.repeat(5001) })).ok, false);
+  assert.equal(validateEntry(entryOf(r, { notes: 7 })).ok, false);
+  assert.equal(validateEntry(entryOf(r)).entry.notes, null);
+});

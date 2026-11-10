@@ -172,3 +172,23 @@ test('panel: findBySha256() devuelve la entrada validada o null', async () => {
   assert.equal(await history.findBySha256('f'.repeat(64)), null);
   assert.equal(await history.findBySha256('no es un hash'), null);
 });
+
+test('informe forense: setNotes guarda, get las devuelve, se recortan a 5000 y un sha que no existe da false', async () => {
+  const { history } = setup();
+  const { entry } = await history.save(input('03-phishing-banco'));
+  assert.equal(await history.setNotes(entry.sha256, 'Reenviado por RR. HH.'), true);
+  assert.equal((await history.get(entry.id)).notes, 'Reenviado por RR. HH.');
+  await history.setNotes(entry.sha256, 'y'.repeat(6000));
+  assert.equal((await history.get(entry.id)).notes.length, 5000);
+  assert.equal(await history.setNotes('f'.repeat(64), 'x'), false);
+});
+
+test('Review Focus 1: volver a guardar el mismo texto conserva las notas', async () => {
+  const { history } = setup();
+  const { entry } = await history.save(input('03-phishing-banco'));
+  await history.setNotes(entry.sha256, 'nota');
+  await history.save(input('03-phishing-banco'));
+  assert.equal((await history.get(entry.id)).notes, 'nota');
+  const json = await history.exportJson();
+  assert.match(json, /"notes": "nota"/);
+});

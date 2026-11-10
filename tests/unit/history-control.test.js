@@ -169,3 +169,15 @@ test('panel: un lote real guarda sus campañas con las pistas en texto y el lote
   assert.ok(c.reasons.some((r) => r.startsWith('Mismo dominio de envío: ')), c.reasons.join(' | '));
   assert.ok(c.reasons.some((r) => r.startsWith('Mismo adjunto: ') && !r.includes('sin nombre')), c.reasons.join(' | '));
 });
+
+test('informe forense: saveNotes apagado no abre la base; encendido guarda', async () => {
+  const { ctl, opened, backend } = control();
+  assert.equal(await ctl.saveNotes('a'.repeat(64), 'x'), false);
+  assert.equal(opened(), 0);
+  await ctl.enable();
+  const a = input('03-phishing-banco');
+  await ctl.record(a, analyzeInput(a), 'x.eml');
+  const [saved] = await backend.getAll('analyses');
+  assert.equal(await ctl.saveNotes(saved.sha256, 'nota'), true);
+  assert.equal((await backend.getAll('analyses'))[0].notes, 'nota');
+});

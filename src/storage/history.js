@@ -1,5 +1,6 @@
 // Historial (spec 3.0, §2): una entrada por correo analizado, sin el correo. Deduplica por SHA-256,
 // guarda como mucho 500 y valida todo lo que lee, porque la base o el fichero importado pueden venir tocados.
+import { MAX_NOTES } from '../intel/forensic.js';
 import { sha256 } from '../lib/sha256.js';
 import { slimReport, validateEntry, validateBatch, safeParse } from './schema.js';
 
@@ -47,7 +48,8 @@ export function createHistory(backend, { now = () => new Date(), uuid = () => cr
   /** Guarda una entrada ya validada; si su hash existe, reutiliza su id. */
   async function store(entry) {
     const existing = await backend.getByIndex('analyses', 'sha256', entry.sha256);
-    let final = existing ? { ...entry, id: existing.id } : entry;
+    // Volver a analizar el mismo correo no borra las notas del analista.
+    let final = existing ? { ...entry, id: existing.id, notes: entry.notes ?? existing.notes ?? null } : entry;
     // Un id que ya usa otro correo (p. ej. en un fichero importado) no lo pisa: se le da uno nuevo.
     if (!existing && (await backend.get('analyses', final.id)) !== undefined) final = { ...final, id: uuid() };
     await backend.put('analyses', final);
@@ -127,6 +129,17 @@ export function createHistory(backend, { now = () => new Date(), uuid = () => cr
     };
   }
 
+  /** Notas del analista de la entrada con ese SHA-256; false si no hay entrada. */
+  async function setNotes(sha, notes) {
+    if (typeof sha !== 'string' || !/^[0-9a-f]{64}$/.test(sha)) return false;
+    const raw = await backend.getByIndex('analyses', 'sha256', sha);
+    if (raw === undefined) return false;
+    const res = validateEntry({ ...raw, notes: String(notes ?? '').slice(0, MAX_NOTES) || null });
+    if (!res.ok) return false;
+    await backend.put('analyses', res.entry);
+    return true;
+  }
+
   async function exportJson() {
     const { items } = await valid();
     return JSON.stringify({ phishlens: FORMAT, exportedAt: now().toISOString(), entries: items }, null, 2);
@@ -180,7 +193,7 @@ export function createHistory(backend, { now = () => new Date(), uuid = () => cr
 
   return {
     batches, findBySha256,
-    save, saveBatch, list, get, searchIoc, compare, exportJson, importJson,
+    save, saveBatch, setNotes, list, get, searchIoc, compare, exportJson, importJson,
     remove: (id) => backend.delete('analyses', String(id)),
     clear: () => backend.destroy(),
     count: () => backend.count('analyses'),
