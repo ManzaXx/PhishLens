@@ -307,3 +307,21 @@
 .level-tag--suspicious { color: var(--suspicious); background: var(--suspicious-soft); }
 .level-tag--phishing { color: var(--phishing); background: var(--phishing-soft); }
 .level-tag--critical { color: var(--critical); background: var(--critical-soft); }
+
+/* Gráficas del panel (bar-chart.js). Marcas finas, ejes discretos, texto en tinta de texto. */
+.chart { margin: 0; display: grid; gap: var(--space-3); min-width: 0; }
+.chart__caption { font-weight: 700; color: var(--text-strong); }
+.chart__svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart__axis { stroke: var(--border); stroke-width: 1; }
+.chart__tick, .chart__value { fill: var(--muted); font-size: var(--text-xs); font-family: var(--mono); }
+.chart__label { fill: var(--text); font-size: var(--text-sm); }
+.chart__bar--safe, .chart__swatch--safe { fill: var(--chart-safe); background: var(--chart-safe); }
+.chart__bar--suspicious, .chart__swatch--suspicious { fill: var(--chart-suspicious); background: var(--chart-suspicious); }
+.chart__bar--phishing, .chart__swatch--phishing { fill: var(--chart-phishing); background: var(--chart-phishing); }
+.chart__bar--critical, .chart__swatch--critical { fill: var(--chart-critical); background: var(--chart-critical); }
+.chart__hbar { fill: var(--accent); }
+.chart__legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; font-size: var(--text-sm); color: var(--text); }
+.chart__legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.chart__swatch { inline-size: var(--space-3); block-size: var(--space-3); border-radius: var(--radius-sm); }
+.chart__table { font-size: var(--text-sm); }
+.chart .table-scroll { max-height: 16rem; overflow: auto; }

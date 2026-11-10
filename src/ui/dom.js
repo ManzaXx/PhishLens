@@ -31,7 +31,7 @@ const SVG_TAGS = new Set(['svg', 'g', 'line', 'circle', 'rect', 'polygon', 'path
 const SVG_ATTRS = new Set([
   'viewBox', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'width', 'height', 'points', 'd', 'transform',
   'role', 'tabindex', 'aria-label', 'aria-labelledby', 'aria-hidden', 'focusable', 'data-node', 'data-from', 'data-to',
-  'class', 'text-anchor', 'preserveAspectRatio',
+  'class', 'text-anchor', 'preserveAspectRatio', 'rx', 'dominant-baseline',
 ]);
 
 /** Elemento SVG con lista blanca de etiquetas y atributos; el texto va en textContent (revelado). */

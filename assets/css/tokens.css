@@ -34,6 +34,11 @@
   --phishing-soft: #fee2e2;
   --critical: #9f1239;
   --critical-soft: #ffe4e6;
+  /* Gráficas por nivel (skill dataviz: validate_palette.js pasa en claro sobre --surface). */
+  --chart-safe: #2b7a46;
+  --chart-suspicious: #a1881d;
+  --chart-phishing: #a73f43;
+  --chart-critical: #c571d8;
   --info: #475569;
   --info-soft: #e2e8f0;
   --focus: #2563eb;
@@ -69,6 +74,10 @@
     --phishing-soft: #331414;
     --critical: #fb7185;
     --critical-soft: #3a0d18;
+    --chart-safe: #259063;
+    --chart-suspicious: #cc7d05;
+    --chart-phishing: #a94c3a;
+    --chart-critical: #aa5fd2;
     --info: #94a3b8;
     --info-soft: #1e2633;
     --focus: #60a5fa;
@@ -104,6 +113,10 @@
   --phishing-soft: #331414;
   --critical: #fb7185;
   --critical-soft: #3a0d18;
+  --chart-safe: #259063;
+  --chart-suspicious: #cc7d05;
+  --chart-phishing: #a94c3a;
+  --chart-critical: #aa5fd2;
   --info: #94a3b8;
   --info-soft: #1e2633;
   --focus: #60a5fa;
@@ -140,6 +153,10 @@
     --phishing-soft: #fee2e2;
     --critical: #9f1239;
     --critical-soft: #ffe4e6;
+    --chart-safe: #2b7a46;
+    --chart-suspicious: #a1881d;
+    --chart-phishing: #a73f43;
+    --chart-critical: #c571d8;
     --info: #475569;
     --info-soft: #e2e8f0;
     --focus: #2563eb;
