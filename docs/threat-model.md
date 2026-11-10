@@ -76,6 +76,21 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | Lotes guardados manipulados | `validateBatch`: id, fecha ISO, listas de cadenas y 200 campañas como mucho; los que no cumplen se ignoran | `tests/unit/storage-schema.test.js`, `tests/unit/history-control.test.js` |
 | Cifras que dependen de claves del correo | Recuentos con `Map` (nunca objetos indexados con texto del correo) y desempates por cadena | `tests/unit/stats.test.js` (prueba de propiedad con 50 órdenes) |
 
+### Informe forense (`src/intel/forensic.js`, `src/ui/views/forensic.js`)
+
+| Riesgo | Mitigación | Prueba |
+| --- | --- | --- |
+| Texto del atacante o de las notas interpretado como HTML en el informe | Todo se pinta con `el()` y `textContent`, con los caracteres de control de dirección revelados; IOCs, evidencias y cadenas de URLs van defanged | `tests/unit/forensic-ui.test.js` (`<script>` y RLO), `tests/unit/forensic.test.js` |
+| Informe que no corresponde al correo o JSON editado después | SHA-256, SHA-1 y MD5 de los bytes UTF-8 analizados (comparados con `node:crypto`); `reportSha256` al final del JSON y `verifyForensicJson` que detecta cualquier cambio | `tests/unit/forensic.test.js`, `tests/e2e/forensic.e2e.js` |
+| La impresión muestra otro análisis o la interfaz | Al imprimir solo se ve `.forensic`, creado en `beforeprint` con el informe abierto y quitado en `afterprint` | `tests/e2e/a11y.e2e.js`, `tests/e2e/forensic.e2e.js` |
+
+### Notas del analista (`src/storage/history.js`)
+
+| Riesgo | Mitigación | Prueba |
+| --- | --- | --- |
+| Notas enormes o de otro tipo en la base o en un import | Cadena de 5.000 caracteres como mucho (se recorta al guardar y `validateEntry` rechaza lo demás); `setNotes` solo acepta un SHA-256 de 64 hex | `tests/unit/storage-schema.test.js`, `tests/unit/storage-history.test.js` |
+| Notas guardadas con el historial apagado | `saveNotes` no abre IndexedDB si el historial está apagado | `tests/unit/history-control.test.js`, `tests/e2e/forensic.e2e.js` (privacidad) |
+
 ### Cadena de suministro
 
 | Riesgo | Mitigación | Prueba |

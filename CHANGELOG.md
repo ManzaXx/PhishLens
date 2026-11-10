@@ -11,6 +11,8 @@ Especificación en [docs/specs/2026-11-07-phishlens-3.0-design.md](docs/specs/20
 - Gráficas SVG propias (`stackedBars`, `hBars`) con lista blanca, `<title>` al pasar el ratón, leyenda con texto y su tabla de datos plegada; tokens `--chart-*` validados para daltonismo en claro y oscuro.
 - `src/intel/stats.js`: todas las cifras en una pasada, sin depender del orden de entrada.
 - Los lotes guardados conservan sus campañas con las pistas en texto.
+- **Informe forense** ([docs/forensic.md](docs/forensic.md)) en «Exportar»: PDF desde el diálogo de impresión, con el SHA-256 y el número de página al pie, y JSON `phishlens-forense-AAAA-MM-DD.json` con `reportSha256` para detectar cambios. Identificación con SHA-256, SHA-1 y MD5, hallazgos por gravedad, autenticación, cronología con los saltos que van atrás, IOCs, adjuntos, URLs y límites. Sustituye a «Imprimir».
+- **Notas del analista** (5.000 caracteres como mucho) en el informe; con el historial activado se guardan con el análisis y entran en la exportación.
 - `src/storage/` con su validador de esquema y su informe recortado, y e2e del historial (privacidad, recarga, borrar, exportar e importar, axe, teclado y diseño).
 
 ## 2.3.0 · 2026-11-07 · Threat Intel local

@@ -32,6 +32,8 @@ const SHOTS = [
   ['analista-historial', 'historial', '', 1280, 'light'],
   ['movil-historial', 'historial', '', 390, 'dark'],
   ['analista-panel', 'panel', '', 1280, 'light'],
+  ['informe-forense', 'forense', '#analista', 900, 'light'],
+  ['forense-dialogo', 'forense-dialogo', '#analista', 390, 'dark'],
   ['movil-panel', 'panel', '', 390, 'dark'],
   ['movil-lote', 'lote', '', 390, 'light'],
   ['movil-sencillo', '03-phishing-banco', '', 390, 'light'],
@@ -80,6 +82,18 @@ for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !on
   await page.goto(`${server.url}/index.html${hash}`);
   if (sample === 'historial') await savedHistory(page);
   else if (sample === 'panel') await savedPanel(page);
+  else if (sample === 'forense' || sample === 'forense-dialogo') {
+    await page.getByRole('button', { name: title('12-pdf-activo-zip'), exact: true }).click();
+    await page.locator('#report .report__toolbar').waitFor();
+    await page.getByRole('button', { name: 'Exportar' }).click();
+    await page.getByRole('menuitem', { name: 'Informe forense' }).click();
+    await page.locator('[data-role="forensic-notes"]').fill('Recibido por tres personas de Administración. Bloqueado el remitente en la pasarela.');
+    if (sample === 'forense') {
+      await page.getByRole('button', { name: 'Cerrar' }).click();
+      await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+      await page.emulateMedia({ media: 'print' });
+    }
+  }
   else if (sample) {
     await page.getByRole('button', { name: title(sample), exact: true }).click();
     await page.locator('#report > *').first().waitFor();
@@ -90,6 +104,14 @@ for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !on
   await page.waitForTimeout(300);
   // El panel es largo: se captura entero, pero solo el informe (sin la portada ni el pie).
   if (sample === 'panel') await page.locator('#report').screenshot({ path: `${OUT}${name}.png` });
+  // El informe forense se captura como sale impreso: la primera hoja, más o menos.
+  else if (sample === 'forense') {
+    const box = await page.locator('#report .forensic').evaluate((e) => {
+      const r = e.getBoundingClientRect();
+      return { x: r.left + scrollX, y: r.top + scrollY, width: r.width, height: r.height };
+    });
+    await page.screenshot({ path: `${OUT}${name}.png`, fullPage: true, clip: { x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 1270) } });
+  }
   else await page.screenshot({ path: `${OUT}${name}.png` });
   await page.close();
   console.log(`docs/img/${name}.png`);

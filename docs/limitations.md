@@ -87,3 +87,11 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 - **Las listas tienen tope:** 10 técnicas, 20 IOCs repetidos (solo dominios, IPs y hashes; URLs y direcciones no), 10 remitentes, 10 dominios y 5 campañas.
 - **Un lote guardado no se vuelve a abrir entero.** «Abrir el último correo» abre el análisis más reciente de la campaña; el grafo del lote no se guarda.
 - **Un análisis guardado con fecha ilegible o futura** cuenta como de hoy.
+
+## Informe forense
+
+- **El hash es el del texto en UTF-8** tal cual se analizó. Coincide con `sha256sum` del `.eml` si el fichero está en UTF-8; un correo en otra codificación o pegado con otros saltos de línea da otro hash.
+- **Desde el historial no hay SHA-1, MD5 ni tamaño:** el correo no se guarda, solo su SHA-256.
+- **El pie con el SHA-256 y el número de página** usa las cajas de margen de `@page`, que solo pinta Chromium. En Firefox y Safari el PDF sale sin pie, pero el SHA-256 sigue en «Identificación».
+- **`reportSha256` detecta cambios, no firma:** quien edite el JSON puede recalcularlo.
+- **La hora local** es la del navegador que hizo el análisis.

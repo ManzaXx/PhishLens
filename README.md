@@ -7,7 +7,7 @@
 **¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
 
 [![Tests](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml/badge.svg)](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml)
-![Tests](https://img.shields.io/badge/tests-663%20%2B%2053%20e2e-15803d)
+![Tests](https://img.shields.io/badge/tests-688%20%2B%2062%20e2e-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
@@ -32,10 +32,11 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 - **Varios correos a la vez**: suelta hasta 50 `.eml` (100 MB en total) y elige cuál ver. Un **grafo de IOCs** en SVG une correos, remitentes, dominios, IPs, URLs y adjuntos (con teclado y una tabla equivalente), y las **campañas** agrupan los correos que comparten infraestructura, un adjunto o la misma plantilla.
 - **MITRE ATT&CK**: cada señal enlazada a su técnica (T1566.002, T1036.007, T1684.001…), con su táctica y el motivo, según ATT&CK 20.1.
 - **URLs sin visitarlas**: desenvuelve redirecciones (Safe Links, Google, Facebook, LinkedIn, parámetros como `url` o `next`, base64 y codificación doble, hasta 10 saltos) y detecta IPs disfrazadas (`http://3232235777`), credenciales en el enlace, puertos raros y dominios con aspecto aleatorio. La vista **«URLs»** enseña la cadena de saltos sin que nada se pueda pulsar.
-- **Exportar** (JSON, **STIX 2.1**, copiar IOCs, imprimir) desde un menú accesible con teclado. El bundle STIX lleva observables, indicadores, técnicas ATT&CK y campañas con ids deterministas, y pasa el validador oficial de OASIS ([docs/stix.md](docs/stix.md)).
+- **Exportar** (JSON, **STIX 2.1**, copiar IOCs, informe forense) desde un menú accesible con teclado. El bundle STIX lleva observables, indicadores, técnicas ATT&CK y campañas con ids deterministas, y pasa el validador oficial de OASIS ([docs/stix.md](docs/stix.md)).
 - **Sistema de diseño propio** ([docs/design-system.md](docs/design-system.md)): tokens con contraste comprobado en claro y oscuro, objetivos táctiles de 44 px y sin scroll horizontal a 360 px, comprobados en un Chromium real.
 - **Historial opcional en el navegador** (apagado por defecto): guarda el informe de cada análisis, nunca el correo. Busca un IOC en todo lo guardado, filtra por nivel, fecha o técnica, compara dos análisis y exporta o importa el historial en `.json`. «Borrar todo» borra la base entera.
 - **Panel SOC** sobre el historial: cifras clave, niveles en el tiempo, técnicas ATT&CK más vistas, IOCs que se repiten (un clic los busca), remitentes y dominios más frecuentes y campañas recientes. Gráficas SVG propias, con su tabla de datos y colores comprobados para daltonismo.
+- **Informe forense** en PDF (desde el diálogo de impresión) y en JSON: identificación con SHA-256, SHA-1 y MD5, veredicto, hallazgos por gravedad, autenticación, cronología, IOCs, adjuntos, URLs y las notas del analista. El JSON lleva `reportSha256` para comprobar que nadie lo ha tocado ([docs/forensic.md](docs/forensic.md)).
 - **13 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
 
 | Modo sencillo (oscuro) | Móvil | Email legítimo |
@@ -63,6 +64,10 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 | ![Historial con búsqueda, filtros y dos análisis marcados para comparar](docs/img/analista-historial.png) | ![Historial en el móvil, tema oscuro](docs/img/movil-historial.png) | ![Panel en el móvil, tema oscuro](docs/img/movil-panel.png) |
 
 ![Panel SOC: siete análisis guardados, niveles en el tiempo, técnicas ATT&CK, IOCs repetidos y una campaña](docs/img/analista-panel.png)
+
+| Informe forense impreso | Diálogo del informe en el móvil |
+|---|---|
+| ![Informe forense: identificación con hashes, veredicto y hallazgos por gravedad](docs/img/informe-forense.png) | ![Diálogo «Informe forense» con notas del analista, tema oscuro](docs/img/forense-dialogo.png) |
 
 ## 🔍 Qué detecta
 

@@ -77,6 +77,11 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | Panel: privacidad (sin peticiones externas ni violaciones de CSP) y axe, en claro y oscuro, encendido y apagado | ✅ | `tests/e2e/dashboard.e2e.js` |
 | Revisión de seguridad del PR11: sin hallazgos explotables; el fallo encontrado era funcional (las pistas de campaña se guardaban como objetos y el lote se descartaba) | ✅ | `tests/unit/history-control.test.js` |
 
+| Informe forense: notas y texto del correo solo como `textContent`, defanged; notas de 5.000 caracteres como mucho | ✅ | `tests/unit/forensic-ui.test.js`, `tests/unit/storage-schema.test.js` |
+| Informe forense: hashes iguales a `node:crypto` (también con CRLF y no ASCII); `reportSha256` detecta cualquier cambio | ✅ | `tests/unit/forensic.test.js`, `tests/e2e/forensic.e2e.js` |
+| Informe forense: la impresión solo muestra el informe abierto; privacidad y axe del diálogo en claro y oscuro | ✅ | `tests/e2e/forensic.e2e.js`, `tests/e2e/a11y.e2e.js` |
+| Revisión de seguridad del PR12 sin hallazgos explotables | 👁️ | revisión del diff |
+
 ## Pendiente
 
 - Probar la privacidad también en Firefox y WebKit.
