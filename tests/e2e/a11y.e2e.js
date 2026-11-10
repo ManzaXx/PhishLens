@@ -157,15 +157,15 @@ test('nota 0: el motivo principal no repite el resumen', { skip }, async () => {
   await context.close();
 });
 
-test('impresión: los «¿Por qué?» se abren y el informe sale en claro aunque esté en oscuro', { skip }, async () => {
+test('impresión: el informe forense sale en claro aunque la pantalla esté en oscuro', { skip }, async () => {
   const { page, context } = await openReport('03-phishing-banco', { colorScheme: 'dark' });
   await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
-  assert.deepEqual(await page.locator('#report details:not(.auth-local)').evaluateAll((els) => els.filter((d) => !d.open).length), 0);
   await page.emulateMedia({ media: 'print', colorScheme: 'dark' });
-  const bg = await page.locator('#report .card').first().evaluate((e) => getComputedStyle(e).backgroundColor);
-  assert.equal(bg, 'rgb(255, 255, 255)');
+  assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(255, 255, 255)');
+  assert.equal(await page.locator('#report .forensic').evaluate((e) => getComputedStyle(e).color), 'rgb(20, 24, 31)');
+  await page.emulateMedia({ media: 'screen' });
   await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
-  assert.ok(await page.locator('#report details').evaluateAll((els) => els.some((d) => !d.open)), 'tras imprimir vuelven a cerrarse');
+  assert.equal(await page.locator('#report .forensic').count(), 0, 'tras imprimir se quita');
   await context.close();
 });
 
@@ -184,7 +184,7 @@ test('menú Exportar: se abre con teclado, las flechas se mueven y Escape vuelve
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowUp');
-  assert.equal(await focused(), 'Imprimir');
+  assert.equal(await focused(), 'Informe forense');
   await page.keyboard.press('Escape');
   assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
   assert.equal(await page.locator('#report [role="menu"]').isHidden(), true);
@@ -197,7 +197,7 @@ test('menú Exportar: se abre con teclado, las flechas se mueven y Escape vuelve
   await context.close();
 });
 
-test('impresión desde el modo sencillo: sale el informe completo del modo analista', { skip }, async () => {
+test('impresión desde el modo sencillo: sale el informe forense entero', { skip }, async () => {
   const context = await browser.newContext();
   const page = await context.newPage();
   page.setDefaultTimeout(5000);
@@ -206,14 +206,13 @@ test('impresión desde el modo sencillo: sale el informe completo del modo anali
   await page.locator('#report .verdict-card').waitFor();
   await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
   await page.emulateMedia({ media: 'print' });
-  const visible = (sel) => page.locator(sel).evaluateAll((els) => els.filter((e) => e.offsetParent !== null || e.getClientRects().length).length);
-  assert.equal(await visible('#report .finding'), 15, 'todas las señales');
-  for (const t of ['Resumen', 'Señales', 'Vista segura', 'Autenticación', 'Cabeceras y ruta', 'URLs', 'IOCs', 'ATT&CK']) {
-    assert.ok(await page.locator('#report h2', { hasText: t }).count() >= 1, t);
-  }
+  const h2 = await page.locator('#report .forensic h2').allInnerTexts();
+  assert.deepEqual(h2, ['Identificación', 'Veredicto', 'Hallazgos', 'Autenticación', 'Cronología', 'IOCs', 'Adjuntos', 'URLs', 'Límites']);
+  assert.equal(await page.locator('#report .forensic tbody tr', { has: page.locator('.sev') }).count(), 15, 'todas las señales');
+  assert.equal(await page.locator('#report .verdict-card').isVisible(), false, 'el modo sencillo no se imprime');
   await page.emulateMedia({ media: 'screen' });
   await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
-  assert.equal(await page.locator('#report .print-report').count(), 0, 'tras imprimir se quita');
+  assert.equal(await page.locator('#report .forensic').count(), 0, 'tras imprimir se quita');
   assert.ok(await page.locator('#report .verdict-card').isVisible());
   await context.close();
 });

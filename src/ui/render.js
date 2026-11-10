@@ -7,13 +7,13 @@ import { modeSwitch } from './components/mode-switch.js';
 import { menuButton } from './components/menu-button.js';
 import { batchBar } from './components/batch-bar.js';
 import { renderSimple } from './views/simple.js';
-import { renderAnalyst, renderPrint } from './views/analyst.js';
+import { renderAnalyst } from './views/analyst.js';
 
 export const EXPORT_ITEMS = [
   { action: 'export-json', text: 'Descargar informe (JSON)' },
   { action: 'export-stix', text: 'Descargar STIX 2.1' },
   { action: 'copy-iocs', text: 'Copiar IOCs' },
-  { action: 'print', text: 'Imprimir' },
+  { action: 'forensic', text: 'Informe forense' },
 ];
 
 /** Barra del informe: nivel de detalle, menú Exportar y la acción principal. */
@@ -47,12 +47,6 @@ export function renderReport(container, report, options = {}) {
   const saved = options.savedNote && !(mode === 'analyst' && (options.view === 'historial' || options.view === 'panel')) ? el('p', { className: 'saved-note', text: options.savedNote }) : null;
   container.append(...[toolbar(mode), saved, options.batch ? lotBar(options.batch) : null, body].filter(Boolean));
   container.hidden = false;
-}
-
-/** Añade (o quita, con report = null) el informe completo que sale al imprimir en cualquier modo. */
-export function setPrintReport(container, report) {
-  container.querySelector(':scope > .print-report')?.remove();
-  if (report) container.append(renderPrint(report));
 }
 
 /** Versión de PhishLens: va en los informes y en cada entrada del historial. */

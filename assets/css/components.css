@@ -147,13 +147,44 @@
 }
 /* Informe completo para imprimir: solo existe entre beforeprint y afterprint, y solo se ve en papel. */
 .print-report { display: none; }
+/* ---- Informe forense (views/forensic.js): solo existe mientras se imprime ---- */
+.forensic { display: none; }
+/* Pie de cada hoja: el SHA-256 lo pone app.js en --forensic-sha (CSSOM, sin estilos en línea) antes de imprimir. */
+@page { margin: 18mm 14mm 22mm; @bottom-left { content: "SHA-256 " var(--forensic-sha, ""); font-size: var(--text-xs); color: var(--muted); } @bottom-right { content: "Página " counter(page); font-size: var(--text-xs); color: var(--muted); } }
 @media print {
-  .report:has(> .print-report) > :not(.print-report) { display: none !important; }
-  .print-report { display: grid; gap: var(--space-6); }
-  .report__toolbar, .nav-rail { display: none !important; }
-  .analyst { grid-template-columns: 1fr !important; }
-  .analyst > .side { grid-column: auto; }
+  .report:has(> .forensic) > :not(.forensic) { display: none !important; }
+  .report__toolbar, .nav-rail, .forensic-dialog { display: none !important; }
+  .forensic { display: grid; gap: var(--space-5); color: var(--text); font-size: var(--text-sm); }
+  .forensic h1 { margin: 0; font-size: var(--text-2xl); color: var(--text-strong); }
+  .forensic h2 { margin: 0 0 var(--space-2); font-size: var(--text-lg); color: var(--text-strong); break-after: avoid; }
+  .forensic h3 { margin: var(--space-2) 0 var(--space-1); font-size: var(--text-md); break-after: avoid; }
+  .forensic__hint, .forensic__detail { color: var(--muted); }
+  .forensic__detail { display: block; }
+  .forensic__facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-1) var(--space-4); margin: 0; }
+  .forensic__facts dt { font-weight: 700; }
+  .forensic__facts dd { margin: 0; }
+  .forensic .table-scroll { overflow: visible; max-height: none; }
+  .forensic table { inline-size: 100%; border-collapse: collapse; }
+  .forensic thead { display: table-header-group; }
+  .forensic tr { break-inside: avoid; }
+  .forensic th, .forensic td { border: 1px solid var(--border); padding: var(--space-1) var(--space-2); text-align: start; vertical-align: top; }
+  .forensic .mono, .forensic td { overflow-wrap: anywhere; word-break: break-word; }
+  .forensic__hashes, .forensic__notes { white-space: pre-wrap; }
+  .forensic__iocs ul { margin: 0; padding-inline-start: var(--space-5); }
+  .forensic .sev { border: 1px solid currentColor; }
+  .forensic__footer { margin: 0; font-size: var(--text-xs); color: var(--muted); }
 }
+
+/* Diálogo del informe forense */
+.forensic-dialog { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); color: var(--text); padding: var(--space-6); inline-size: min(36rem, calc(100vw - var(--space-8))); }
+.forensic-dialog::backdrop { background: color-mix(in srgb, var(--text-strong) 45%, transparent); }
+.forensic-dialog__title { margin: 0 0 var(--space-2); font-size: var(--text-xl); color: var(--text-strong); }
+.forensic-dialog__label { display: block; margin-block-start: var(--space-4); font-weight: 600; }
+.forensic-dialog__notes { display: block; inline-size: 100%; margin-block-start: var(--space-2); padding: var(--space-3); font: inherit; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); resize: vertical; box-sizing: border-box; }
+.forensic-dialog__notes:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.forensic-dialog__count { margin: var(--space-1) 0 0; text-align: end; font-size: var(--text-sm); }
+.forensic-dialog__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block-start: var(--space-4); }
+.forensic-dialog__actions .btn { min-height: 44px; }
 
 /* menuButton */
 .menu-button { position: relative; display: inline-block; }

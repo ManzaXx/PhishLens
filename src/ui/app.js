@@ -5,7 +5,11 @@ import { buildGraph } from '../intel/graph.js';
 import { findCampaigns } from '../intel/campaigns.js';
 import { SAMPLES, BATCHES } from '../../samples/index.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
-import { renderReport, setPrintReport, reportToJson, iocsToText, stixJson } from './render.js';
+import { renderReport, reportToJson, iocsToText, stixJson } from './render.js';
+import { forensicReport, forensicJson, forensicFileName } from '../intel/forensic.js';
+import { renderForensic } from './views/forensic.js';
+import { forensicDialog, notesCount } from './components/forensic-dialog.js';
+import { sha256 } from '../lib/sha256.js';
 import { FACTS, levelLegend } from '../core/facts.js';
 import { menuKey } from './components/menu-button.js';
 import { graphKey } from './components/graph.js';
@@ -40,6 +44,8 @@ const state = {
   batch: null, batchTexts: new Map(), batchAbort: null, campaign: null,
   // Vista «Historial»: lo que se ha leído del historial para pintarla y el aviso del informe abierto desde él.
   historyData: null, historyQuery: { filters: {}, offset: 0 }, savedNote: '', dashboard: null, dashboardCache: {},
+  // Informe forense: cuándo se analizó, la entrada del historial si se abrió desde él y las notas del analista.
+  analyzedAt: null, saved: null, notes: '',
 };
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
@@ -149,6 +155,8 @@ function openSaved(entry, go = true) {
   state.analyst = {};
   state.lastInput = null;
   state.lastReport = entry.report;
+  state.saved = entry;
+  state.notes = entry.notes ?? '';
   state.savedNote = `Informe guardado el ${new Date(entry.savedAt).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })}; el correo original no está guardado.`;
   if (go) {
     state.route = { mode: 'analyst', view: 'resumen' };
@@ -427,6 +435,8 @@ function openBatchEmail(key) {
   state.analyst = {};
   state.lastReport = entry.report;
   state.savedNote = '';
+  state.saved = null;
+  state.notes = '';
   state.lastInput = { kind: 'eml', value: state.batchTexts.get(key) ?? '' };
 }
 
@@ -474,6 +484,7 @@ async function runBatch(files) {
     // Se empieza por el primero por nombre, el mismo orden que el selector.
     const first = [...out.entries].sort((a, b) => String(a.name).localeCompare(String(b.name), 'es'))[0];
     state.batch = { ...out, graph: buildGraph(out.entries), campaigns: findCampaigns(out.entries), current: first.key };
+    state.analyzedAt = new Date();
     openBatchEmail(first.key);
   } catch {
     // Un lote raro nunca debe dejar la página a medias.
@@ -526,6 +537,9 @@ function run() {
   try {
     state.lastInput = input;
     state.savedNote = '';
+    state.saved = null;
+    state.notes = '';
+    state.analyzedAt = new Date();
     state.lastReport = analyzeInput(input);
     paint();
     announce(`Resultado: ${state.lastReport.verdict.headline}. ${state.lastReport.score} de 100.`);
@@ -790,15 +804,23 @@ document.addEventListener('keydown', (e) => {
 // Al imprimir se abren los «¿Por qué?» del informe (no el formulario de DKIM/SPF) y luego se dejan como estaban.
 let openedForPrint = [];
 window.addEventListener('beforeprint', () => {
-  // Al imprimir siempre sale el informe completo del modo analista, se esté en el modo que se esté.
-  if (state.lastReport && !reportBox.hidden) setPrintReport(reportBox, state.lastReport);
+  // Al imprimir (botón o Ctrl+P) siempre sale el informe forense, se esté en el modo que se esté.
+  reportBox.querySelector(':scope > .forensic')?.remove();
+  if (state.lastReport && !reportBox.hidden) {
+    const doc = forensicDoc();
+    reportBox.append(renderForensic(doc));
+    // El pie de cada hoja (@page) lee el hash de esta variable; solo puede ser hexadecimal.
+    const sha = /^[0-9a-f]{64}$/.test(doc.identification.sha256 ?? '') ? doc.identification.sha256 : 'no disponible';
+    document.documentElement.style.setProperty('--forensic-sha', `"${sha}"`);
+  }
   openedForPrint = [...reportBox.querySelectorAll('details:not([open]):not(.auth-local)')];
   for (const d of openedForPrint) d.open = true;
 });
 window.addEventListener('afterprint', () => {
   for (const d of openedForPrint) d.open = false;
   openedForPrint = [];
-  setPrintReport(reportBox, null);
+  reportBox.querySelector(':scope > .forensic')?.remove();
+  document.documentElement.style.removeProperty('--forensic-sha');
 });
 
 // ---------- Comprobación local de DKIM y SPF ----------
@@ -878,7 +900,7 @@ function onReportAction(e) {
   if (action === 'verify-dkim') verifyDkim();
   if (action === 'eval-spf') evalSpf();
   if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || 'Sin IOCs');
-  if (action === 'print') window.print();
+  if (action === 'forensic') openForensic();
   if (action === 'export-json') download(reportToJson(state.lastReport), 'informe');
   if (action === 'export-stix') {
     // Con un lote se exporta el lote entero con sus campañas; si no, lo que está abierto.
@@ -895,13 +917,77 @@ function onReportAction(e) {
 }
 
 /** Descarga un texto JSON como fichero, sin red (Blob local). */
-function download(json, kind) {
+function download(json, kind, fileName = `phishlens-${kind}-${new Date().toISOString().slice(0, 10)}.json`) {
   const blob = new Blob([json], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `phishlens-${kind}-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = fileName;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---------- Informe forense ----------
+/** De dónde sale el informe abierto: el texto analizado o la entrada del historial. */
+function forensicSource() {
+  if (state.saved) return { kind: 'saved', name: state.saved.name ?? null, sha256: state.saved.sha256, savedAt: state.saved.savedAt };
+  const batchName = state.batch?.entries.find((e) => e.key === state.batch.current)?.name;
+  const name = batchName ?? (state.lastInput?.kind === 'eml' ? state.fileName ?? null : null);
+  return { kind: 'live', name, text: String(state.lastInput?.value ?? '') };
+}
+
+function forensicDoc() {
+  const analyzedAt = state.saved ? new Date(state.saved.savedAt) : state.analyzedAt ?? new Date();
+  return forensicReport({ report: state.lastReport, source: forensicSource(), analyzedAt, version: VERSION, notes: state.notes });
+}
+
+const forensicTrigger = () => reportBox.querySelector('[aria-haspopup="menu"]');
+
+async function openForensic() {
+  if (!state.lastReport) return;
+  // Un correo ya guardado con notas las recupera aunque se haya vuelto a analizar.
+  if (!state.notes && !state.saved && historyControl.enabled() && historyControl.history()) {
+    const entry = await historyControl.history().findBySha256(sha256(String(state.lastInput?.value ?? ''))).catch(() => null);
+    if (entry?.notes) state.notes = entry.notes;
+  }
+  document.querySelector('dialog.forensic-dialog')?.remove();
+  const dialog = forensicDialog({ notes: state.notes });
+  document.body.append(dialog);
+  const notes = dialog.querySelector('[data-role="forensic-notes"]');
+  notes.addEventListener('input', () => {
+    state.notes = notes.value;
+    dialog.querySelector('[data-role="forensic-count"]').textContent = notesCount(notes.value.length);
+  });
+  dialog.addEventListener('click', (e) => forensicAction(e.target.closest('[data-action]')?.dataset.action, dialog));
+  // Escape o «Cerrar»: el foco vuelve al botón Exportar.
+  dialog.addEventListener('close', () => {
+    dialog.remove();
+    forensicTrigger()?.focus();
+  });
+  dialog.showModal();
+  notes.focus();
+}
+
+/** Guarda las notas con el análisis si el historial está encendido. */
+async function keepNotes() {
+  const sha = state.saved?.sha256 ?? (state.lastInput ? sha256(String(state.lastInput.value ?? '')) : null);
+  if (!sha || !historyControl.enabled()) return;
+  if (state.saved) state.saved = { ...state.saved, notes: state.notes };
+  await historyControl.saveNotes(sha, state.notes);
+}
+
+async function forensicAction(action, dialog) {
+  if (action === 'forensic-close') return dialog.close();
+  if (action === 'forensic-print') {
+    await keepNotes();
+    dialog.close();
+    return window.print();
+  }
+  if (action === 'forensic-json') {
+    await keepNotes();
+    download(forensicJson(forensicDoc()), 'forense', forensicFileName(new Date()));
+    return announce('Informe forense descargado en JSON.');
+  }
+  return undefined;
 }
 
 // ---------- Portada: cifras y escala sacadas del código ----------

@@ -16,7 +16,7 @@ after(() => dom.restore());
 
 test('el menú Exportar lleva STIX justo después del JSON', () => {
   assert.deepEqual(M.EXPORT_ITEMS.map((i) => [i.action, i.text]), [
-    ['export-json', 'Descargar informe (JSON)'], ['export-stix', 'Descargar STIX 2.1'], ['copy-iocs', 'Copiar IOCs'], ['print', 'Imprimir'],
+    ['export-json', 'Descargar informe (JSON)'], ['export-stix', 'Descargar STIX 2.1'], ['copy-iocs', 'Copiar IOCs'], ['forensic', 'Informe forense'],
   ]);
 });
 
