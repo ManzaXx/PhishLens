@@ -3,6 +3,7 @@
 import { createHistory } from '../storage/history.js';
 import { idbBackend } from '../storage/backends.js';
 import { HISTORY_KEY, historyEnabled } from './route.js';
+import { reasonText, hashNames } from './campaign-reasons.js';
 
 /**
  * @param {{storage, factory?, version: string, open?: () => Promise<Backend>}} options
@@ -106,9 +107,15 @@ export function createHistoryControl({ storage, factory, version, open = () => i
     },
     record: (input, report, name = null) => guard((h) => h.save({ kind: input.kind, value: input.value, name, report })),
     /** batch: {entries: [{key, name, report}], campaigns}; texts: clave → texto del correo. */
-    recordBatch: (batch, texts) => guard((h) => h.saveBatch({
+    recordBatch: (batch, texts) => { const names = hashNames(batch); return guard((h) => h.saveBatch({
       entries: batch.entries.map((e) => ({ kind: 'eml', value: texts.get(e.key) ?? '', name: e.name, report: e.report })),
-      campaigns: (batch.campaigns ?? []).map((c) => ({ ...c, emails: (c.emails ?? []).map((k) => batch.entries.find((e) => e.key === k)?.name).filter(Boolean) })),
-    })),
+      campaigns: (batch.campaigns ?? []).map((c) => ({
+        ...c,
+        // Las pistas se guardan ya en texto: el panel las enseña tal cual y validateBatch exige cadenas.
+        reasons: (c.reasons ?? []).map((r) => (typeof r === 'string' ? r : reasonText(r, names))),
+        emails: (c.emails ?? []).map((k) => batch.entries.find((e) => e.key === k)?.name).filter(Boolean),
+      })),
+    }));
+    },
   };
 }

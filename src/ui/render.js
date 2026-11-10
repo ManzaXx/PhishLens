@@ -44,7 +44,7 @@ export function renderReport(container, report, options = {}) {
   container.replaceChildren();
   container.className = `wrap report report--${mode} level-${report.level}`;
   const body = mode === 'analyst' ? renderAnalyst(report, options.view, options) : renderSimple(report, options);
-  const saved = options.savedNote && !(mode === 'analyst' && options.view === 'historial') ? el('p', { className: 'saved-note', text: options.savedNote }) : null;
+  const saved = options.savedNote && !(mode === 'analyst' && (options.view === 'historial' || options.view === 'panel')) ? el('p', { className: 'saved-note', text: options.savedNote }) : null;
   container.append(...[toolbar(mode), saved, options.batch ? lotBar(options.batch) : null, body].filter(Boolean));
   container.hidden = false;
 }

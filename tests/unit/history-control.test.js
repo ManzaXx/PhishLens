@@ -149,3 +149,23 @@ test('panel: revision() sube al guardar, al borrar todo y al apagar', async () =
   ctl.disable();
   assert.ok(ctl.revision() > r2);
 });
+
+test('panel: un lote real guarda sus campañas con las pistas en texto y el lote se puede leer', async () => {
+  const { analyzeBatch } = await import('../../src/core/batch.js');
+  const { findCampaigns } = await import('../../src/intel/campaigns.js');
+  const { buildGraph } = await import('../../src/intel/graph.js');
+  const files = BATCHES[0].files.map((f) => ({ name: f.split('/').pop(), size: SAMPLE_TEXTS[f].length, text: async () => SAMPLE_TEXTS[f] }));
+  const { entries } = await analyzeBatch(files, { yieldFn: async () => {} });
+  const batch = { entries, graph: buildGraph(entries), campaigns: findCampaigns(entries) };
+  const texts = new Map(entries.map((e, i) => [e.key, SAMPLE_TEXTS[BATCHES[0].files[i]]]));
+  const { ctl } = control();
+  await ctl.enable();
+  await ctl.recordBatch(batch, texts);
+  const saved = await ctl.history().batches();
+  assert.equal(saved.length, 1);
+  const [c] = saved[0].campaigns;
+  assert.equal(c.emails.length, 4);
+  assert.ok(c.reasons.length > 0 && c.reasons.every((r) => typeof r === 'string'), JSON.stringify(c.reasons));
+  assert.ok(c.reasons.some((r) => r.startsWith('Mismo dominio de envío: ')), c.reasons.join(' | '));
+  assert.ok(c.reasons.some((r) => r.startsWith('Mismo adjunto: ') && !r.includes('sin nombre')), c.reasons.join(' | '));
+});

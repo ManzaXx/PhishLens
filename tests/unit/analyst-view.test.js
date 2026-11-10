@@ -28,17 +28,17 @@ const report = (prefix) => {
 };
 const has = (cls) => (n) => n.classList.contains(cls);
 
-test('muestra 03, vista señales: navegación con 8 enlaces (con «URLs») y 15 tarjetas', () => {
+test('muestra 03, vista señales: navegación con 9 enlaces (con «URLs» y «Panel») y 15 tarjetas', () => {
   const r = report('03');
   const view = renderAnalyst(r, 'senales');
   const nav = find(view, tag('nav'));
   assert.equal(nav.getAttribute('aria-label'), 'Secciones del informe');
   const links = findAll(nav, tag('a'));
-  assert.equal(links.length, 8);
+  assert.equal(links.length, 9);
   const current = links.filter((a) => a.getAttribute('aria-current') === 'page');
   assert.equal(current.length, 1);
   assert.equal(current[0].getAttribute('href'), '#analista/senales');
-  assert.deepEqual(findAll(nav, tag('h3')).map((h) => h.textContent), ['Correo', 'Inteligencia']);
+  assert.deepEqual(findAll(nav, tag('h3')).map((h) => h.textContent), ['Correo', 'Inteligencia', 'Historial']);
   assert.match(current[0].textContent, new RegExp(String(r.findings.length)));
   const panel = find(view, has('view'));
   assert.equal(r.findings.length, 15);

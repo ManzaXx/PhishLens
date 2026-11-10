@@ -11,6 +11,7 @@ import { menuKey } from './components/menu-button.js';
 import { graphKey } from './components/graph.js';
 import { parseRoute, formatRoute, initialMode, resolveView, isAnalystHash, MODE_KEY } from './route.js';
 import { createHistoryControl } from './history-control.js';
+import { dashboardData } from './dashboard-data.js';
 import { VERSION } from './render.js';
 
 import { LIMITS } from '../lib/limits.js';
@@ -38,7 +39,7 @@ const state = {
   // Lote en memoria mientras la pestaña esté abierta: {entries, skipped, warning, graph, campaigns, current}.
   batch: null, batchTexts: new Map(), batchAbort: null, campaign: null,
   // Vista «Historial»: lo que se ha leído del historial para pintarla y el aviso del informe abierto desde él.
-  historyData: null, historyQuery: { filters: {}, offset: 0 }, savedNote: '',
+  historyData: null, historyQuery: { filters: {}, offset: 0 }, savedNote: '', dashboard: null, dashboardCache: {},
 };
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
@@ -156,6 +157,13 @@ function openSaved(entry, go = true) {
 }
 
 async function historyAction(action, target) {
+  if (action === 'history-enable') {
+    historyToggle.checked = true;
+    const res = await historyControl.enable();
+    historyStatus.textContent = res.ok ? 'Historial activado.' : historyStatus.textContent;
+    await refreshDashboard();
+    return reportBox.querySelector('.view__title')?.focus();
+  }
   await historyControl.ensure();
   const h = historyControl.history();
   if (!h) return;
@@ -566,7 +574,7 @@ function paint(options = {}) {
   const context = { batch: state.batch, historyEnabled: historyControl.enabled() };
   const view = resolveView(state.route.view, state.lastReport, context);
   renderReport(reportBox, state.lastReport, {
-    mode, view, ...context, campaign: state.campaign, history: state.historyData, savedNote: state.savedNote, ...options,
+    mode, view, ...context, campaign: state.campaign, history: state.historyData, dashboard: state.dashboard, savedNote: state.savedNote, ...options,
   });
   // En móvil la navegación es una fila con desplazamiento: la vista actual tiene que verse.
   const nav = reportBox.querySelector('.nav-rail');
@@ -597,8 +605,41 @@ function onRoute() {
     refreshHistory().then(focusView);
     return;
   }
+  if (state.route.view === 'panel') {
+    refreshDashboard().then(focusView);
+    return;
+  }
   paint();
   focusView();
+}
+
+/** Recalcula el panel solo si cambió el historial (dashboard-data.js memoriza por revisión). */
+async function refreshDashboard() {
+  state.dashboard = await dashboardData(historyControl, state.dashboardCache).catch(() => null);
+  paint();
+}
+
+async function dashboardAction(action, target) {
+  if (action === 'dashboard-search') {
+    const query = target.getAttribute('data-ioc') ?? '';
+    const h = historyControl.history();
+    const results = h ? await h.searchIoc(query).catch(() => []) : [];
+    state.route = { mode: 'analyst', view: 'historial' };
+    history.pushState(null, '', formatRoute(state.route));
+    await refreshHistory({ search: { query, results } });
+    announce(results.length ? `${results.length} ${results.length === 1 ? 'IOC encontrado' : 'IOCs encontrados'}.` : 'Sin resultados.');
+    return reportBox.querySelector('[data-role="history-query"]')?.focus();
+  }
+  if (action === 'dashboard-open') {
+    const h = historyControl.history();
+    const entry = h ? await h.findBySha256(target.getAttribute('data-sha')).catch(() => null) : null;
+    if (!entry) {
+      announce('Este análisis ya no está guardado.');
+      return refreshDashboard();
+    }
+    return openSaved(entry);
+  }
+  return undefined;
 }
 window.addEventListener('hashchange', onRoute);
 
@@ -808,6 +849,10 @@ function onReportAction(e) {
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (action?.startsWith('history-') && action !== 'history-select' && action !== 'history-filter') {
     historyAction(action, e.target.closest('[data-action]'));
+    return;
+  }
+  if (action?.startsWith('dashboard-')) {
+    dashboardAction(action, e.target.closest('[data-action]'));
     return;
   }
   if (action === 'mode-simple') goTo('simple');

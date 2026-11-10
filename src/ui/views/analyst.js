@@ -16,11 +16,12 @@ import { attachmentsPanel } from '../panels/attachments.js';
 import { urlsPanel } from '../panels/urls.js';
 import { campaignsPanel } from '../panels/campaigns.js';
 import { historyPanel } from '../panels/history.js';
+import { dashboardPanel } from '../panels/dashboard.js';
 
 const PANELS = new Map([
   ['resumen', summaryPanel], ['senales', findingsPanel], ['vista-segura', safeViewPanel], ['autenticacion', authPanel],
   ['cabeceras', headersPanel], ['adjuntos', attachmentsPanel], ['urls', urlsPanel], ['iocs', iocsPanel],
-  ['campanas', campaignsPanel], ['attack', mitrePanel], ['historial', historyPanel],
+  ['campanas', campaignsPanel], ['attack', mitrePanel], ['panel', dashboardPanel], ['historial', historyPanel],
 ]);
 
 const IOC_KEYS = IOC_SECTIONS.map(([key]) => key);
@@ -75,7 +76,7 @@ export function renderAnalyst(report, view, options = {}) {
     el('h2', { className: 'view__title', text: VIEW_LABELS[current], attrs: { id, tabindex: '-1' } }),
     PANELS.get(current)(report, options));
   // El historial no habla del informe de fondo: ocupa todo el ancho, sin su lateral.
-  if (current === 'historial') return el('div', { className: 'analyst analyst--wide' }, navRail({ groups, current, counts }), panel);
+  if (current === 'historial' || current === 'panel') return el('div', { className: 'analyst analyst--wide' }, navRail({ groups, current, counts }), panel);
   return el('div', { className: 'analyst' }, navRail({ groups, current, counts }), panel, sidebar(report));
 }
 

@@ -325,3 +325,20 @@
 .chart__swatch { inline-size: var(--space-3); block-size: var(--space-3); border-radius: var(--radius-sm); }
 .chart__table { font-size: var(--text-sm); }
 .chart .table-scroll { max-height: 16rem; overflow: auto; }
+
+/* Vista «Panel». */
+.dashboard__tiles { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+.stat-tile { display: grid; gap: var(--space-1); padding: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.stat-tile__value { font-size: var(--text-xl); font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+.stat-tile__label { font-size: var(--text-sm); color: var(--muted); }
+.dashboard__card { display: grid; gap: var(--space-3); min-width: 0; }
+.dashboard__card h3 { margin: 0; }
+.dashboard__pair { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+.dashboard__iocs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.dashboard__ioc { min-height: 44px; font-weight: 400; max-width: 100%; overflow-wrap: anywhere; text-align: start; }
+.dashboard__ioc-value { font-family: var(--mono); }
+.dashboard__campaign-list { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.dashboard__campaign-list li { display: grid; gap: var(--space-1); justify-items: start; }
+.dashboard__campaign-list p { margin: 0; }
+.dashboard__campaign-name { font-weight: 700; }
+.dashboard .btn { min-height: 44px; }

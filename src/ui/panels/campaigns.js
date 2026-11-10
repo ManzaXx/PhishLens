@@ -1,20 +1,11 @@
 // Panel «Campañas»: correos del lote que comparten infraestructura, un adjunto o la misma plantilla.
 import { el, nextId } from '../dom.js';
-import { defang } from '../../intel/ioc.js';
+import { reasonText, hashNames } from '../campaign-reasons.js';
 import { LEVELS } from '../../core/scoring.js';
 import { emptyState } from '../components/empty-state.js';
 
 const LEVEL_LABEL = new Map(LEVELS.map((l) => [l.level, l.label]));
 const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-
-/** La pista en lenguaje llano. hashNames: sha256 -> nombre del adjunto. */
-function reasonText(r, hashNames) {
-  if (r.type === 'sender-domain') return `Mismo dominio de envío: ${defang(r.value)}`;
-  if (r.type === 'entry-ip') return `Misma IP de entrada: ${defang(r.value)}`;
-  if (r.type === 'link-domain') return `Mismo dominio en los enlaces: ${defang(r.value)}`;
-  if (r.type === 'sha256') return `Mismo adjunto: ${hashNames.get(r.value) ?? 'sin nombre'} (SHA-256 ${r.value.slice(0, 12)}…)`;
-  return `Misma plantilla: ${Math.round(Number(r.value) * 100)} % parecida`;
-}
 
 /** Campaña elegida (por id) o la primera. */
 export const pickCampaign = (campaigns, id) => campaigns.find((c) => c.id === id) ?? campaigns[0] ?? null;
@@ -24,7 +15,7 @@ export function campaignsPanel(report, { batch, campaign } = {}) {
   if (!campaigns.length) return emptyState('Sin campañas', 'Ningún correo del lote comparte infraestructura, adjuntos ni plantilla.');
   const chosen = pickCampaign(campaigns, campaign);
   const names = new Map(batch.entries.map((e) => [e.key, e]));
-  const hashNames = new Map((batch.graph?.nodes ?? []).filter((n) => n.type === 'hash').map((n) => [n.value, n.label]));
+  const fileNames = hashNames(batch);
 
   const list = el('ul', { className: 'campaign-list', attrs: { 'aria-label': 'Campañas del lote' } });
   for (const c of campaigns) {
@@ -50,7 +41,7 @@ export function campaignsPanel(report, { batch, campaign } = {}) {
   const reasons = el('ul', { className: 'campaign__reasons' });
   for (const r of chosen.reasons) {
     const who = [...r.emails].sort(byName).map((k) => names.get(k)?.name ?? k).join(', ');
-    reasons.append(el('li', {}, el('span', { className: 'campaign__reason', text: reasonText(r, hashNames) }), el('span', { className: 'campaign__who', text: who })));
+    reasons.append(el('li', {}, el('span', { className: 'campaign__reason', text: reasonText(r, fileNames) }), el('span', { className: 'campaign__who', text: who })));
   }
   const techniques = el('ul', { className: 'campaign__techniques' });
   for (const t of chosen.techniques) techniques.append(el('li', { text: `${t.id} · ${t.name}` }));
