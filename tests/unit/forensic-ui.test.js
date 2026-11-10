@@ -80,3 +80,17 @@ test('forensicDialog: textarea con maxlength 5000 y su contador, dos acciones, C
   assert.deepEqual(actions, [['forensic-print', 'Guardar como PDF'], ['forensic-json', 'Descargar JSON'], ['forensic-close', 'Cerrar']]);
   assert.match(dlg.textContent, /En el diálogo de impresión, elige «Guardar como PDF» como destino\./);
 });
+
+test('revisión final: las notas guardadas vuelven al campo tal cual, sin revelar el RLO', () => {
+  const raw = 'a\u202Eb';
+  const ta = find(forensicDialog({ notes: raw }), (n) => attr(n, 'data-role') === 'forensic-notes');
+  assert.equal(ta.value, raw);
+  assert.ok(!String(ta.textContent ?? '').includes('⟦'));
+});
+
+test('revisión final: si el historial está activado y las notas no se guardan, se dice', async () => {
+  const { notesSaveMessage } = await import('../../src/ui/components/forensic-dialog.js');
+  assert.equal(notesSaveMessage({ enabled: false, ok: false }), null);
+  assert.equal(notesSaveMessage({ enabled: true, ok: true }), null);
+  assert.match(notesSaveMessage({ enabled: true, ok: false }), /No se han podido guardar las notas/);
+});

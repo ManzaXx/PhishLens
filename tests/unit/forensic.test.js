@@ -160,3 +160,17 @@ test('integridad: verifyForensicJson acepta lo de forensicJson y rechaza cambios
 test('nombre del fichero con la fecha en UTC', () => {
   assert.equal(forensicFileName(new Date('2026-11-10T23:30:00Z')), 'phishlens-forense-2026-11-10.json');
 });
+
+test('revisión final: con los bytes del fichero (BOM o Latin-1) los hashes y el tamaño son los de sha256sum', () => {
+  const body = Buffer.from('Subject: año\r\n\r\nHola\r\n', 'latin1');
+  for (const bytes of [Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from('Subject: x\r\n\r\nHola', 'utf8')]), body]) {
+    const text = new TextDecoder().decode(bytes);
+    const doc = forensicReport({ report: analyzeInput({ kind: 'eml', value: text }), source: { kind: 'live', name: 'x.eml', text, bytes: new Uint8Array(bytes) }, analyzedAt: AT, version: '2.3.0', notes: '' });
+    assert.equal(doc.identification.sha256, hash('sha256', bytes));
+    assert.equal(doc.identification.sha1, hash('sha1', bytes));
+    assert.equal(doc.identification.md5, hash('md5', bytes));
+    assert.equal(doc.identification.size, bytes.length);
+    assert.equal(doc.identification.hashOf, 'file');
+  }
+  assert.equal(live('03-phishing-banco').identification.hashOf, 'text');
+});

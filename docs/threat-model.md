@@ -81,7 +81,7 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | Riesgo | Mitigación | Prueba |
 | --- | --- | --- |
 | Texto del atacante o de las notas interpretado como HTML en el informe | Todo se pinta con `el()` y `textContent`, con los caracteres de control de dirección revelados; IOCs, evidencias y cadenas de URLs van defanged | `tests/unit/forensic-ui.test.js` (`<script>` y RLO), `tests/unit/forensic.test.js` |
-| Informe que no corresponde al correo o JSON editado después | SHA-256, SHA-1 y MD5 de los bytes UTF-8 analizados (comparados con `node:crypto`); `reportSha256` al final del JSON y `verifyForensicJson` que detecta cualquier cambio | `tests/unit/forensic.test.js`, `tests/e2e/forensic.e2e.js` |
+| Informe que no corresponde al correo o JSON editado después | SHA-256, SHA-1 y MD5 de los bytes del fichero, también con BOM o Latin-1 (o del texto en UTF-8, y el informe lo dice), comparados con `node:crypto`; `reportSha256` al final del JSON y `verifyForensicJson` que detecta cualquier cambio | `tests/unit/forensic.test.js`, `tests/e2e/forensic.e2e.js` |
 | La impresión muestra otro análisis o la interfaz | Al imprimir solo se ve `.forensic`, creado en `beforeprint` con el informe abierto y quitado en `afterprint` | `tests/e2e/a11y.e2e.js`, `tests/e2e/forensic.e2e.js` |
 
 ### Notas del analista (`src/storage/history.js`)

@@ -8,6 +8,19 @@ const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 export const notesCount = (n) => `${fmt(n)} de ${fmt(MAX)}`;
 const button = (text, action, className = 'btn') => el('button', { className, text, attrs: { type: 'button', 'data-action': action } });
 
+/** Aviso cuando el historial está activado y las notas no se han guardado; null si no hay nada que decir. */
+export function notesSaveMessage({ enabled, ok }) {
+  return enabled && !ok ? 'No se han podido guardar las notas en el historial. El informe sí lleva las notas.' : null;
+}
+
+// value y no textContent: las notas vuelven tal cual (sin revelar los caracteres de dirección) y un
+// textarea nunca interpreta su valor como HTML.
+function notesField(value, opts) {
+  const ta = el('textarea', opts);
+  ta.value = value;
+  return ta;
+}
+
 export function forensicDialog({ notes = '' } = {}) {
   const title = nextId('forensic-title');
   const field = nextId('forensic-notes');
@@ -17,7 +30,7 @@ export function forensicDialog({ notes = '' } = {}) {
     el('h2', { className: 'forensic-dialog__title', text: 'Informe forense', attrs: { id: title } }),
     el('p', { className: 'muted', text: 'Lleva los hashes del correo, el veredicto, las señales, la autenticación, la ruta, los IOCs, los adjuntos y las URLs.' }),
     el('label', { className: 'forensic-dialog__label', text: 'Notas del analista (opcional)', attrs: { for: field } }),
-    el('textarea', { className: 'forensic-dialog__notes', text: value, attrs: { id: field, rows: '6', maxlength: String(MAX), 'data-role': 'forensic-notes', 'aria-describedby': hint } }),
+    notesField(value, { className: 'forensic-dialog__notes', attrs: { id: field, rows: '6', maxlength: String(MAX), 'data-role': 'forensic-notes', 'aria-describedby': hint } }),
     el('p', { className: 'muted forensic-dialog__count', text: notesCount(value.length), attrs: { 'data-role': 'forensic-count', 'aria-live': 'polite' } }),
     el('p', { className: 'muted', text: 'Si el historial está activado, las notas se guardan con este análisis.', attrs: { id: hint } }),
     el('div', { className: 'forensic-dialog__actions' },

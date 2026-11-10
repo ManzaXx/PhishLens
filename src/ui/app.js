@@ -8,7 +8,7 @@ import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { renderReport, reportToJson, iocsToText, stixJson } from './render.js';
 import { forensicReport, forensicJson, forensicFileName } from '../intel/forensic.js';
 import { renderForensic } from './views/forensic.js';
-import { forensicDialog, notesCount } from './components/forensic-dialog.js';
+import { forensicDialog, notesCount, notesSaveMessage } from './components/forensic-dialog.js';
 import { sha256 } from '../lib/sha256.js';
 import { FACTS, levelLegend } from '../core/facts.js';
 import { menuKey } from './components/menu-button.js';
@@ -335,8 +335,11 @@ async function loadFile(file) {
     return;
   }
   let text;
+  let bytes;
   try {
-    text = await file.text();
+    // Los bytes van al informe forense: sus hashes son los del fichero (BOM, Latin-1) y no los del texto.
+    bytes = new Uint8Array(await file.arrayBuffer());
+    text = new TextDecoder().decode(bytes);
   } catch {
     showError('No se pudo leer el archivo.');
     return;
@@ -344,6 +347,7 @@ async function loadFile(file) {
   cancelBatch();
   state.fileText = text;
   state.fileName = file.name;
+  state.fileBytes = bytes;
   dropzone.classList.add('has-file');
   dropzone.querySelector('.dropzone__title').textContent = file.name;
   dropzone.querySelector('.dropzone__hint').textContent = `${(file.size / 1024).toFixed(1)} KB · listo para analizar`;
@@ -446,6 +450,7 @@ async function runBatch(files) {
   showError('');
   // El correo suelto de antes ya no es lo que se ve: «Analizar» no debe volver a él.
   state.fileText = null;
+  state.fileBytes = null;
   const controller = new AbortController();
   state.batchAbort = controller;
   const texts = new Map();
@@ -932,7 +937,10 @@ function forensicSource() {
   if (state.saved) return { kind: 'saved', name: state.saved.name ?? null, sha256: state.saved.sha256, savedAt: state.saved.savedAt };
   const batchName = state.batch?.entries.find((e) => e.key === state.batch.current)?.name;
   const name = batchName ?? (state.lastInput?.kind === 'eml' ? state.fileName ?? null : null);
-  return { kind: 'live', name, text: String(state.lastInput?.value ?? '') };
+  const text = String(state.lastInput?.value ?? '');
+  // Solo si lo analizado es el fichero suelto tal cual; si no (lote, texto pegado o editado), el texto.
+  const bytes = !batchName && state.lastInput?.kind === 'eml' && state.fileBytes && text === state.fileText ? state.fileBytes : undefined;
+  return { kind: 'live', name, text, bytes };
 }
 
 function forensicDoc() {
@@ -972,7 +980,8 @@ async function keepNotes() {
   const sha = state.saved?.sha256 ?? (state.lastInput ? sha256(String(state.lastInput.value ?? '')) : null);
   if (!sha || !historyControl.enabled()) return;
   if (state.saved) state.saved = { ...state.saved, notes: state.notes };
-  await historyControl.saveNotes(sha, state.notes);
+  const message = notesSaveMessage({ enabled: true, ok: await historyControl.saveNotes(sha, state.notes) });
+  if (message) announce(message);
 }
 
 async function forensicAction(action, dialog) {

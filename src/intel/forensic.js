@@ -17,9 +17,13 @@ const list = (v) => (Array.isArray(v) ? v : []);
 const iso = (ms) => (Number.isFinite(ms) ? new Date(ms).toISOString() : null);
 
 function identification(source, analyzedAt, version) {
-  const base = { name: str(source?.name), size: null, sha256: null, sha1: null, md5: null };
+  const base = { name: str(source?.name), size: null, sha256: null, sha1: null, md5: null, hashOf: 'text' };
   if (source?.kind === 'saved') {
     Object.assign(base, { sha256: str(source.sha256) });
+  } else if (source?.bytes instanceof Uint8Array) {
+    // Los bytes del fichero tal cual: lo que da sha256sum, aunque lleve BOM o no sea UTF-8.
+    const bytes = source.bytes;
+    Object.assign(base, { size: bytes.length, sha256: sha256(bytes), sha1: sha1(bytes), md5: md5(bytes), hashOf: 'file' });
   } else {
     const text = String(source?.text ?? '');
     const bytes = new TextEncoder().encode(text);
@@ -119,7 +123,7 @@ function urls(report) {
 }
 
 /**
- * @param {{report: object, source: {kind: 'live', name: string|null, text: string} | {kind: 'saved', name: string|null, sha256: string, savedAt: string},
+ * @param {{report: object, source: {kind: 'live', name: string|null, text: string, bytes?: Uint8Array} | {kind: 'saved', name: string|null, sha256: string, savedAt: string},
  *   analyzedAt: Date, version: string, notes?: string}} input
  */
 export function forensicReport({ report, source, analyzedAt, version, notes = '' }) {

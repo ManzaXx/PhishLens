@@ -90,7 +90,7 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 
 ## Informe forense
 
-- **El hash es el del texto en UTF-8** tal cual se analizó. Coincide con `sha256sum` del `.eml` si el fichero está en UTF-8; un correo en otra codificación o pegado con otros saltos de línea da otro hash.
+- **Con un fichero suelto, los hashes son los de sus bytes** y coinciden con `sha256sum`. **En un lote, con texto pegado o desde el historial son los del texto analizado en UTF-8:** un correo con BOM o en otra codificación da otro hash. El informe dice cuál de los dos es en «Hashes de».
 - **Desde el historial no hay SHA-1, MD5 ni tamaño:** el correo no se guarda, solo su SHA-256.
 - **El pie con el SHA-256 y el número de página** usa las cajas de margen de `@page`, que solo pinta Chromium. En Firefox y Safari el PDF sale sin pie, pero el SHA-256 sigue en «Identificación».
 - **`reportSha256` detecta cambios, no firma:** quien edite el JSON puede recalcularlo.

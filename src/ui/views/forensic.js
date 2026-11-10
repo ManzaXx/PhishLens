@@ -21,6 +21,7 @@ function identification(id) {
     ['Fichero', id.name ?? 'Sin fichero (texto pegado o URL)'],
     ['Tamaño', id.size != null ? `${String(id.size).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} bytes` : missing(null)],
     ['SHA-256', id.sha256 ?? '—'],
+    ['Hashes de', id.hashOf === 'file' ? 'Los bytes del fichero tal cual (coinciden con sha256sum)' : 'El texto analizado en UTF-8 (puede no coincidir con sha256sum del fichero original)'],
     ['SHA-1', missing(id.sha1)],
     ['MD5', missing(id.md5)],
     ['Analizado (UTC)', id.analyzedAt.utc],

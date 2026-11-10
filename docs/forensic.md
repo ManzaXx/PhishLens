@@ -11,7 +11,7 @@ Si el historial está activado, las notas se guardan con el análisis y vuelven 
 
 | Sección | Qué lleva |
 | --- | --- |
-| Identificación | Nombre del fichero, tamaño en bytes, SHA-256, SHA-1 y MD5 de los bytes UTF-8 del texto analizado, fecha del análisis en UTC y en hora local, versión de PhishLens. Desde el historial: solo el SHA-256 guardado y la fecha en que se guardó |
+| Identificación | Nombre del fichero, tamaño en bytes, SHA-256, SHA-1 y MD5 de los bytes del fichero (o del texto analizado en UTF-8 si no hay fichero suelto), de qué se han sacado, fecha del análisis en UTC y en hora local, versión de PhishLens. Desde el historial: solo el SHA-256 guardado y la fecha en que se guardó |
 | Veredicto | Nivel, etiqueta, puntuación, confianza y la frase del modo sencillo |
 | Hallazgos | Ordenados por gravedad (alta, media, baja, info), con su evidencia defanged y su técnica ATT&CK |
 | Autenticación | SPF, DKIM y DMARC con su estado, resultado y detalle |
@@ -30,7 +30,7 @@ Si el historial está activado, las notas se guardan con el análisis y vuelven 
 node -e 'const f=require("fs").readFileSync(process.argv[1],"utf8");const {reportSha256:h,...b}=JSON.parse(f);console.log(require("crypto").createHash("sha256").update(JSON.stringify(b,null,2)).digest("hex")===h?"OK":"MODIFICADO")' phishlens-forense-2026-11-10.json
 ```
 
-Para comprobar que el informe es del correo que tienes: `sha256sum correo.eml` debe dar el SHA-256 de «Identificación» (con el texto en UTF-8 tal cual se analizó).
+Para comprobar que el informe es del correo que tienes: si «Hashes de» dice «Los bytes del fichero tal cual», `sha256sum correo.eml` da el SHA-256 de «Identificación», también con BOM o en Latin-1. Para texto pegado, un correo de un lote o un informe abierto desde el historial, los hashes son los del texto analizado en UTF-8 y pueden no coincidir con el fichero original.
 
 El hash detecta cambios, no firma: quien edite el JSON puede recalcularlo. Guarda el hash aparte (en el ticket, por ejemplo) si necesitas cadena de custodia.
 
