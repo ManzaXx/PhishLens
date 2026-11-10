@@ -5,6 +5,10 @@ import { analyzeInput } from '../../src/core/engine.js';
 import { buildEmail, SIZES } from './build.js';
 import { buildGraph } from '../../src/intel/graph.js';
 import { layoutGraph } from '../../src/intel/layout.js';
+import { historyStats } from '../../src/intel/stats.js';
+import { slimReport } from '../../src/storage/schema.js';
+import { SAMPLES } from '../../samples/index.js';
+import { SAMPLE_TEXTS } from '../../samples/data.js';
 
 const MAX_MS_25MB = 4000;
 
@@ -30,4 +34,20 @@ test('grafo enorme: 50 correos con 200 enlaces cada uno se construye y se dispon
   const ms = performance.now() - start;
   assert.equal(layout.nodes.length, 150);
   assert.ok(ms < 1000, `${Math.round(ms)} ms`);
+});
+
+test('panel: historyStats con 500 entradas de 200 IOCs cada una en menos de 300 ms (spec 3.0, §1.3)', () => {
+  const reports = SAMPLES.map((x) => slimReport(analyzeInput({ kind: 'eml', value: SAMPLE_TEXTS[x.id] })));
+  const now = new Date('2026-11-10T12:00:00Z');
+  const entries = Array.from({ length: 500 }, (_, i) => {
+    const report = structuredClone(reports[i % reports.length]);
+    report.iocs = { ...report.iocs, domains: Array.from({ length: 200 }, (_, j) => `d${(i * 7 + j) % 900}.test`) };
+    return { id: `e${i}`, savedAt: new Date(now.getTime() - (i % 60) * 86400000).toISOString(), sha256: i.toString(16).padStart(64, '0'), report };
+  });
+  const start = performance.now();
+  const s = historyStats(entries, { now });
+  const ms = performance.now() - start;
+  assert.equal(s.totals.analyses, 500);
+  assert.equal(s.iocs.length, 20);
+  assert.ok(ms < 300, `${Math.round(ms)} ms`);
 });
