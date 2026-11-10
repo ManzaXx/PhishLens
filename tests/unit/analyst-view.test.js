@@ -112,3 +112,14 @@ test('vista cabeceras ya no repite los adjuntos', () => {
   const view = renderAnalyst(report('06-'), 'cabeceras');
   assert.doesNotMatch(view.textContent, /Adjuntos \(1\)/);
 });
+
+test('crítica de diseño: «Historial» no dice 0 cuando no lo sabe; en el Panel usa el total guardado', () => {
+  const r = report('03');
+  const countOf = (view) => {
+    const link = findAll(find(view, tag('nav')), tag('a')).find((a) => a.getAttribute('href') === '#analista/historial');
+    return find(link, has('nav-rail__count'))?.textContent ?? null;
+  };
+  assert.equal(countOf(renderAnalyst(r, 'senales', { historyEnabled: true })), null, 'sin datos del historial no hay número');
+  const stats = { totals: { analyses: 7, phishingOrWorse: 0, campaigns: 0, distinctIocs: 0, dangerousPct: 0 }, timeline: { unit: 'day', buckets: [], omitted: 0 }, techniques: [], iocs: [], senders: [], domains: [], campaigns: [] };
+  assert.equal(countOf(renderAnalyst(r, 'panel', { historyEnabled: true, dashboard: { stats } })), '7');
+});

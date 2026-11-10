@@ -60,6 +60,8 @@ test('cada IOC repetido es un botón que lanza la búsqueda, defanged en el text
   assert.ok(dom1, 'algún dominio o IP');
   assert.ok(text(dom1).includes('[.]'), text(dom1));
   assert.equal(findAll(panel, (n) => n.localName === 'a').length, 0, 'ningún enlace');
+  // WCAG 2.5.3: el nombre accesible es el texto visible (axe label-content-name-mismatch).
+  for (const b of btns) assert.equal(attr(b, 'aria-label'), null);
 });
 
 test('Review Focus 2: sin IOCs repetidos lo dice en texto', () => {

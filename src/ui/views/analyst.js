@@ -69,8 +69,10 @@ export function renderAnalyst(report, view, options = {}) {
     iocs: IOC_KEYS.reduce((n, k) => n + (report.iocs?.[k]?.length ?? 0), 0),
     campanas: options.batch?.campaigns?.length ?? 0,
     attack: report.techniques.length,
-    historial: options.history?.page?.total ?? 0,
   };
+  // Solo se cuenta lo que se sabe: la página del historial o, en el Panel, el total de sus cifras.
+  const saved = options.history?.page?.total ?? options.dashboard?.stats?.totals?.analyses;
+  if (saved != null) counts.historial = saved;
   const id = nextId('view');
   const panel = el('section', { className: `view view--${current}`, attrs: { 'aria-labelledby': id } },
     el('h2', { className: 'view__title', text: VIEW_LABELS[current], attrs: { id, tabindex: '-1' } }),

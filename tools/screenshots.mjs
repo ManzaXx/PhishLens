@@ -10,7 +10,8 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 const OUT = fileURLToPath(new URL('../docs/img/', import.meta.url));
 const title = (id) => (id === 'lote' ? BATCHES[0].title : SAMPLES.find((s) => s.id === id).title);
 
-// [archivo, muestra ('lote' = el lote de campaña; 'historial' = tres análisis guardados) o null (portada), hash, ancho, tema]
+// [archivo, muestra ('lote' = el lote de campaña; 'historial' = tres análisis guardados; 'panel' = tres sueltos y el lote)
+// o null (portada), hash, ancho, tema]
 // Con argumentos solo se hacen esas capturas: node tools/screenshots.mjs analista-grafo movil-lote
 const SHOTS = [
   ['inicio', null, '', 1280, 'light'],
@@ -30,6 +31,8 @@ const SHOTS = [
   ['analista-campanas', 'lote', '#analista/campanas', 1280, 'dark'],
   ['analista-historial', 'historial', '', 1280, 'light'],
   ['movil-historial', 'historial', '', 390, 'dark'],
+  ['analista-panel', 'panel', '', 1280, 'light'],
+  ['movil-panel', 'panel', '', 390, 'dark'],
   ['movil-lote', 'lote', '', 390, 'light'],
   ['movil-sencillo', '03-phishing-banco', '', 390, 'light'],
   ['movil-analista', '03-phishing-banco', '#analista/senales', 390, 'dark'],
@@ -53,6 +56,22 @@ async function savedHistory(page) {
   await page.locator('#report').evaluate((n) => n.scrollIntoView({ block: 'start' }));
 }
 
+/** Enciende el historial, guarda tres análisis sueltos y el lote de campaña, y abre el Panel. */
+async function savedPanel(page) {
+  await page.locator('#history-toggle').check();
+  const wait = (n) => page.waitForFunction((t) => document.querySelector('#history-open').textContent === t, `Ver historial (${n})`);
+  for (const [i, id] of ['03-phishing-banco', '04-phishing-correos', '02-legitimo-pedido'].entries()) {
+    await page.getByRole('button', { name: title(id), exact: true }).click();
+    await wait(i + 1);
+    await page.goto(`${server.url}/index.html`);
+  }
+  await page.getByRole('button', { name: title('lote'), exact: true }).click();
+  await wait(7);
+  await page.evaluate(() => { location.hash = '#analista/panel'; });
+  await page.locator('#report .dashboard__tiles').waitFor();
+  await page.locator('#report').evaluate((n) => n.scrollIntoView({ block: 'start' }));
+}
+
 const server = await serve();
 const browser = await chromium.launch();
 const only = process.argv.slice(2);
@@ -60,6 +79,7 @@ for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !on
   const page = await browser.newPage({ viewport: { width, height: width < 600 ? 844 : 900 }, deviceScaleFactor: 2, colorScheme, reducedMotion: 'reduce' });
   await page.goto(`${server.url}/index.html${hash}`);
   if (sample === 'historial') await savedHistory(page);
+  else if (sample === 'panel') await savedPanel(page);
   else if (sample) {
     await page.getByRole('button', { name: title(sample), exact: true }).click();
     await page.locator('#report > *').first().waitFor();
@@ -68,7 +88,9 @@ for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !on
   // El ratón se queda donde estaba el ejemplo: se aparta para que no salga ningún :hover.
   await page.mouse.move(0, 0);
   await page.waitForTimeout(300);
-  await page.screenshot({ path: `${OUT}${name}.png` });
+  // El panel es largo: se captura entero, pero solo el informe (sin la portada ni el pie).
+  if (sample === 'panel') await page.locator('#report').screenshot({ path: `${OUT}${name}.png` });
+  else await page.screenshot({ path: `${OUT}${name}.png` });
   await page.close();
   console.log(`docs/img/${name}.png`);
 }

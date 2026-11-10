@@ -1,6 +1,6 @@
 // Gráficas de barras del panel (spec 3.0, §3; skill dataviz): SVG propio con svgEl (lista blanca),
 // marcas finas con 2 px de separación, extremo de datos redondeado a 4 px, leyenda con texto y la
-// tabla equivalente siempre al lado. Las etiquetas vienen del correo: van en textContent y recortadas.
+// tabla equivalente plegada debajo. Las etiquetas vienen del correo: van en textContent y recortadas.
 import { el, svgEl, nextId } from '../dom.js';
 import { dataTable } from './data-table.js';
 
@@ -12,12 +12,15 @@ const short = (s) => {
 };
 const sum = (counts, series) => series.reduce((n, s) => n + (Number(counts?.[s.key]) || 0), 0);
 
-function figure(caption, svgNode, legend, table) {
+/** La tabla equivalente, plegada: los datos exactos están a un clic sin duplicar la gráfica en pantalla. */
+const folded = (table) => el('details', { className: 'chart__data' }, el('summary', { text: 'Ver los datos en una tabla' }), table);
+
+function figure(caption, body, legend, table) {
   const id = nextId('chart');
-  svgNode.setAttribute('aria-labelledby', id);
+  if (body.localName === 'svg' || body.tagName?.toLowerCase() === 'svg') body.setAttribute('aria-labelledby', id);
   return el('figure', { className: 'chart' },
     el('figcaption', { className: 'chart__caption', text: caption, attrs: { id } }),
-    svgNode, legend, table);
+    body, legend, folded(table));
 }
 
 /** Barras apiladas por cubo (p. ej. días) y serie (p. ej. nivel). buckets: [{label, counts: {clave: n}}]. */
@@ -50,7 +53,9 @@ export function stackedBars({ caption, buckets, series }) {
       rect.append(svgEl('title', { text: `${short(b.label)}: ${p.n} ${p.s.label}` }));
       root.append(rect);
     });
-    if (i % labelEvery === 0 || i === buckets.length - 1) {
+    // Cada `labelEvery` cubos y siempre el último; el anterior se salta si quedaría pisándolo.
+    const last = buckets.length - 1;
+    if (i === last || (i % labelEvery === 0 && last - i >= labelEvery)) {
       root.append(svgEl('text', { attrs: { x: (x + barW / 2).toFixed(2), y: H - 8, 'text-anchor': 'middle', class: 'chart__tick' }, text: short(b.label) }));
     }
   });
@@ -65,31 +70,28 @@ export function stackedBars({ caption, buckets, series }) {
   return figure(caption, root, legend, table);
 }
 
-/** Barras horizontales: una fila por nombre, con su valor en texto. rows: [{label, value, detail?}]. */
+/**
+ * Barras horizontales: una fila por nombre. El nombre y el valor son texto HTML (se leen igual a 360 px
+ * que a 1280 px) y la barra es un SVG decorativo de la fila. rows: [{label, value, detail?}].
+ */
 export function hBars({ caption, rows }) {
-  const W = 640;
-  const ROW = 28;
-  const labelW = 240;
-  const valueW = 40;
-  const H = Math.max(ROW, rows.length * ROW);
   const max = Math.max(1, ...rows.map((r) => Number(r.value) || 0));
-  const plotW = W - labelW - valueW;
-  const root = svgEl('svg', { attrs: { viewBox: `0 0 ${W} ${H}`, role: 'img', class: 'chart__svg', preserveAspectRatio: 'xMidYMid meet' } });
-  rows.forEach((r, i) => {
-    const y = i * ROW;
+  const list = el('ol', { className: 'chart__rows' }, ...rows.map((r) => {
     const v = Number(r.value) || 0;
-    const w = (v / max) * plotW;
-    root.append(svgEl('text', { attrs: { x: labelW - 8, y: y + ROW / 2 + 4, 'text-anchor': 'end', class: 'chart__label' }, text: short(r.label) }));
-    const rect = svgEl('rect', { attrs: { x: labelW, y: y + 6, width: w.toFixed(2), height: ROW - 12, rx: 4, class: 'chart__hbar' } });
+    const track = svgEl('svg', { attrs: { viewBox: '0 0 100 8', preserveAspectRatio: 'none', class: 'chart__track', 'aria-hidden': 'true', focusable: 'false' } });
+    const rect = svgEl('rect', { attrs: { x: 0, y: 0, width: ((v / max) * 100).toFixed(2), height: 8, class: 'chart__hbar' } });
     rect.append(svgEl('title', { text: `${short(r.label)}: ${v}` }));
-    root.append(rect);
-    root.append(svgEl('text', { attrs: { x: (labelW + w + 6).toFixed(2), y: y + ROW / 2 + 4, class: 'chart__value' }, text: String(v) }));
-  });
+    track.append(rect);
+    return el('li', { className: 'chart__row' },
+      el('span', { className: 'chart__label', text: short(r.label) }),
+      track,
+      el('span', { className: 'chart__value', text: String(v) }));
+  }));
   const table = dataTable({
     caption,
     columns: ['Nombre', 'Detalle', 'Veces'],
     rows: rows.map((r) => [String(r.label), String(r.detail ?? ''), String(Number(r.value) || 0)]),
     className: 'chart__table',
   });
-  return figure(caption, root, null, table);
+  return figure(caption, list, null, table);
 }

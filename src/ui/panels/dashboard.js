@@ -40,7 +40,7 @@ function timelineCard({ timeline }) {
 function iocCard({ iocs }) {
   const body = iocs.length
     ? el('ul', { className: 'dashboard__iocs' }, ...iocs.map((i) => el('li', {},
-      el('button', { className: 'btn dashboard__ioc', attrs: { type: 'button', 'data-action': 'dashboard-search', 'data-ioc': i.value, 'aria-label': `Buscar ${defang(i.value)} en el historial` } },
+      el('button', { className: 'btn dashboard__ioc', attrs: { type: 'button', 'data-action': 'dashboard-search', 'data-ioc': i.value } },
         el('span', { className: 'dashboard__ioc-value', text: defang(i.value) }),
         el('span', { className: 'hint', text: ` ${TYPES[i.type] ?? i.type} · ${i.count} análisis` })))))
     : none('Ningún IOC aparece en más de un análisis.');

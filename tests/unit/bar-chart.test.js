@@ -58,31 +58,51 @@ test('stackedBars: todo a cero no pinta barras ni deja NaN', () => {
   }
 });
 
-test('Review Focus 3: una etiqueta con <script>, RLO y 10.000 caracteres va como texto, recortada en el SVG y entera en la tabla', () => {
+test('Review Focus 3: una etiqueta con <script>, RLO y 10.000 caracteres va como texto, recortada en la gráfica y entera en la tabla', () => {
   const evil = `<script>x</script>\u202Eabc${'a'.repeat(10000)}`;
   const fig = hBars({ caption: 'Remitentes', rows: [{ label: evil, value: 3 }] });
   assert.equal(findAll(fig, (n) => local(n) === 'script').length, 0);
-  const svgText = findAll(fig, (n) => local(n) === 'text').map((n) => n.textContent).find((t) => t.startsWith('<script>'));
-  assert.ok(svgText.length < 100 && svgText.endsWith('…'), `largo ${svgText.length}`);
-  assert.match(svgText, /⟦U\+202E⟧/);
+  const shown = findAll(fig, (n) => attr(n, 'class') === 'chart__label').map((n) => n.textContent).find((t) => t.startsWith('<script>'));
+  assert.ok(shown.length < 100 && shown.endsWith('…'), `largo ${shown.length}`);
+  assert.match(shown, /⟦U\+202E⟧/);
   const cellText = findAll(fig, (n) => local(n) === 'td').map((n) => n.textContent).find((t) => t.startsWith('<script>'));
   assert.ok(cellText.length > 10000);
 });
 
-test('hBars: la barra más larga ocupa todo el ancho útil y el valor va en texto', () => {
+test('hBars: la barra más larga ocupa todo el ancho útil; nombre y valor van en texto HTML, no dentro del SVG', () => {
   const fig = hBars({ caption: 'Técnicas', rows: [{ label: 'T1566', value: 8, detail: 'Initial Access' }, { label: 'T1036', value: 2 }] });
   const [a, b] = findAll(fig, (n) => local(n) === 'rect' && attr(n, 'class') === 'chart__hbar');
   assert.equal(Number(attr(b, 'width')) * 4, Number(attr(a, 'width')));
-  const texts = findAll(fig, (n) => local(n) === 'text').map((n) => n.textContent);
-  assert.ok(texts.includes('8') && texts.includes('2'));
+  assert.equal(findAll(fig, (n) => local(n) === 'text').length, 0, 'sin <text>: a 360 px el SVG encoge y el texto se volvía ilegible');
+  assert.deepEqual(findAll(fig, (n) => attr(n, 'class') === 'chart__label').map((n) => n.textContent), ['T1566', 'T1036']);
+  assert.deepEqual(findAll(fig, (n) => attr(n, 'class') === 'chart__value').map((n) => n.textContent), ['8', '2']);
+  for (const svg of findAll(fig, (n) => local(n) === 'svg')) assert.equal(attr(svg, 'aria-hidden'), 'true');
   const head = findAll(fig, (n) => local(n) === 'th').map((n) => n.textContent);
   assert.deepEqual(head, ['Nombre', 'Detalle', 'Veces']);
+});
+
+test('crítica de diseño: la tabla equivalente va plegada en «Ver los datos en una tabla»', () => {
+  for (const fig of [stackedBars({ caption: 'N', buckets, series: SERIES }), hBars({ caption: 'N', rows: [{ label: 'a', value: 1 }] })]) {
+    const details = find(fig, (n) => local(n) === 'details');
+    assert.ok(details, 'hay <details>');
+    assert.equal(find(details, (n) => local(n) === 'summary').textContent, 'Ver los datos en una tabla');
+    assert.ok(find(details, (n) => local(n) === 'table'));
+  }
+});
+
+test('crítica de diseño: las fechas del eje no se pisan (30 días)', () => {
+  const days = Array.from({ length: 30 }, (_, i) => ({ label: `${i + 1} nov`, counts: counts(1, 0, 0, 0) }));
+  const fig = stackedBars({ caption: 'N', buckets: days, series: SERIES });
+  const xs = findAll(fig, (n) => local(n) === 'text' && attr(n, 'text-anchor') === 'middle').map((n) => Number(attr(n, 'x')));
+  assert.equal(xs.at(-1) > xs.at(-2), true);
+  for (let k = 1; k < xs.length; k++) assert.ok(xs[k] - xs[k - 1] >= 60, `${xs[k - 1]} → ${xs[k]}`);
 });
 
 test('solo etiquetas SVG de la lista blanca', () => {
   const ok = new Set(['svg', 'g', 'line', 'circle', 'rect', 'polygon', 'path', 'text', 'title']);
   for (const fig of [stackedBars({ caption: 'N', buckets, series: SERIES }), hBars({ caption: 'N', rows: [{ label: 'a', value: 1 }] })]) {
-    const svgRoot = find(fig, (n) => local(n) === 'svg');
-    for (const n of findAll(svgRoot, (x) => x.nodeType === 1)) assert.ok(ok.has(local(n)), local(n));
+    for (const svgRoot of findAll(fig, (n) => local(n) === 'svg')) {
+      for (const n of findAll(svgRoot, (x) => x.nodeType === 1)) assert.ok(ok.has(local(n)), local(n));
+    }
   }
 });
