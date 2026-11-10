@@ -122,4 +122,6 @@ test('crítica de diseño: «Historial» no dice 0 cuando no lo sabe; en el Pane
   assert.equal(countOf(renderAnalyst(r, 'senales', { historyEnabled: true })), null, 'sin datos del historial no hay número');
   const stats = { totals: { analyses: 7, phishingOrWorse: 0, campaigns: 0, distinctIocs: 0, dangerousPct: 0 }, timeline: { unit: 'day', buckets: [], omitted: 0 }, techniques: [], iocs: [], senders: [], domains: [], campaigns: [] };
   assert.equal(countOf(renderAnalyst(r, 'panel', { historyEnabled: true, dashboard: { stats } })), '7');
+  // Revisión final: fuera del Panel sus cifras pueden ser viejas (se analizó otro correo después).
+  assert.equal(countOf(renderAnalyst(r, 'senales', { historyEnabled: true, dashboard: { stats } })), null);
 });

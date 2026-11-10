@@ -121,3 +121,11 @@ test('propiedad: el resultado no depende del orden de las entradas ni de los lot
   const expected = historyStats(entries, { now: NOW, batches });
   for (let seed = 1; seed <= 50; seed++) assert.deepEqual(historyStats(shuffle(entries, seed), { now: NOW, batches }), expected, `semilla ${seed}`);
 });
+
+test('revisión final: el mismo lote guardado dos veces es una sola campaña, la más reciente', () => {
+  const lot = (savedAt, id) => ({ id, savedAt, emails: [sha(1), sha(2)], campaigns: [{ id: 'c', name: 'Campaña 1', reasons: ['Mismo dominio de envío: x[.]test'], techniques: [], emails: [sha(2), sha(1)] }] });
+  const other = { id: 'b3', savedAt: iso(3), emails: [sha(3)], campaigns: [{ id: 'c', name: 'Campaña 1', reasons: [], techniques: [], emails: [sha(3), sha(4)] }] };
+  const { campaigns, totals } = historyStats(entries, { now: NOW, batches: [lot(iso(5), 'b1'), lot(iso(1), 'b2'), other] });
+  assert.equal(totals.campaigns, 2);
+  assert.deepEqual(campaigns.map((c) => c.savedAt), [iso(1), iso(3)]);
+});

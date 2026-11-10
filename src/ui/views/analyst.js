@@ -70,8 +70,8 @@ export function renderAnalyst(report, view, options = {}) {
     campanas: options.batch?.campaigns?.length ?? 0,
     attack: report.techniques.length,
   };
-  // Solo se cuenta lo que se sabe: la página del historial o, en el Panel, el total de sus cifras.
-  const saved = options.history?.page?.total ?? options.dashboard?.stats?.totals?.analyses;
+  // Solo se cuenta lo que se sabe: la página del historial o, estando en el Panel, el total de sus cifras.
+  const saved = options.history?.page?.total ?? (current === 'panel' ? options.dashboard?.stats?.totals?.analyses : undefined);
   if (saved != null) counts.historial = saved;
   const id = nextId('view');
   const panel = el('section', { className: `view view--${current}`, attrs: { 'aria-labelledby': id } },

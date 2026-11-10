@@ -96,15 +96,21 @@ export function historyStats(entries, { now = new Date(), batches = [] } = {}) {
     }
   }
 
-  const campaigns = [];
+  // Volver a analizar el mismo lote guarda otro registro: una campaña con el mismo nombre y los mismos
+  // correos cuenta una vez, la más reciente.
+  const byKey = new Map();
   for (const b of batches) {
     for (const c of Array.isArray(b?.campaigns) ? b.campaigns : []) {
-      const emails = strings(c?.emails);
+      const emails = [...new Set(strings(c?.emails))].sort(cmp);
       const latestSha = emails.filter((s) => savedAtBySha.has(s))
         .sort((x, y) => cmp(savedAtBySha.get(y), savedAtBySha.get(x)) || cmp(x, y))[0] ?? null;
-      campaigns.push({ name: String(c?.name ?? 'Campaña'), savedAt: String(b.savedAt ?? ''), emails: emails.length, reasons: strings(c?.reasons), latestSha });
+      const item = { name: String(c?.name ?? 'Campaña'), savedAt: String(b.savedAt ?? ''), emails: emails.length, reasons: strings(c?.reasons), latestSha };
+      const key = JSON.stringify([item.name, emails]);
+      const known = byKey.get(key);
+      if (!known || cmp(item.savedAt, known.savedAt) > 0 || (item.savedAt === known.savedAt && cmp(item.reasons.join('|'), known.reasons.join('|')) < 0)) byKey.set(key, item);
     }
   }
+  const campaigns = [...byKey.values()];
   campaigns.sort((a, b) => cmp(b.savedAt, a.savedAt) || cmp(a.name, b.name) || cmp(String(a.latestSha), String(b.latestSha)));
 
   const n = entries.length;

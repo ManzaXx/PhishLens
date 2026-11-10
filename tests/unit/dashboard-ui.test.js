@@ -96,3 +96,18 @@ test('Review Focus 4: dashboardData memoriza por revisión y sigue los cambios d
   const after = await dashboardData(ctl, cache, NOW);
   assert.equal(after.stats.totals.analyses, 0, 'tras borrar todo, cero');
 });
+
+test('revisión final: la cifra de campañas cuenta todos los lotes guardados, no solo los 20 últimos', async () => {
+  const backend = memoryBackend();
+  const ctl = createHistoryControl({ storage: null, version: '3.0.0', open: async () => backend });
+  await ctl.enable();
+  const hex = (i) => i.toString(16).padStart(64, '0');
+  for (let i = 0; i < 25; i++) {
+    await backend.put('batches', { id: `b${i}`, savedAt: new Date(NOW.getTime() - i * 60000).toISOString(), emails: [hex(i)], campaigns: [{ id: 'c', name: 'Campaña 1', reasons: [], techniques: [], emails: [hex(i), hex(i + 100)] }] });
+  }
+  ctl.disable();
+  await ctl.enable();
+  const { stats } = await dashboardData(ctl, {}, NOW);
+  assert.equal(stats.totals.campaigns, 25);
+  assert.equal(stats.campaigns.length, 5);
+});

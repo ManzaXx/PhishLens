@@ -149,6 +149,15 @@ test('«Activar historial» desde el Panel enciende el interruptor y el Panel pa
   await w.context.close();
 });
 
+test('revisión final: apagar el historial con el Panel abierto quita las cifras', { skip }, async () => {
+  const context = await browser.newContext();
+  const page = await withData(await context.newPage(), server.url, { lot: false });
+  await page.locator('#history-toggle').uncheck();
+  await page.locator('#report [data-action="history-enable"]').waitFor();
+  assert.equal(await page.locator('#report .dashboard__tiles').count(), 0);
+  await context.close();
+});
+
 for (const width of [360, 768, 1280]) {
   test(`diseño: Panel sin scroll horizontal, objetivos de 44 px y SVG dentro de su caja a ${width} px`, { skip }, async () => {
     const context = await browser.newContext({ viewport: { width, height: 900 } });

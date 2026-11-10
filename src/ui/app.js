@@ -82,6 +82,8 @@ historyToggle.addEventListener('change', async () => {
     historyControl.disable();
     historyStatus.textContent = 'Historial desactivado. Lo ya guardado sigue ahí hasta que lo borres.';
   }
+  // Con el Panel abierto, sus cifras siguen al interruptor (apagado: estado vacío con «Activar historial»).
+  if (state.lastReport && state.route.mode === 'analyst' && state.route.view === 'panel') await refreshDashboard();
 });
 const historyOpen = $('#history-open');
 historyControl.on('change', () => updateHistoryButton());
