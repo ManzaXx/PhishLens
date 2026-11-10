@@ -79,3 +79,11 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 - **Sin cifrado.** Lo guardado está en el perfil del navegador: quien use ese perfil lo puede ver. La exportación `.json` tampoco va cifrada.
 - **Ventana privada o almacenamiento bloqueado:** el historial se apaga y lo dice; el análisis sigue funcionando.
 - **Las reglas propias del PR13** no podrán mirar el cuerpo de un análisis guardado, porque no está.
+
+## Panel
+
+- **Fechas en UTC.** Los días y las semanas de «Niveles en el tiempo» se cortan en UTC, no en la hora local: un análisis de las 00:30 en Madrid puede caer en el día anterior.
+- **30 días o 26 semanas.** Con más de 30 días de historia se agrupa por semanas (de lunes a domingo) y solo se pintan las 26 últimas; las más antiguas se cuentan y se avisa.
+- **Las listas tienen tope:** 10 técnicas, 20 IOCs repetidos (solo dominios, IPs y hashes; URLs y direcciones no), 10 remitentes, 10 dominios y 5 campañas.
+- **Un lote guardado no se vuelve a abrir entero.** «Abrir el último correo» abre el análisis más reciente de la campaña; el grafo del lote no se guarda.
+- **Un análisis guardado con fecha ilegible o futura** cuenta como de hoy.

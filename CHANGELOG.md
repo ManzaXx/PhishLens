@@ -7,6 +7,10 @@ Especificación en [docs/specs/2026-11-07-phishlens-3.0-design.md](docs/specs/20
 ### Añadido
 - **Historial local opcional** (apagado por defecto, [ADR 0004](docs/adr/0004-historial-local-opcional.md)): un interruptor en la portada guarda en IndexedDB el informe de cada análisis y de cada lote, nunca el correo. Hasta 500 análisis; los repetidos se actualizan.
 - Vista **«Historial»** en el modo analista: tabla paginada, búsqueda de un IOC en todo lo guardado, filtros por nivel, fecha y técnica, comparar dos análisis, abrir uno guardado, borrar uno o todo, y exportar o importar en `.json` (20 MB y 500 entradas como mucho, cada una validada).
+- Vista **«Panel»** en el modo analista (grupo Historial): cifras clave (análisis guardados, probable phishing o peor, campañas, IOCs distintos, con adjunto peligroso), niveles en el tiempo por día o semana, técnicas ATT&CK más vistas, IOCs repetidos que abren su búsqueda, remitentes y dominios más frecuentes y campañas recientes con «Abrir el último correo».
+- Gráficas SVG propias (`stackedBars`, `hBars`) con lista blanca, `<title>` al pasar el ratón, leyenda con texto y su tabla de datos plegada; tokens `--chart-*` validados para daltonismo en claro y oscuro.
+- `src/intel/stats.js`: todas las cifras en una pasada, sin depender del orden de entrada.
+- Los lotes guardados conservan sus campañas con las pistas en texto.
 - `src/storage/` con su validador de esquema y su informe recortado, y e2e del historial (privacidad, recarga, borrar, exportar e importar, axe, teclado y diseño).
 
 ## 2.3.0 · 2026-11-07 · Threat Intel local

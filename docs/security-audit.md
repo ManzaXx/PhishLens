@@ -72,6 +72,10 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | Vista «Historial» sin `innerHTML`, sin enlaces y defanged; axe en claro y oscuro | ✅ | `tests/unit/history-ui.test.js`, `tests/e2e/history.e2e.js` |
 | Revisión final del PR10: «Borrar todo» cuenta lo guardado y no lo filtrado; otra pestaña que borra la base ya no apaga el historial de esta; entradas sin veredicto válido se rechazan | ✅ | `tests/unit/history-ui.test.js`, `tests/unit/history-control.test.js`, `tests/unit/storage-schema.test.js` |
 | Revisión de seguridad del PR10: dos hallazgos arreglados (el import podía meter el cuerpo del correo; listas mal formadas rompían la búsqueda) | ✅ | `tests/unit/storage-schema.test.js` |
+| Panel: texto del correo en las gráficas solo como `textContent`, SVG con lista blanca, sin enlaces | ✅ | `tests/unit/bar-chart.test.js`, `tests/unit/dashboard-ui.test.js` |
+| Panel: `data-sha` validado como 64 hex antes de buscar; lotes guardados validados con `validateBatch` | ✅ | `tests/unit/storage-history.test.js`, `tests/unit/storage-schema.test.js` |
+| Panel: privacidad (sin peticiones externas ni violaciones de CSP) y axe, en claro y oscuro, encendido y apagado | ✅ | `tests/e2e/dashboard.e2e.js` |
+| Revisión de seguridad del PR11: sin hallazgos explotables; el fallo encontrado era funcional (las pistas de campaña se guardaban como objetos y el lote se descartaba) | ✅ | `tests/unit/history-control.test.js` |
 
 ## Pendiente
 

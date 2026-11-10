@@ -67,6 +67,15 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | Entradas manipuladas (otra pestaña, una extensión, un fichero importado) | `JSON.parse` con reviver que descarta `__proto__`, `constructor` y `prototype`; copia limpia solo con objetos planos; esquema propio (UUID, fecha ISO, nivel, puntuación, 500 hallazgos, listas de técnicas e IOCs, cadenas de 10.000 caracteres, 1 MB por entrada); importación de 20 MB y 500 entradas como mucho; todo se pinta con `textContent` y defanged | `tests/unit/storage-schema.test.js`, `tests/unit/storage-history.test.js`, `tests/unit/history-ui.test.js` |
 | Borrado parcial que deja restos | «Borrar todo» usa `indexedDB.deleteDatabase` y no la vuelve a crear hasta el siguiente análisis guardado | `tests/unit/history-control.test.js`, `tests/e2e/history.e2e.js` |
 
+### Panel (`src/intel/stats.js`, `src/ui/panels/dashboard.js`)
+
+| Riesgo | Mitigación | Prueba |
+| --- | --- | --- |
+| Texto del atacante (remitente, dominio, técnica) dentro de las gráficas | Las gráficas se hacen con `svgEl` y su lista blanca de etiquetas y atributos; nombres y valores van en `textContent`, con los caracteres de control de dirección revelados y recortados a 80 caracteres; la tabla equivalente lleva el texto entero | `tests/unit/bar-chart.test.js` (`<script>`, RLO y 10.000 caracteres), `tests/unit/dashboard-ui.test.js` |
+| `data-ioc` y `data-sha` usados como algo más que texto | `data-ioc` solo rellena la búsqueda del historial (sin enlaces, defanged en pantalla); `data-sha` solo se acepta como 64 hex y solo sirve de clave del índice `sha256` | `tests/unit/storage-history.test.js`, `tests/e2e/dashboard.e2e.js` |
+| Lotes guardados manipulados | `validateBatch`: id, fecha ISO, listas de cadenas y 200 campañas como mucho; los que no cumplen se ignoran | `tests/unit/storage-schema.test.js`, `tests/unit/history-control.test.js` |
+| Cifras que dependen de claves del correo | Recuentos con `Map` (nunca objetos indexados con texto del correo) y desempates por cadena | `tests/unit/stats.test.js` (prueba de propiedad con 50 órdenes) |
+
 ### Cadena de suministro
 
 | Riesgo | Mitigación | Prueba |
