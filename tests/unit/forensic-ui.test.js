@@ -94,3 +94,15 @@ test('revisión final: si el historial está activado y las notas no se guardan,
   assert.equal(notesSaveMessage({ enabled: true, ok: true }), null);
   assert.match(notesSaveMessage({ enabled: true, ok: false }), /No se han podido guardar las notas/);
 });
+
+test('PR13: un hallazgo de regla propia lleva «(regla propia)» en el informe y custom en el JSON', async () => {
+  const { validateRules } = await import('../../src/rules/validate.js');
+  const { rules } = validateRules(JSON.stringify({ phishlens: 'rules/1', rules: [{ id: 'prueba', title: 'Mi regla', severity: 'high', category: 'sender', when: { field: 'subject', op: 'exists' } }] }));
+  const text = SAMPLE_TEXTS['03-phishing-banco'];
+  const d = forensicReport({ report: analyzeInput({ kind: 'eml', value: text, rules }), source: { kind: 'live', name: null, text }, analyzedAt: new Date('2026-11-10T12:00:00Z'), version: '3.0.0', notes: '' });
+  const f = d.findings.find((x) => x.id === 'custom.prueba');
+  assert.equal(f.custom, true);
+  assert.equal(d.findings.find((x) => x.id !== 'custom.prueba').custom, false);
+  const root = renderForensic(d);
+  assert.ok(findAll(root, (n) => n.textContent === 'Mi regla (regla propia)').length > 0);
+});

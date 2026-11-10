@@ -66,7 +66,7 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `links.shortener` | T1566.002, T1204.001 | 04 | `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.tld` | T1566.002, T1204.001 | 13 | `unit/links.test.js` | ✅ |
 | `links.tracking` | T1566.002, T1204.001 | — | `unit/links.test.js` | ✅ |
-| `lookalike.brand-in-domain` | T1583.001 | 03, 08, 10 | `unit/lookalike.test.js`, `unit/samples.test.js`, `unit/scoring.test.js` | ✅ |
+| `lookalike.brand-in-domain` | T1583.001 | 03, 08, 10 | `unit/lookalike.test.js`, `unit/rules-evaluate.test.js`, `unit/samples.test.js`, `unit/scoring.test.js` | ✅ |
 | `lookalike.deceptive-subdomain` | T1583.001 | 10 | `unit/lookalike.test.js`, `unit/samples.test.js` | ✅ |
 | `lookalike.homoglyph` | T1583.001 | — | `unit/lookalike.test.js` | ✅ |
 | `lookalike.mixed-script-domain` | T1583.001 | 10 | `unit/lookalike.test.js`, `unit/samples.test.js` | ✅ |

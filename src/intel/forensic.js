@@ -49,6 +49,7 @@ function findings(report) {
       id: str(f.id), severity: str(f.severity), title: str(f.title), detail: str(f.detail),
       evidence: f.evidence ? defang(f.evidence) : '',
       technique: t?.id ? `${t.id} · ${t.name ?? ''}`.trim() : null,
+      custom: f.custom === true,
     };
   });
 }

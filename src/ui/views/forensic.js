@@ -44,7 +44,7 @@ export function renderForensic(doc) {
       v.headline ? el('p', { text: v.headline }) : null),
     section('Hallazgos', doc.findings.length
       ? table('Hallazgos por gravedad', ['Gravedad', 'Hallazgo', 'Evidencia', 'Técnica'], doc.findings.map((f) => [
-        severityTag(f.severity), el('span', {}, el('strong', { text: f.title ?? f.id }), f.detail ? el('span', { className: 'forensic__detail', text: f.detail }) : null),
+        severityTag(f.severity), el('span', {}, el('strong', { text: f.custom ? `${f.title ?? f.id} (regla propia)` : f.title ?? f.id }), f.detail ? el('span', { className: 'forensic__detail', text: f.detail }) : null),
         el('span', { className: 'mono', text: f.evidence || '—' }), f.technique ?? '—']))
       : none('Sin hallazgos.')),
     section('Autenticación', table('SPF, DKIM y DMARC', ['Mecanismo', 'Estado', 'Resultado', 'Detalle'],

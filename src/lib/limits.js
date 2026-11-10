@@ -12,4 +12,6 @@ export const LIMITS = {
   headerBytes: 64 * 1024,
   batchFiles: 50,
   batchBytes: 100 * 1024 * 1024,
+  // Texto del cuerpo que miran las reglas propias (body.text): 2.000 condiciones sobre 25 MB bloquearían la pestaña.
+  ruleBodyChars: 256 * 1024,
 };

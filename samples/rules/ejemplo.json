@@ -1,0 +1,37 @@
+{
+  "phishlens": "rules/1",
+  "rules": [
+    {
+      "id": "mi-org.factura-falsa",
+      "title": "Asunto de factura desde un dominio que no es de la empresa",
+      "detail": "El asunto habla de una factura y el remitente no es de la empresa ni de un proveedor conocido.",
+      "severity": "medium",
+      "category": "sender",
+      "technique": "T1566.001",
+      "when": { "all": [
+        { "field": "subject", "op": "contains", "value": "factura" },
+        { "field": "sender.domain", "op": "not-in", "value": ["mi-empresa.es", "proveedor.es"] }
+      ] }
+    },
+    {
+      "id": "mi-org.ejecutable-o-imagen",
+      "title": "Adjunto ejecutable o imagen de disco",
+      "detail": "En esta empresa nadie envía programas ni imágenes de disco por correo.",
+      "severity": "high",
+      "category": "attachments",
+      "technique": "T1204.002",
+      "when": { "field": "attachment.extension", "op": "in", "value": ["exe", "scr", "iso", "img", "vhd"] }
+    },
+    {
+      "id": "mi-org.suplantacion-con-enlace",
+      "title": "Dominio parecido a una marca y con enlaces",
+      "severity": "medium",
+      "category": "links",
+      "technique": "T1566.002",
+      "when": { "all": [
+        { "field": "finding.id", "op": "starts-with", "value": "lookalike." },
+        { "field": "link.url", "op": "count-gte", "value": 1 }
+      ] }
+    }
+  ]
+}

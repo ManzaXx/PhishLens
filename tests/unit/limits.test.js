@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { LIMITS } from '../../src/lib/limits.js';
 import { LIMITS as PARSER_LIMITS, parseEml } from '../../src/parser/eml.js';
 
-test('límites centralizados con los valores de la 2.2 y el lote de la 2.3', () => {
+test('límites centralizados con los valores de la 2.2, el lote de la 2.3 y las reglas de la 3.0', () => {
   assert.deepEqual({ ...LIMITS }, {
     depth: 20, parts: 500, links: 200, attachments: 100,
     attachmentBytes: 10 * 1024 * 1024, rawBytes: 25 * 1024 * 1024,
     inputBytes: 25 * 1024 * 1024, headers: 1000, headerBytes: 64 * 1024,
-    batchFiles: 50, batchBytes: 100 * 1024 * 1024,
+    batchFiles: 50, batchBytes: 100 * 1024 * 1024, ruleBodyChars: 256 * 1024,
   });
   assert.equal(PARSER_LIMITS, LIMITS);
 });

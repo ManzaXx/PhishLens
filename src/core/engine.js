@@ -19,6 +19,7 @@ import * as headers from '../detectors/headers.js';
 import * as route from '../detectors/route.js';
 import * as html from '../detectors/html.js';
 import * as mime from '../detectors/mime.js';
+import { customFindings } from '../rules/evaluate.js';
 
 export const DEFAULT_DETECTORS = [auth, sender, headers, route, mime, links, lookalike, attachments, html, language];
 
@@ -47,7 +48,7 @@ function summarize(level, findings) {
 }
 
 /** Analiza un email ya parseado. */
-export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
+export function analyze(email, detectors = DEFAULT_DETECTORS, extra = [], rules = []) {
   const found = [...extra];
   const errors = [];
   for (const detector of detectors) {
@@ -55,6 +56,14 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
       found.push(...detector.detect(email));
     } catch (err) {
       errors.push({ detector: detector.name, message: err?.message ?? String(err) });
+    }
+  }
+  // Reglas propias (spec 3.0, §5.2): después de los detectores, viendo sus hallazgos.
+  if (rules?.length) {
+    try {
+      found.push(...customFindings(rules, email, [...found]));
+    } catch (err) {
+      errors.push({ detector: 'custom', message: err?.message ?? String(err) });
     }
   }
   found.sort((a, b) => SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity));
@@ -104,7 +113,7 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = []) {
  * Punto de entrada de la UI: {kind: 'eml' | 'text' | 'url', value}.
  * Opcionales del analista: spfRecord (registro TXT pegado) y dkim (resultado de verifyDkimSignature).
  */
-export function analyzeInput({ kind, value, spfRecord, dkim }) {
+export function analyzeInput({ kind, value, spfRecord, dkim, rules = [] }) {
   if (kind === 'url') {
     const extra = [];
     if (!parseUrl(value)) {
@@ -117,7 +126,7 @@ export function analyzeInput({ kind, value, spfRecord, dkim }) {
         evidence: String(value ?? '').slice(0, 200),
       }));
     }
-    return analyze(emailFromUrl(value), DEFAULT_DETECTORS, extra);
+    return analyze(emailFromUrl(value), DEFAULT_DETECTORS, extra, rules);
   }
 
   const email = parseEml(value);
@@ -132,7 +141,7 @@ export function analyzeInput({ kind, value, spfRecord, dkim }) {
       detail: 'Solo se ha analizado el texto. Para un análisis completo pega el email original con sus cabeceras (en Gmail: ⋮ → "Mostrar original").',
     }));
   }
-  return analyze(email, DEFAULT_DETECTORS, extra);
+  return analyze(email, DEFAULT_DETECTORS, extra, rules);
 }
 
 /**
