@@ -124,8 +124,8 @@ export function evaluateAuth(email) {
     spf: strip(spf),
     dkim: strip(dkim),
     dmarc: strip(dmarc),
-    headers: classified.headers.map(({ index, parsed, trusted, forged, why, whyRef }) => ({
-      index, authservId: parsed.authservId, trusted, forged, why, whyRef, results: parsed.results.map(({ method, result: r }) => ({ method, result: r })),
+    headers: classified.headers.map(({ index, parsed, trusted, forged, ambiguous, arc, why, whyRef }) => ({
+      index, authservId: parsed.authservId, trusted, forged, ambiguous, arc, why, whyRef, results: parsed.results.map(({ method, result: r }) => ({ method, result: r })),
     })),
     // Datos internos para el detector (no van al informe).
     internal: { header, classified, bodies, spfOffline: spf.offline ?? null },

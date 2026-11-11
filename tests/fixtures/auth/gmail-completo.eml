@@ -1,0 +1,30 @@
+Delivered-To: destino@gmail.test
+Received: by 2002:a05:7300:5a13:b0:1a2:3b4c:5d6e with SMTP id k19csp123456dyc;
+        Tue, 10 Nov 2026 10:00:03 -0800 (PST)
+X-Received: by 2002:a17:90a:1234:b0:2f0:1234:5678 with SMTP id abc; Tue, 10 Nov 2026 10:00:03 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1789000000; cv=none; d=google.com; s=arc-20240605; b=AAAA
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@github.com header.s=pf2023;
+       spf=pass (google.com: domain of noreply@github.com designates 192.30.252.204 as permitted sender) smtp.mailfrom=noreply@github.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=github.com
+Return-Path: <noreply@github.com>
+Received: from out-21.smtp.github.com (out-21.smtp.github.com. [192.30.252.204])
+        by mx.google.com with ESMTPS id x1 for <destino@gmail.test>; Tue, 10 Nov 2026 10:00:02 -0800 (PST)
+Received-SPF: pass (google.com: domain of noreply@github.com designates 192.30.252.204 as permitted sender) client-ip=192.30.252.204;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@github.com header.s=pf2023;
+       spf=pass (google.com: domain of noreply@github.com designates 192.30.252.204 as permitted sender) smtp.mailfrom=noreply@github.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=github.com
+From: GitHub <noreply@github.com>
+To: destino@gmail.test
+Subject: [GitHub] Please reset your password
+Date: Tue, 10 Nov 2026 10:00:00 -0800
+Message-ID: <reset-123@github.com>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<p>We heard that you lost your GitHub password. Sorry about that!</p>
+<p>You can use the following button to reset your password:</p>
+<a href="https://github.com/password_reset/abcdef0123456789">Reset your password</a>
+<p>If you don't use this link within 3 hours, it will expire.</p>
+<p>Thanks, The GitHub Team</p>

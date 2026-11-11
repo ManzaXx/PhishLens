@@ -204,7 +204,7 @@ La demo está en **https://manzaxx.github.io/PhishLens/**. El workflow `.github/
 
 ## 📄 Licencia y aviso
 
-[MIT](LICENSE) © 2026 Pablo Manzanedo.
+[MIT](LICENSE) © 2026 Pablo Manzanedo. `src/data/psl.js` es una copia de la [Public Suffix List](https://publicsuffix.org/) bajo la MPL 2.0.
 
 PhishLens es un proyecto educativo de ciberseguridad defensiva. Si recibes un email sospechoso, contacta con la empresa por un canal oficial y repórtalo. En España puedes llamar a INCIBE al **017**.
 

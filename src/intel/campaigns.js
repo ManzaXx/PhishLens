@@ -39,8 +39,9 @@ function cluesOf(report) {
     const d = registrableDomain(host);
     if (COMMON_LINKS.has(d)) continue;
     // En una plataforma de alojamiento cada cliente es un subdominio: la pista es el host, no la plataforma.
+    // (Con la PSL, en las que figuran ahí, como pages.dev, d ya es el subdominio del cliente.)
     if (HOSTING.has(d) || [...HOSTING_PLATFORMS].some((p) => host.endsWith(`.${p}`))) {
-      if (!HOSTING_PLATFORMS.has(host) && host !== d) out.push(['infra', 'link-domain', host]);
+      if (!HOSTING_PLATFORMS.has(host) && !HOSTING.has(host)) out.push(['infra', 'link-domain', host]);
     } else out.push(['infra', 'link-domain', d]);
   }
   for (const a of report?.email?.attachments ?? []) if (a.sha256) out.push(['hash', 'sha256', a.sha256]);

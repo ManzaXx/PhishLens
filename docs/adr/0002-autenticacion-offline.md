@@ -24,4 +24,4 @@ Cada mecanismo tiene un estado (`verified`, `declared-trusted`, `declared-untrus
 - La privacidad se mantiene: cero peticiones, comprobado en el smoke test de navegador.
 - El analista que quiera certeza total tiene que consultar DNS por su cuenta y pegar el resultado.
 - La política DMARC (`p=`, `adkim=`, `aspf=`) se desconoce, así que se asume alineación relaxed.
-- El dominio organizativo se calcula sin la Public Suffix List completa (ver [limitaciones](../limitations.md)).
+- El dominio organizativo se calcula con una copia empaquetada de la Public Suffix List ([ADR 0006](0006-public-suffix-list.md)).

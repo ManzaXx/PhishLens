@@ -28,7 +28,7 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `auth.dmarc` | T1684.002 | 03, 04, 05, 07, 11, 12, 13 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.dmarc-declared-mismatch` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `auth.dmarc-unaligned` | T1684.002 | 04 | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |
-| `auth.forged-results` | T1684.002 | — | `unit/auth-evaluate.test.js`, `unit/mitre.test.js` | ✅ |
+| `auth.forged-results` | T1684.002 | — | `unit/auth-evaluate.test.js`, `unit/mitre.test.js`, `unit/trust-layouts.test.js` | ✅ |
 | `auth.missing` | — | 06, 08, 09, 10 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
 | `auth.spf` | T1684.002 | 03, 04, 11, 12, 13 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/finding.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.spf-offline` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |

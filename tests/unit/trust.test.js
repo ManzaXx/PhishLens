@@ -25,12 +25,15 @@ test('una cabecera que imita al receptor por debajo de la frontera es falsa', ()
   assert.deepEqual(c.headers.map((h) => [h.trusted, h.forged]), [[true, false], [false, true]]);
 });
 
-test('una cabecera falsa justo debajo del único Received del receptor tampoco cuela', () => {
+// Hasta la 3.1 esto salía como «falsificado», pero es exactamente donde Postfix con OpenDKIM/OpenDMARC
+// y Gmail escriben su propia cabecera (tests/unit/trust-layouts.test.js): no se puede distinguir.
+// Sigue sin colar (no es de confianza ni da puntos a favor), pero tampoco acusa a un correo legítimo.
+test('una cabecera justo debajo del único Received del receptor no cuela, pero queda sin confirmar', () => {
   const c = classifyAuthResults(mail(
     'Received: from vps.attacker.test ([203.0.113.9]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000',
     'Authentication-Results: mx.example.com; dmarc=pass header.from=b.test',
   ));
-  assert.deepEqual(c.headers.map((h) => [h.trusted, h.forged]), [[false, true]]);
+  assert.deepEqual(c.headers.map((h) => [h.trusted, h.forged, h.ambiguous]), [[false, false, true]]);
 });
 
 test('un reenvío legítimo no es falsificación', () => {
