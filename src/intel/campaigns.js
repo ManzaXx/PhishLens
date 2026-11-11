@@ -113,5 +113,5 @@ export function findCampaigns(entries) {
   });
   return campaigns
     .sort((a, b) => b.emails.length - a.emails.length || cmp(a.emails[0], b.emails[0]))
-    .map((c, i) => ({ id: c.id, name: `Campaña ${i + 1}`, ...c }));
+    .map((c, i) => ({ id: c.id, name: `Campaña ${i + 1}`, nameRef: { code: 'campaign.name', params: { n: i + 1 } }, ...c }));
 }

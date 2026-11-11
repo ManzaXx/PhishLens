@@ -54,6 +54,12 @@ function timeline(points, nowMs) {
  * @param {Array<{savedAt: string, sha256: string, report: object}>} entries entradas válidas del historial
  * @param {{now?: Date, batches?: Array<{savedAt: string, campaigns: Array}>}} options
  */
+// Referencias de una campaña guardada (3.1); la interfaz las traduce. Lo que no tenga la forma esperada no pasa.
+const nameRefOf = (r) => (r && r.code === 'campaign.name' && Number.isInteger(r.params?.n) ? { code: r.code, params: { n: r.params.n } } : null);
+const reasonRefsOf = (refs, count) => (Array.isArray(refs) && refs.length === count
+  && refs.every((r) => r && typeof r.type === 'string' && typeof r.value === 'string')
+  ? refs.map((r) => ({ type: r.type, value: r.value, ...(typeof r.name === 'string' ? { name: r.name } : {}) })) : []);
+
 export function historyStats(entries, { now = new Date(), batches = [] } = {}) {
   const nowMs = now.getTime();
   const points = [];
@@ -104,7 +110,8 @@ export function historyStats(entries, { now = new Date(), batches = [] } = {}) {
       const emails = [...new Set(strings(c?.emails))].sort(cmp);
       const latestSha = emails.filter((s) => savedAtBySha.has(s))
         .sort((x, y) => cmp(savedAtBySha.get(y), savedAtBySha.get(x)) || cmp(x, y))[0] ?? null;
-      const item = { name: String(c?.name ?? 'Campaña'), savedAt: String(b.savedAt ?? ''), emails: emails.length, reasons: strings(c?.reasons), latestSha };
+      const item = { name: String(c?.name ?? 'Campaña'), savedAt: String(b.savedAt ?? ''), emails: emails.length, reasons: strings(c?.reasons), latestSha,
+        nameRef: nameRefOf(c?.nameRef), reasonRefs: reasonRefsOf(c?.reasonRefs, strings(c?.reasons).length) };
       const key = JSON.stringify([item.name, emails]);
       const known = byKey.get(key);
       if (!known || cmp(item.savedAt, known.savedAt) > 0 || (item.savedAt === known.savedAt && cmp(item.reasons.join('|'), known.reasons.join('|')) < 0)) byKey.set(key, item);

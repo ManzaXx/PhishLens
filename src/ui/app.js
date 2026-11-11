@@ -25,8 +25,10 @@ import { validateRules, formatRuleError, RULES_LIMITS } from '../rules/validate.
 import { previewRules } from '../rules/preview.js';
 import { rulesPanel } from './components/rules-panel.js';
 import { HISTORY_MAX } from '../storage/history.js';
-import { t, getLang, setLang, onLangChange, initialLang, LANG_KEY, LOCALE, fmtDate } from '../i18n/index.js';
+import { t, tr, getLang, setLang, onLangChange, initialLang, LANG_KEY, LOCALE, fmtDate } from '../i18n/index.js';
 import { translatePage } from './translate-page.js';
+import { localizeReport } from './localize.js';
+import { sampleTitle, batchTitle } from './samples.js';
 
 const MAX_BYTES = LIMITS.inputBytes;
 const MAX_MB = Math.round(MAX_BYTES / 1024 / 1024);
@@ -158,7 +160,9 @@ async function savedEntries() {
 let rulesModel = null;
 function paintRules(model, focus = false) {
   rulesModel = model;
-  rulesPanelBox.replaceChildren(rulesPanel(model));
+  // Los errores se guardan sin formatear para pintarlos en el idioma activo.
+  const shown = model.rawErrors ? { ...model, errors: model.rawErrors.map((e) => formatRuleError(e, tr)) } : model;
+  rulesPanelBox.replaceChildren(rulesPanel(shown));
   if (focus) rulesPanelBox.querySelector('[tabindex="-1"]')?.focus();
 }
 
@@ -194,7 +198,7 @@ rulesFile.addEventListener('change', async () => {
       res = { ok: false, errors: [{ rule: null, path: '', reason: t('app.rules.unreadable') }] };
     }
   }
-  if (!res.ok) return paintRules({ state: 'errors', errors: res.errors.map(formatRuleError) }, true);
+  if (!res.ok) return paintRules({ state: 'errors', rawErrors: res.errors }, true);
   // Se guarda el mismo texto que se ha validado (leerlo otra vez podría dar otro si el fichero cambia).
   pendingRules = { source: text, rules: res.rules };
   return paintRules({ state: 'preview', rules: res.rules, preview: previewRules(res.rules, await savedEntries()) }, true);
@@ -425,6 +429,7 @@ function rerender() {
   errorBox.hidden = !errorBox.textContent;
   // La vista previa de reglas sin activar (o sus errores) se repinta tal cual, no como «sin reglas».
   if (rulesModel) paintRules(rulesModel);
+  paintHome();
   if (state.lastReport && !reportBox.hidden) paintKeepingInput();
 }
 
@@ -680,7 +685,7 @@ async function runBatch(files) {
   say(dropzone.querySelector('.dropzone__hint'), 'app.drop.batch');
   paint();
   historyControl.recordBatch(state.batch, state.batchTexts);
-  announce(t('app.batch.announce', { emails: t('campaigns.emails.count', { count: done }), campaigns: t('app.campaigns.count', { count: state.batch.campaigns.length }), headline: state.lastReport.verdict.headline }));
+  announce(t('app.batch.announce', { emails: t('campaigns.emails.count', { count: done }), campaigns: t('app.campaigns.count', { count: state.batch.campaigns.length }), headline: localizeReport(state.lastReport).verdict.headline }));
   reportBox.scrollIntoView({ block: 'start' });
 }
 
@@ -725,7 +730,7 @@ function run() {
     state.analyzedAt = new Date();
     state.lastReport = analyzeWith(input);
     paint();
-    announce(t('app.result', { headline: state.lastReport.verdict.headline, score: state.lastReport.score }));
+    announce(t('app.result', { headline: localizeReport(state.lastReport).verdict.headline, score: state.lastReport.score }));
     historyControl.record(input, state.lastReport, input.kind === 'eml' ? state.fileName ?? null : null);
   } catch {
     // Un email malformado nunca debe dejar la página rota.
@@ -921,7 +926,7 @@ reportBox.addEventListener('change', (e) => {
   paint();
   const select = $('#batch-email');
   select?.focus();
-  announce(t('app.batch.email', { headline: state.lastReport.verdict.headline, score: state.lastReport.score }));
+  announce(t('app.batch.email', { headline: localizeReport(state.lastReport).verdict.headline, score: state.lastReport.score }));
 });
 
 // ---------- Menús (patrón ARIA menu button) ----------
@@ -1082,13 +1087,13 @@ function onReportAction(e) {
   }
   if (action === 'verify-dkim') verifyDkim();
   if (action === 'eval-spf') evalSpf();
-  if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || t('forensic.iocs.none'));
+  if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs, (key) => t(`ioc.section.${key}`)) || t('forensic.iocs.none'));
   if (action === 'forensic') openForensic();
-  if (action === 'export-json') download(reportToJson(state.lastReport), 'informe');
+  if (action === 'export-json') download(reportToJson(localizeReport(state.lastReport), getLang()), 'informe');
   if (action === 'export-stix') {
     // Con un lote se exporta el lote entero con sus campañas; si no, lo que está abierto.
-    const entries = state.batch?.entries ?? [{ key: 'actual', name: 'actual', report: state.lastReport }];
-    const { json, count } = stixJson(entries, { campaigns: state.batch?.campaigns ?? [] });
+    const entries = (state.batch?.entries ?? [{ key: 'actual', name: 'actual', report: state.lastReport }]).map((e) => ({ ...e, report: localizeReport(e.report) }));
+    const { json, count } = stixJson(entries, { campaigns: state.batch?.campaigns ?? [], lang: getLang(), tr });
     download(json, 'stix');
     announce(t('app.stix', { count }));
   }
@@ -1123,7 +1128,7 @@ function forensicSource() {
 
 function forensicDoc() {
   const analyzedAt = state.saved ? new Date(state.saved.savedAt) : state.analyzedAt ?? new Date();
-  return forensicReport({ report: state.lastReport, source: forensicSource(), analyzedAt, version: VERSION, notes: state.notes });
+  return forensicReport({ report: localizeReport(state.lastReport), source: forensicSource(), analyzedAt, version: VERSION, notes: state.notes, lang: getLang(), tr });
 }
 
 const forensicTrigger = () => reportBox.querySelector('[aria-haspopup="menu"]');
@@ -1182,18 +1187,26 @@ for (const node of document.querySelectorAll('[data-fact]')) {
   const value = FACTS[node.dataset.fact];
   if (value != null && Object.hasOwn(FACTS, node.dataset.fact)) node.textContent = String(value);
 }
-const legendBox = document.querySelector('[data-levels]');
-if (legendBox) {
-  legendBox.replaceChildren(...levelLegend().map((l) => {
+const samplesBox = $('#samples');
+/**
+ * Leyenda de niveles y botones de ejemplo de la portada, en el idioma activo. Busca los nodos cada vez:
+ * rerender() puede llamarla antes de que esta parte del módulo se haya ejecutado.
+ */
+function paintHome() {
+  document.querySelector('[data-levels]')?.replaceChildren(...levelLegend().map((l) => {
     const li = document.createElement('li');
     li.className = `legend__item legend__item--${l.level}`;
-    li.textContent = `${l.min}–${l.max} ${l.label}`;
+    li.textContent = `${l.min}–${l.max} ${t(`level.${l.level}`)}`;
     return li;
   }));
+  for (const btn of document.querySelectorAll('#samples [data-sample]')) {
+    const item = [...SAMPLES, ...BATCHES].find((x) => x.id === btn.dataset.sample);
+    const label = btn.querySelector('.chip__label');
+    if (item && label) label.textContent = btn.classList.contains('chip--batch') ? batchTitle(item) : sampleTitle(item);
+  }
 }
 
 // ---------- Ejemplos ----------
-const samplesBox = $('#samples');
 for (const sample of SAMPLES) {
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -1201,7 +1214,10 @@ for (const sample of SAMPLES) {
   const dot = document.createElement('span');
   dot.className = `chip__dot chip__dot--${sample.id.includes('legitimo') ? 'safe' : 'phishing'}`;
   dot.setAttribute('aria-hidden', 'true');
-  btn.append(dot, sample.title);
+  btn.dataset.sample = sample.id;
+  const label = document.createElement('span');
+  label.className = 'chip__label';
+  btn.append(dot, label);
   // Las muestras van dentro de samples/data.js: la CSP (connect-src 'none') no deja pedirlas por red.
   btn.addEventListener('click', () => {
     rawInput.value = SAMPLE_TEXTS[sample.id];
@@ -1214,7 +1230,8 @@ for (const lot of BATCHES) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'chip chip--batch';
-  btn.textContent = lot.title;
+  btn.dataset.sample = lot.id;
+  btn.append(Object.assign(document.createElement('span'), { className: 'chip__label' }));
   btn.addEventListener('click', () => {
     selectTab($('#tab-eml'));
     runBatch(lot.files.map((f) => {
@@ -1224,3 +1241,4 @@ for (const lot of BATCHES) {
   });
   samplesBox.append(btn);
 }
+paintHome();

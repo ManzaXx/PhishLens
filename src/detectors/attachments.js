@@ -43,7 +43,7 @@ function byName(filename, add, skip) {
   if (BIDI.test(filename)) {
     add('attachments.rtl-override', 'high', 'Nombre de adjunto invertido',
       'El nombre contiene un carácter que invierte el sentido del texto: "factura\u202Efdp.exe" se ve como "facturaexe.pdf".',
-      filename.replace(/[\u202A-\u202E\u2066-\u2069]/g, '⟦RLO⟧'));
+      filename.replace(/[\u202A-\u202E\u2066-\u2069]/g, '⟦RLO⟧'), { name: filename.replace(/[\u202A-\u202E\u2066-\u2069]/g, '⟦RLO⟧') });
     return;
   }
   const parts = windowsName(filename).toLowerCase().split('.').map((p) => p.trim());
@@ -52,15 +52,15 @@ function byName(filename, add, skip) {
   const prev = parts.length > 2 ? parts.at(-2) : null;
   if (DANGEROUS_EXTENSIONS.has(ext) && prev && DOCUMENT_LIKE.test(prev)) {
     add('attachments.double-extension', 'high', 'Adjunto con doble extensión',
-      `"${filename}" parece un .${prev} pero en realidad es un .${ext}. Es un truco clásico para colar malware.`, filename);
+      `"${filename}" parece un .${prev} pero en realidad es un .${ext}. Es un truco clásico para colar malware.`, filename, { prev, ext });
   } else if (DISK_IMAGE.has(ext) || ext === 'lnk') {
     // Tienen su propia regla, más concreta, más abajo.
   } else if (DANGEROUS_EXTENSIONS.has(ext)) {
     add('attachments.dangerous', 'high', 'Adjunto que puede ejecutar código',
-      `Los ficheros .${ext} pueden ejecutar programas en tu ordenador al abrirlos.`, filename);
+      `Los ficheros .${ext} pueden ejecutar programas en tu ordenador al abrirlos.`, filename, { ext });
   } else if (MACRO_EXTENSIONS.has(ext)) {
     if (!skip.has('macro')) {
-      add('attachments.macro', 'medium', 'Documento con macros', `Los .${ext} pueden contener macros, una vía habitual de infección.`, filename);
+      add('attachments.macro', 'medium', 'Documento con macros', `Los .${ext} pueden contener macros, una vía habitual de infección.`, filename, { ext });
     }
   } else if (ARCHIVE_EXTENSIONS.has(ext)) {
     add('attachments.archive', 'low', 'Fichero comprimido',
@@ -82,25 +82,25 @@ function byContent(filename, insp, add) {
   if (real && real !== 'unknown' && !COMPATIBLE.get(real)?.has(ext)) {
     const severity = EXECUTES.has(real) && (!ext || DOCUMENT_LIKE.test(ext)) ? 'high' : 'medium';
     add('attachments.type-mismatch', severity, 'El adjunto no es lo que dice ser',
-      `"${filename}" dice ser ${ext ? `un .${ext}` : 'un archivo sin extensión'}, pero por dentro es: ${insp.realLabel}.`, filename);
+      `"${filename}" dice ser ${ext ? `un .${ext}` : 'un archivo sin extensión'}, pero por dentro es: ${insp.realLabel}.`, filename, { ext, real: { key: `filetype.${real}` }, ...(ext ? {} : { variant: 'noext' }) });
   }
   const zip = insp?.zip;
   if (zip?.ok) {
     const inner = zip.entries.find((e) => RUNS_INSIDE.has(extOf(e.name)));
     if (inner) {
       add('attachments.archive-executable', 'high', 'Comprimido con un programa dentro',
-        `"${filename}" lleva dentro "${inner.name}", que puede ejecutar código al abrirlo.`, inner.name);
+        `"${filename}" lleva dentro "${inner.name}", que puede ejecutar código al abrirlo.`, inner.name, { inner: inner.name });
     }
     const locked = zip.entries.filter((e) => e.encrypted);
     if (locked.length) {
       add('attachments.encrypted-archive', 'medium', 'Comprimido con contraseña',
-        `${locked.length} de ${zip.entries.length} entradas de "${filename}" están cifradas: ni el filtro del correo ni PhishLens pueden ver qué son.`, filename);
+        `${locked.length} de ${zip.entries.length} entradas de "${filename}" están cifradas: ni el filtro del correo ni PhishLens pueden ver qué son.`, filename, { locked: locked.length, total: zip.entries.length });
     }
   }
   const pdfLevel = insp?.pdf && pdfSeverity(insp.pdf.tokens);
   if (pdfLevel) {
     add('attachments.pdf-active', pdfLevel, 'PDF que actúa al abrirlo',
-      `"${filename}" contiene ${insp.pdf.tokens.map((t) => `/${t}`).join(', ')}: instrucciones para que el visor haga algo por su cuenta.`, filename);
+      `"${filename}" contiene ${insp.pdf.tokens.map((t) => `/${t}`).join(', ')}: instrucciones para que el visor haga algo por su cuenta.`, filename, { tokens: insp.pdf.tokens.map((t) => `/${t}`).join(', ') });
   }
   if (insp?.ole?.hasVba || zip?.vbaProject) {
     add('attachments.ole-macro', 'high', 'Documento con macros de verdad',
@@ -108,7 +108,7 @@ function byContent(filename, insp, add) {
   }
   if (insp?.html?.suspicious) {
     add('attachments.html-smuggling', 'high', 'HTML que fabrica un archivo',
-      `"${filename}" tiene un script con ${insp.html.markers.join(', ')}: así se crea un archivo en tu equipo sin que pase por el filtro del correo.`, filename);
+      `"${filename}" tiene un script con ${insp.html.markers.join(', ')}: así se crea un archivo en tu equipo sin que pase por el filtro del correo.`, filename, { markers: insp.html.markers.join(', ') });
   }
   if (DISK_IMAGE.has(ext) || real === 'iso') {
     add('attachments.disk-image', 'high', 'Imagen de disco adjunta',
@@ -123,7 +123,7 @@ function byContent(filename, insp, add) {
 export function detect(email) {
   const out = [];
   for (const { filename, inspection } of email.attachments ?? []) {
-    const add = (id, severity, title, detail, evidence) => out.push(finding({ id, detector: name, severity, title, detail, evidence }));
+    const add = (id, severity, title, detail, evidence, params = {}) => out.push(finding({ id, detector: name, severity, title, detail, evidence, params: { name: filename, ...params } }));
     const insp = inspection ?? null;
     const hasVba = !insp?.partial && (insp?.ole?.hasVba || insp?.zip?.vbaProject);
     byName(filename, add, new Set(hasVba ? ['macro'] : []));

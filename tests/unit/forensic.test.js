@@ -28,7 +28,7 @@ test('identificación en vivo: nombre, tamaño en bytes UTF-8, SHA-256/SHA-1/MD5
   assert.ok(id.analyzedAt.local.length > 0);
   assert.equal(id.version, '2.3.0');
   assert.equal(id.savedAt, null);
-  assert.deepEqual(Object.keys(doc), ['tool', 'format', 'identification', 'verdict', 'findings', 'auth', 'timeline', 'iocs', 'attachments', 'urls', 'notes', 'limits']);
+  assert.deepEqual(Object.keys(doc), ['tool', 'format', 'lang', 'identification', 'verdict', 'findings', 'auth', 'timeline', 'iocs', 'attachments', 'urls', 'notes', 'limits']);
 });
 
 test('Review Focus 4: CRLF y no ASCII: el SHA-256 es el de los bytes UTF-8', () => {

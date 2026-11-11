@@ -108,19 +108,22 @@ const CORRELATIONS = [
 
 const ids = (list) => [...new Set(list.map((f) => f.id))].sort();
 
+// [texto, referencia]: la referencia usa ids de correlación y de categoría, nunca frases.
 function mainReasonFor(score, correlations, categories) {
-  if (correlations.length) return `Motivo principal: ${correlations[0].label}.`;
-  if (score === 0) return 'No se han encontrado señales de riesgo.';
+  if (correlations.length) {
+    return [`Motivo principal: ${correlations[0].label}.`, { code: 'report.main.correlation', params: { correlation: { key: `correlation.${correlations[0].id}` } } }];
+  }
+  if (score === 0) return ['No se han encontrado señales de riesgo.', { code: 'report.main.none', params: {} }];
   const top = categories.filter((c) => c.score > 0)
     .sort((a, b) => b.score - a.score || Object.keys(CATEGORY_MAX).indexOf(a.id) - Object.keys(CATEGORY_MAX).indexOf(b.id))
-    .slice(0, 2)
-    .map((c) => c.label);
-  return `Pesa sobre todo: ${top.join(' y ')}.`;
+    .slice(0, 2);
+  const [a, b] = top.map((c) => ({ key: `category.${c.id}` }));
+  return [`Pesa sobre todo: ${top.map((c) => c.label).join(' y ')}.`, { code: b ? 'report.main.top.two' : 'report.main.top.one', params: b ? { a, b } : { a } }];
 }
 
 /**
  * Calcula la nota contextual de un conjunto de hallazgos.
- * @returns {{score, baseScore, level, label, categories, correlations, trust, mainReason}}
+ * @returns {{score, baseScore, level, label, categories, correlations, trust, mainReason, mainReasonRef}}
  */
 export function scoreFindings(findings) {
   const risk = findings.filter(isRisk);
@@ -153,6 +156,6 @@ export function scoreFindings(findings) {
     categories,
     correlations,
     trust: ids(findings.filter((f) => f.polarity === 'trust')),
-    mainReason: mainReasonFor(score, correlations, categories),
+    ...(([mainReason, mainReasonRef]) => ({ mainReason, mainReasonRef }))(mainReasonFor(score, correlations, categories)),
   };
 }

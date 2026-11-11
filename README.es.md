@@ -25,6 +25,8 @@ PhishLens analiza un email (archivo `.eml` o texto pegado) o una URL y devuelve 
 
 Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una Content-Security-Policy estricta impide cualquier conexión a terceros.
 
+La interfaz está en español e inglés: sigue el idioma del navegador y el botón **ES/EN** la cambia. Los informes, los paquetes STIX y el informe forense salen en el idioma elegido.
+
 ## ✨ Funcionalidades
 
 - **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, URLs, IOCs, Campañas, ATT&CK , Panel e Historial, con la vista en la URL (`#analista/senales`).
@@ -197,7 +199,7 @@ La demo está en **https://manzaxx.github.io/PhishLens/**. El workflow `.github/
 - [x] Modo por lotes, grafo de IOCs y campañas (2.3)
 - [x] URLs sin visitarlas y exportación STIX 2.1 (2.3)
 - [x] Historial, panel SOC, informe forense y reglas propias (3.0)
-- [ ] Interfaz en inglés
+- [x] Interfaz en inglés (3.1)
 - [ ] Extensión de navegador para analizar el email abierto en Gmail u Outlook
 
 ## 📄 Licencia y aviso

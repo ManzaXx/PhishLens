@@ -28,23 +28,25 @@ export { LEVELS, levelFor } from './scoring.js';
 // Para el resumen se priorizan las señales más fáciles de entender.
 const SUMMARY_PRIORITY = ['sender', 'links', 'attachments', 'html', 'lookalike', 'language', 'auth', 'route', 'headers', 'mime', 'input'];
 
+// [texto, referencia]. En la referencia, `top` son los ids de los hallazgos citados: la interfaz
+// pone sus títulos traducidos.
 function summarize(level, findings) {
   if (level === 'safe') {
     return findings.some((f) => f.points > 0)
-      ? 'No hay señales fuertes de phishing, aunque conviene revisar los avisos de abajo.'
-      : 'No se han encontrado señales de phishing.';
+      ? ['No hay señales fuertes de phishing, aunque conviene revisar los avisos de abajo.', { code: 'report.summary.safe-warnings', params: {} }]
+      : ['No se han encontrado señales de phishing.', { code: 'report.summary.safe', params: {} }];
   }
   const strong = findings.filter((f) => f.severity === 'high' || f.severity === 'medium');
-  const top = [...strong]
+  const picked = [...strong]
     .sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'high' ? -1 : 1)
       || SUMMARY_PRIORITY.indexOf(a.detector) - SUMMARY_PRIORITY.indexOf(b.detector))
-    .slice(0, 2)
-    .map((f) => `«${f.title}»`)
-    .join(' y ');
-  if (level === 'critical') return `Combina varias señales graves, entre ellas ${top}. No pulses enlaces ni abras adjuntos y bórralo.`;
+    .slice(0, 2);
+  const top = picked.map((f) => `«${f.title}»`).join(' y ');
+  const ref = (code) => ({ code, params: { count: strong.length, top: picked.map((f) => f.id), at: picked.map((f) => findings.indexOf(f)) } });
+  if (level === 'critical') return [`Combina varias señales graves, entre ellas ${top}. No pulses enlaces ni abras adjuntos y bórralo.`, ref('report.summary.critical')];
   return level === 'phishing'
-    ? `${strong.length === 1 ? `Una señal grave o media: ${top}` : `${strong.length} señales graves o medias, entre ellas ${top}`}. No pulses enlaces ni abras adjuntos.`
-    : `${strong.length === 1 ? 'Una señal sospechosa' : `${strong.length} señales sospechosas`}: ${top}. Compruébalo por otra vía antes de actuar.`;
+    ? [`${strong.length === 1 ? `Una señal grave o media: ${top}` : `${strong.length} señales graves o medias, entre ellas ${top}`}. No pulses enlaces ni abras adjuntos.`, ref('report.summary.phishing')]
+    : [`${strong.length === 1 ? 'Una señal sospechosa' : `${strong.length} señales sospechosas`}: ${top}. Compruébalo por otra vía antes de actuar.`, ref('report.summary.suspicious')];
 }
 
 /** Analiza un email ya parseado. */
@@ -76,12 +78,15 @@ export function analyze(email, detectors = DEFAULT_DETECTORS, extra = [], rules 
   const confidence = confidenceFor({
     hasHeaders: email.hasHeaders, auth, parseNotes: email.parseNotes ?? [], errors, categories: scored.categories,
   });
+  const [summary, summaryRef] = summarize(level, found);
   const report = {
     score,
     level,
     label,
-    summary: summarize(level, found),
+    summary,
+    summaryRef,
     mainReason: scored.mainReason,
+    mainReasonRef: scored.mainReasonRef,
     categories: scored.categories,
     confidence,
     correlations: scored.correlations,
@@ -122,6 +127,7 @@ export function analyzeInput({ kind, value, spfRecord, dkim, rules = [] }) {
         detector: 'input',
         severity: 'info',
         title: 'No parece una URL válida',
+        params: {},
         detail: 'Escribe una dirección que empiece por http://, https:// o www.',
         evidence: String(value ?? '').slice(0, 200),
       }));
@@ -138,6 +144,7 @@ export function analyzeInput({ kind, value, spfRecord, dkim, rules = [] }) {
       detector: 'input',
       severity: 'info',
       title: 'Sin cabeceras',
+      params: {},
       detail: 'Solo se ha analizado el texto. Para un análisis completo pega el email original con sus cabeceras (en Gmail: ⋮ → "Mostrar original").',
     }));
   }

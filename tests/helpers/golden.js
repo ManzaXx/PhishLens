@@ -19,7 +19,9 @@ export async function buildBatchGolden() {
     return { name: f.split('/').pop(), size: text.length, text: async () => text };
   });
   const { entries } = await analyzeBatch(files, { yieldFn: async () => {} });
-  return JSON.parse(JSON.stringify({ graph: buildGraph(entries), campaigns: findCampaigns(entries) }));
+  // nameRef (3.1) es la referencia de traducción del nombre: no forma parte del golden.
+  const campaigns = findCampaigns(entries).map(({ nameRef, ...c }) => c);
+  return JSON.parse(JSON.stringify({ graph: buildGraph(entries), campaigns }));
 }
 
 const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj?.[k] ?? null]));
@@ -27,7 +29,9 @@ const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj?.[k] ?? n
 export function legacyView(report) {
   const { email } = report;
   return {
-    ...pick(report, ['score', 'level', 'label', 'summary', 'mainReason', 'categories', 'confidence', 'correlations', 'trust', 'errors', 'techniques']),
+    ...pick(report, ['score', 'level', 'label', 'summary', 'mainReason', 'categories', 'correlations', 'trust', 'errors', 'techniques']),
+    // Los códigos de traducción (confidence.codes, 3.1) no forman parte del golden: solo los textos.
+    confidence: pick(report.confidence, ['level', 'value', 'reasons']),
     verdict: pick(report.verdict, ['tone', 'headline']),
     findings: report.findings.map((f) => pick(f, ['id', 'detector', 'severity', 'points', 'title', 'detail', 'evidence', 'mitre', 'category', 'reliability', 'provenance', 'polarity', 'brand', 'techniques'])),
     email: {

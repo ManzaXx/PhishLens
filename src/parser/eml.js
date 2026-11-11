@@ -120,7 +120,7 @@ function parseHeaders(head, list = null, acc = null) {
   let current = null;
   const cap = (text) => {
     if (text.length <= LIMITS.headerBytes) return text;
-    if (acc) note(acc, 'limit.header-bytes', `Alguna cabecera supera ${LIMITS.headerBytes} caracteres; se ha recortado.`);
+    if (acc) note(acc, 'limit.header-bytes', `Alguna cabecera supera ${LIMITS.headerBytes} caracteres; se ha recortado.`, { max: LIMITS.headerBytes });
     return text.slice(0, LIMITS.headerBytes);
   };
   for (let i = 0; i < tokens.length; i += 2) {
@@ -129,7 +129,7 @@ function parseHeaders(head, list = null, acc = null) {
       if (current.value.length < LIMITS.headerBytes) {
         current.value = cap(`${current.value} ${line.trim()}`);
         current.raw = cap(current.raw + tokens[i - 1] + line);
-      } else if (acc) note(acc, 'limit.header-bytes', `Alguna cabecera supera ${LIMITS.headerBytes} caracteres; se ha recortado.`);
+      } else if (acc) note(acc, 'limit.header-bytes', `Alguna cabecera supera ${LIMITS.headerBytes} caracteres; se ha recortado.`, { max: LIMITS.headerBytes });
       continue;
     }
     // Se mira solo el principio de la línea: el nombre nunca es largo y el valor se recorta.
@@ -137,7 +137,7 @@ function parseHeaders(head, list = null, acc = null) {
     // Pasado el límite se siguen leyendo solo las cabeceras que cambian el veredicto, para que
     // cientos de cabeceras de relleno no escondan el Content-Type o el From.
     if (ordered.length >= LIMITS.headers) {
-      if (acc) note(acc, 'limit.headers', `Más de ${LIMITS.headers} cabeceras; del resto solo se han leído las importantes.`);
+      if (acc) note(acc, 'limit.headers', `Más de ${LIMITS.headers} cabeceras; del resto solo se han leído las importantes.`, { max: LIMITS.headers });
       if (!m || !KEY_HEADERS.has(m[1].toLowerCase()) || ordered.length >= LIMITS.headers + KEY_HEADERS_MAX) {
         current = null;
         continue;
@@ -213,10 +213,11 @@ export function parseAddress(value) {
 
 // ---------- MIME ----------
 
-function note(acc, code, detail) {
+// params: valores neutros para que la interfaz traduzca el aviso (note.<code>).
+function note(acc, code, detail, params = {}) {
   if (acc.noted.has(code)) return;
   acc.noted.add(code);
-  acc.notes.push({ code, detail });
+  acc.notes.push({ code, detail, params });
 }
 
 /**
@@ -253,11 +254,11 @@ function attachmentBytes(body, encoding) {
 
 function walkPart(headers, body, acc, depth = 0) {
   if (depth > LIMITS.depth) {
-    note(acc, 'limit.depth', `Más de ${LIMITS.depth} niveles de partes MIME anidadas; el resto no se ha analizado.`);
+    note(acc, 'limit.depth', `Más de ${LIMITS.depth} niveles de partes MIME anidadas; el resto no se ha analizado.`, { max: LIMITS.depth });
     return;
   }
   if (acc.parts++ > LIMITS.parts) {
-    note(acc, 'limit.parts', `Más de ${LIMITS.parts} partes MIME; el resto no se ha analizado.`);
+    note(acc, 'limit.parts', `Más de ${LIMITS.parts} partes MIME; el resto no se ha analizado.`, { max: LIMITS.parts });
     return;
   }
   if ((headers.get('content-type')?.length ?? 0) > 1) {
@@ -269,7 +270,7 @@ function walkPart(headers, body, acc, depth = 0) {
 
   if (type.value.startsWith('multipart/') && type.params.boundary) {
     const boundary = type.params.boundary;
-    if (acc.boundaries.has(boundary)) note(acc, 'mime.boundary-reuse', `El boundary "${boundary.slice(0, 70)}" se repite en dos niveles. Cada programa puede cortar las partes por un sitio distinto.`);
+    if (acc.boundaries.has(boundary)) note(acc, 'mime.boundary-reuse', `El boundary "${boundary.slice(0, 70)}" se repite en dos niveles. Cada programa puede cortar las partes por un sitio distinto.`, { boundary: boundary.slice(0, 70) });
     acc.boundaries.add(boundary);
     const delimiter = `--${boundary}`;
     // RFC 2046: el delimitador solo cuenta al principio de una línea.
@@ -280,7 +281,7 @@ function walkPart(headers, body, acc, depth = 0) {
       const atLineStart = i === 1 ? before === '' || before.endsWith('\n') : before.endsWith('\n');
       if (atLineStart || chunks.length === 0) chunks.push(pieces[i]);
       else {
-        note(acc, 'mime.boundary-in-content', `El texto "${delimiter.slice(0, 70)}" aparece en mitad de una línea. PhishLens no corta ahí; otro programa podría hacerlo.`);
+        note(acc, 'mime.boundary-in-content', `El texto "${delimiter.slice(0, 70)}" aparece en mitad de una línea. PhishLens no corta ahí; otro programa podría hacerlo.`, { text: delimiter.slice(0, 70) });
         chunks[chunks.length - 1] += delimiter + pieces[i];
       }
     }
@@ -294,13 +295,13 @@ function walkPart(headers, body, acc, depth = 0) {
       const { head, body: partBody } = splitHeaderBody(part);
       walkPart(parseHeaders(head, null, acc), partBody.replace(/\r?\n$/, ''), acc, depth + 1);
     }
-    if (!closed) note(acc, 'mime.unterminated-multipart', `La parte multipart con boundary "${type.params.boundary.slice(0, 70)}" no tiene delimitador de cierre.`);
+    if (!closed) note(acc, 'mime.unterminated-multipart', `La parte multipart con boundary "${type.params.boundary.slice(0, 70)}" no tiene delimitador de cierre.`, { boundary: type.params.boundary.slice(0, 70) });
     return;
   }
 
   if (filename || disposition.value === 'attachment') {
     if (acc.attachments.length >= LIMITS.attachments) {
-      note(acc, 'limit.attachments', `Más de ${LIMITS.attachments} adjuntos; el resto no se ha analizado.`);
+      note(acc, 'limit.attachments', `Más de ${LIMITS.attachments} adjuntos; el resto no se ha analizado.`, { max: LIMITS.attachments });
       return;
     }
     const { bytes: all, lossy, code, size: realSize } = attachmentBytes(body, headers.get('content-transfer-encoding')?.[0]);
@@ -310,7 +311,7 @@ function walkPart(headers, body, acc, depth = 0) {
         : 'Algún adjunto 8bit no se puede reconstruir byte a byte; no se calcula su hash.');
     }
     const truncated = (realSize ?? all.length) > LIMITS.attachmentBytes;
-    if (truncated) note(acc, 'limit.attachment-bytes', `Algún adjunto supera ${LIMITS.attachmentBytes} bytes; se ha recortado y no se calcula su hash.`);
+    if (truncated) note(acc, 'limit.attachment-bytes', `Algún adjunto supera ${LIMITS.attachmentBytes} bytes; se ha recortado y no se calcula su hash.`, { max: LIMITS.attachmentBytes });
     const bytes = truncated ? all.slice(0, LIMITS.attachmentBytes) : all;
     const attachment = {
       filename: filename || '(sin nombre)',
@@ -334,7 +335,7 @@ function walkPart(headers, body, acc, depth = 0) {
   if (type.value === 'text/html' && type.params.charset) {
     const meta = /<meta[^>]{0,200}charset=["']?([\w-]{1,40})/i.exec(content.slice(0, 4096))?.[1];
     if (meta && meta.toLowerCase() !== type.params.charset.toLowerCase()) {
-      note(acc, 'mime.charset-conflict', `La cabecera dice ${type.params.charset} pero el HTML dice ${meta}. PhishLens usa el de la cabecera; un navegador podría usar el otro.`);
+      note(acc, 'mime.charset-conflict', `La cabecera dice ${type.params.charset} pero el HTML dice ${meta}. PhishLens usa el de la cabecera; un navegador podría usar el otro.`, { header: type.params.charset, meta });
     }
   }
   if (type.value === 'text/html') acc.html += content;
@@ -352,7 +353,7 @@ function extractLinks(html, text, acc = null) {
   const seen = new Set();
   const add = (link) => {
     if (links.length >= LIMITS.links) {
-      if (acc) note(acc, 'limit.links', `Más de ${LIMITS.links} enlaces; el resto no se ha analizado.`);
+      if (acc) note(acc, 'limit.links', `Más de ${LIMITS.links} enlaces; el resto no se ha analizado.`, { max: LIMITS.links });
       return;
     }
     const key = `${link.text}\u0000${link.href}`;
@@ -390,7 +391,7 @@ export function parseEml(raw) {
   }
 
   const acc = { text: '', html: '', attachments: [], parts: 0, notes: [], noted: new Set(), boundaries: new Set() };
-  if (source !== full) note(acc, 'limit.input-bytes', `La entrada supera ${LIMITS.inputBytes} caracteres; solo se ha analizado el principio.`);
+  if (source !== full) note(acc, 'limit.input-bytes', `La entrada supera ${LIMITS.inputBytes} caracteres; solo se ha analizado el principio.`, { max: LIMITS.inputBytes });
   const headerList = [];
   const headers = parseHeaders(head, headerList, acc);
   if (body.length > LIMITS.rawBytes) note(acc, 'limit.raw-bytes', `El cuerpo supera ${LIMITS.rawBytes} bytes; solo se conserva el principio para las comprobaciones de integridad.`);

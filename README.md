@@ -17,7 +17,7 @@
 
 </div>
 
-![PhishLens in simple mode: the verdict, what to do now and why](docs/img/sencillo-claro.png)
+![PhishLens in simple mode: the verdict, what to do now and why](docs/img/en/sencillo-claro.png)
 
 PhishLens analyzes an email (an `.eml` file or pasted text) or a URL and returns a **risk score from 0 to 100**. It explains every signal in plain language, maps it to its **MITRE ATT&CK** technique and extracts the **indicators of compromise (IOCs)**, ready to share with a security team.
 
@@ -25,7 +25,7 @@ PhishLens analyzes an email (an `.eml` file or pasted text) or a URL and returns
 
 Everything runs in your browser. There is no server, no cookies and no analytics, and a strict Content-Security-Policy blocks any connection to third parties.
 
-> The interface is in Spanish for now; an English version is on the way. The screenshots below show the Spanish UI.
+The interface comes in English and Spanish: it follows your browser's language, and the **ES/EN** button switches it. Reports, STIX bundles and forensic reports are written in the language you choose.
 
 ## ✨ Features
 
@@ -48,37 +48,37 @@ Everything runs in your browser. There is no server, no cookies and no analytics
 
 | Simple mode (dark) | Mobile | Legitimate email |
 |---|---|---|
-| ![Simple mode in the dark theme](docs/img/sencillo-oscuro.png) | ![Simple mode on mobile](docs/img/movil-sencillo.png) | ![Simple mode with a legitimate email](docs/img/sencillo-legitimo.png) |
+| ![Simple mode in the dark theme](docs/img/en/sencillo-oscuro.png) | ![Simple mode on mobile](docs/img/en/movil-sencillo.png) | ![Simple mode with a legitimate email](docs/img/en/sencillo-legitimo.png) |
 
 | Analyst mode: summary | Signals | Authentication |
 |---|---|---|
-| ![Analyst mode with the risk ring and the categories](docs/img/analista-resumen.png) | ![Signals grouped by severity, reliability and ATT&CK](docs/img/analista-senales.png) | ![SPF, DKIM and DMARC with their status](docs/img/analista-autenticacion.png) |
+| ![Analyst mode with the risk ring and the categories](docs/img/en/analista-resumen.png) | ![Signals grouped by severity, reliability and ATT&CK](docs/img/en/analista-senales.png) | ![SPF, DKIM and DMARC with their status](docs/img/en/analista-autenticacion.png) |
 
 | Safe view | Headers and route | Attachments |
 |---|---|---|
-| ![Safe view with highlighted phrases](docs/img/analista-vista-segura.png) | ![Received route with warnings per hop](docs/img/analista-cabeceras.png) | ![Attachments inside: active PDF and password-protected ZIP](docs/img/analista-adjuntos.png) |
+| ![Safe view with highlighted phrases](docs/img/en/analista-vista-segura.png) | ![Received route with warnings per hop](docs/img/en/analista-cabeceras.png) | ![Attachments inside: active PDF and password-protected ZIP](docs/img/en/analista-adjuntos.png) |
 
 | Batch IOC graph | Campaigns | Batch on mobile |
 |---|---|---|
-| ![Radial IOC graph of a four-email batch](docs/img/analista-grafo.png) | ![Four-email campaign with what they share](docs/img/analista-campanas.png) | ![Batch picker and campaign notice on mobile](docs/img/movil-lote.png) |
+| ![Radial IOC graph of a four-email batch](docs/img/en/analista-grafo.png) | ![Four-email campaign with what they share](docs/img/en/analista-campanas.png) | ![Batch picker and campaign notice on mobile](docs/img/en/movil-lote.png) |
 
 | URLs | IOCs | ATT&CK |
 |---|---|---|
-| ![Hop chain of a link with a nested redirect](docs/img/analista-urls.png) | ![Defanged IOCs with Unicode domains](docs/img/analista-iocs.png) | ![ATT&CK techniques](docs/img/analista-attack.png) |
+| ![Hop chain of a link with a nested redirect](docs/img/en/analista-urls.png) | ![Defanged IOCs with Unicode domains](docs/img/en/analista-iocs.png) | ![ATT&CK techniques](docs/img/en/analista-attack.png) |
 
 | History | History on mobile | Dashboard on mobile |
 |---|---|---|
-| ![History with search, filters and two analyses selected to compare](docs/img/analista-historial.png) | ![History on mobile, dark theme](docs/img/movil-historial.png) | ![Dashboard on mobile, dark theme](docs/img/movil-panel.png) |
+| ![History with search, filters and two analyses selected to compare](docs/img/en/analista-historial.png) | ![History on mobile, dark theme](docs/img/en/movil-historial.png) | ![Dashboard on mobile, dark theme](docs/img/en/movil-panel.png) |
 
-![SOC dashboard: seven saved analyses, levels over time, ATT&CK techniques, recurring IOCs and a campaign](docs/img/analista-panel.png)
+![SOC dashboard: seven saved analyses, levels over time, ATT&CK techniques, recurring IOCs and a campaign](docs/img/en/analista-panel.png)
 
 | Printed forensic report | Report dialog on mobile |
 |---|---|
-| ![Forensic report: identification with hashes, verdict and findings by severity](docs/img/informe-forense.png) | ![Forensic report dialog with the analyst's notes, dark theme](docs/img/forense-dialogo.png) |
+| ![Forensic report: identification with hashes, verdict and findings by severity](docs/img/en/informe-forense.png) | ![Forensic report dialog with the analyst's notes, dark theme](docs/img/en/forense-dialogo.png) |
 
 | Custom rules: preview | Custom rules on mobile |
 |---|---|
-| ![Three custom rules loaded with their preview against the history](docs/img/reglas-vista-previa.png) | ![Custom rules on mobile, dark theme](docs/img/movil-reglas.png) |
+| ![Three custom rules loaded with their preview against the history](docs/img/en/reglas-vista-previa.png) | ![Custom rules on mobile, dark theme](docs/img/en/movil-reglas.png) |
 
 ## 🔍 What it detects
 
@@ -199,7 +199,7 @@ The demo lives at **https://manzaxx.github.io/PhishLens/**. The `.github/workflo
 - [x] Batch mode, IOC graph and campaigns (2.3)
 - [x] URLs without visiting them and STIX 2.1 export (2.3)
 - [x] History, SOC dashboard, forensic report and custom rules (3.0)
-- [ ] English interface
+- [x] English interface (3.1)
 - [ ] Browser extension to analyze the email open in Gmail or Outlook
 
 ## 📄 License and disclaimer

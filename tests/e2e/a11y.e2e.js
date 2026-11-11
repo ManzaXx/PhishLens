@@ -42,7 +42,8 @@ test('control negativo: axe ve los fallos de una página mal hecha', { skip }, a
   await context.close();
 });
 
-const title = (id) => SAMPLES.find((s) => s.id === id).title;
+// Las muestras salen en el idioma de la página (titleEn en inglés).
+const title = (id, locale = 'es-ES') => { const s = SAMPLES.find((x) => x.id === id); return locale === 'en-GB' ? s.titleEn : s.title; };
 
 // En inglés (spec 3.1) se repite con menos correos: los rótulos cambian, las vistas son las mismas.
 const PASSES = [['es-ES', REPORTS], ['en-GB', ['03-phishing-banco', '06-phishing-factura-adjunto', '13-redireccion-anidada']]];
@@ -55,7 +56,7 @@ for (const [locale, reports] of PASSES) for (const colorScheme of ['light', 'dar
     const found = (await axe(page)).map((v) => `portada: ${v}`);
     if (locale === 'en-GB') assert.equal(await page.getAttribute('html', 'lang'), 'en');
     for (const id of reports) {
-      await page.getByRole('button', { name: title(id), exact: true }).click();
+      await page.getByRole('button', { name: title(id, locale), exact: true }).click();
       await page.locator('#report .verdict-card').waitFor();
       found.push(...(await axe(page)).map((v) => `${id} / sencillo: ${v}`));
       await page.locator('#report [data-action="mode-analyst"]').first().click();

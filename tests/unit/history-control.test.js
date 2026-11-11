@@ -196,3 +196,21 @@ test('PR13: reglas propias con el historial apagado no abren la base; encendido 
   assert.equal(await ctl.clearRules(), true);
   assert.equal(await ctl.rules(), null);
 });
+
+test('panel: el lote guarda también nameRef y las pistas con tipo y valor, para pintarlas en el idioma activo', async () => {
+  const { analyzeBatch } = await import('../../src/core/batch.js');
+  const { findCampaigns } = await import('../../src/intel/campaigns.js');
+  const { buildGraph } = await import('../../src/intel/graph.js');
+  const files = BATCHES[0].files.map((f) => ({ name: f.split('/').pop(), size: SAMPLE_TEXTS[f].length, text: async () => SAMPLE_TEXTS[f] }));
+  const { entries } = await analyzeBatch(files, { yieldFn: async () => {} });
+  const batch = { entries, graph: buildGraph(entries), campaigns: findCampaigns(entries) };
+  const texts = new Map(entries.map((e, i) => [e.key, SAMPLE_TEXTS[BATCHES[0].files[i]]]));
+  const { ctl } = control();
+  await ctl.enable();
+  await ctl.recordBatch(batch, texts);
+  const [c] = (await ctl.history().batches())[0].campaigns;
+  assert.deepEqual(c.nameRef, { code: 'campaign.name', params: { n: 1 } });
+  assert.equal(c.reasonRefs.length, c.reasons.length);
+  assert.ok(c.reasonRefs.some((r) => r.type === 'sender-domain' && typeof r.value === 'string'));
+  assert.ok(c.reasonRefs.some((r) => r.type === 'sha256' && r.name === 'aviso-entrega.pdf'), JSON.stringify(c.reasonRefs));
+});

@@ -2,7 +2,7 @@
 import { el, nextId } from '../dom.js';
 import { meter } from '../components/meter.js';
 import { navRail } from '../components/nav-rail.js';
-import { adviceFor } from '../../core/advice.js';
+import { adviceCodesFor, adviceText } from '../../core/advice.js';
 import { IOC_SECTIONS } from '../../intel/ioc.js';
 import { NAV_GROUPS, VIEW_LABELS, hasView } from '../route.js';
 import { summaryPanel } from '../panels/summary.js';
@@ -17,7 +17,7 @@ import { urlsPanel } from '../panels/urls.js';
 import { campaignsPanel } from '../panels/campaigns.js';
 import { historyPanel } from '../panels/history.js';
 import { dashboardPanel } from '../panels/dashboard.js';
-import { t } from '../../i18n/index.js';
+import { t, tr } from '../../i18n/index.js';
 
 const PANELS = new Map([
   ['resumen', summaryPanel], ['senales', findingsPanel], ['vista-segura', safeViewPanel], ['autenticacion', authPanel],
@@ -42,7 +42,7 @@ function listCard(title, className, items) {
 
 function adviceBox(report) {
   const list = el('ul', { className: 'advice__list' });
-  for (const line of adviceFor(report)) list.append(el('li', { text: line }));
+  for (const code of adviceCodesFor(report)) list.append(el('li', { text: tr(code, {}, adviceText(code)) }));
   return el('div', { className: 'advice' }, el('h3', { text: t('analyst.advice') }), list);
 }
 

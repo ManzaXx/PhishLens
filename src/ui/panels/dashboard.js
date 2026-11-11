@@ -6,8 +6,9 @@ import { LEVELS } from '../../core/scoring.js';
 import { emptyState } from '../components/empty-state.js';
 import { stackedBars, hBars } from '../components/bar-chart.js';
 import { t, fmtDate } from '../../i18n/index.js';
+import { campaignName, campaignReasons } from '../campaign-reasons.js';
 
-const SERIES = [...LEVELS].reverse().map((l) => ({ key: l.level, label: l.label }));
+const series = () => [...LEVELS].reverse().map((l) => ({ key: l.level, label: t(`level.${l.level}`) }));
 const TYPES = new Set(['domains', 'ips', 'hashes', 'sha1', 'md5']);
 const typeLabel = (type) => (TYPES.has(type) ? t(`ioc.type.${type}`) : type);
 const button = (text, action, attrs = {}) => el('button', { className: 'btn', text, attrs: { type: 'button', 'data-action': action, ...attrs } });
@@ -32,7 +33,7 @@ function timelineCard({ timeline }) {
   const note = timeline.unit === 'day' ? t('dashboard.timeline.day') : t('dashboard.timeline.week');
   const omitted = timeline.omitted ? ` ${t('dashboard.timeline.omitted', { count: timeline.omitted })}` : '';
   return card(t('dashboard.timeline'),
-    stackedBars({ caption: t('dashboard.timeline'), series: SERIES, buckets: timeline.buckets.map((b) => ({ label: fmtDay(b.start), counts: b.counts })) }),
+    stackedBars({ caption: t('dashboard.timeline'), series: series(), buckets: timeline.buckets.map((b) => ({ label: fmtDay(b.start), counts: b.counts })) }),
     el('p', { className: 'hint', text: `${note}${omitted}` }));
 }
 
@@ -50,9 +51,9 @@ function iocCard({ iocs }) {
 function campaignsCard({ campaigns }) {
   const body = campaigns.length
     ? el('ul', { className: 'dashboard__campaign-list' }, ...campaigns.map((c) => el('li', {},
-      el('p', { className: 'dashboard__campaign-name', text: c.name }),
+      el('p', { className: 'dashboard__campaign-name', text: campaignName(c) }),
       el('p', { className: 'hint', text: `${when(c.savedAt)} · ${t('campaigns.emails.count', { count: c.emails })}` }),
-      c.reasons.length ? el('p', { text: c.reasons.join(' · ') }) : null,
+      c.reasons.length ? el('p', { text: campaignReasons(c).join(' · ') }) : null,
       c.latestSha ? button(t('dashboard.campaigns.open'), 'dashboard-open', { 'data-sha': c.latestSha }) : null)))
     : none(t('dashboard.campaigns.none'));
   return el('section', { className: 'card dashboard__card dashboard__campaigns', attrs: { 'aria-label': t('dashboard.campaigns') } },

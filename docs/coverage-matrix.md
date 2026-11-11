@@ -57,7 +57,7 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `links.high-entropy` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.insecure-login` | T1566.002, T1204.001 | 03, 07 | `unit/coverage-matrix.test.js`, `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.ip` | T1566.002, T1204.001 | 07 | `unit/coverage-matrix.test.js`, `unit/engine.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js` | ✅ |
-| `links.mismatch` | T1566.002, T1204.001 | 03, 07 | `unit/advice.test.js`, `unit/finding.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
+| `links.mismatch` | T1566.002, T1204.001 | 03, 07 | `unit/advice.test.js`, `unit/finding.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/rules-en.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.nested-redirect` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.non-standard-port` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.obfuscated-ip` | T1566.002, T1204.001 | — | `unit/links.test.js`, `unit/plain.test.js` | ✅ |
@@ -82,11 +82,11 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `mime.unclosed-multipart` | — | — | `differential/cases.js` | ✅ |
 | `route.helo-mismatch` | T1684.002 | 08 | `unit/mitre.test.js`, `unit/route.test.js`, `unit/samples.test.js` | ✅ |
 | `route.private-ip-boundary` | T1684.002 | 08 | `unit/mitre.test.js`, `unit/route.test.js`, `unit/samples.test.js` | ✅ |
-| `route.slow-delivery` | — | 08 | `unit/engine.test.js`, `unit/mitre.test.js`, `unit/route.test.js`, `unit/samples.test.js` | ✅ |
+| `route.slow-delivery` | — | 08 | `unit/engine.test.js`, `unit/localize.test.js`, `unit/mitre.test.js`, `unit/route.test.js`, `unit/samples.test.js` | ✅ |
 | `route.time-travel` | T1684.002 | 08 | `unit/mitre.test.js`, `unit/route.test.js`, `unit/samples.test.js` | ✅ |
-| `route.too-many-hops` | — | — | `unit/route.test.js` | ✅ |
+| `route.too-many-hops` | — | — | `unit/localize.test.js`, `unit/route.test.js` | ✅ |
 | `route.unparseable` | — | — | `unit/route.test.js` | ✅ |
-| `sender.brand-impersonation` | T1684.001 | 03, 04, 05, 08, 09, 12 | `unit/advice.test.js`, `unit/engine.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
+| `sender.brand-impersonation` | T1684.001 | 03, 04, 05, 08, 09, 12 | `unit/advice.test.js`, `unit/engine.test.js`, `unit/localize.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
 | `sender.display-name-address` | T1684.001 | 09 | `unit/samples.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
 | `sender.invisible-chars` | T1027 | 07 | `unit/sender.test.js` | ✅ |
 | `sender.mixed-script` | T1684.001 | 07 | `unit/sender.test.js` | ✅ |

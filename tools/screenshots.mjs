@@ -1,14 +1,28 @@
 // Capturas de docs/img para el README. Se ejecuta a mano (no es un test): node tools/screenshots.mjs
+// Con --lang en salen en inglés y van a docs/img/en/: node tools/screenshots.mjs --lang en
 // Usa el Chromium de Playwright y el servidor estático de los e2e; reduce el movimiento para que
 // el anillo salga con su nota final.
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { serve } from '../tests/e2e/server.js';
 import { SAMPLES, BATCHES } from '../samples/index.js';
+import ES from '../src/i18n/es.js';
+import EN from '../src/i18n/en.js';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
-const OUT = fileURLToPath(new URL('../docs/img/', import.meta.url));
-const title = (id) => (id === 'lote' ? BATCHES[0].title : SAMPLES.find((s) => s.id === id).title);
+const args = process.argv.slice(2);
+const at = args.indexOf('--lang');
+const LANG = at !== -1 && args[at + 1] === 'en' ? 'en' : 'es';
+if (at !== -1) args.splice(at, 2);
+const OUT = fileURLToPath(new URL(LANG === 'en' ? '../docs/img/en/' : '../docs/img/', import.meta.url));
+const LOCALE = LANG === 'en' ? 'en-GB' : 'es-ES';
+// Textos de la interfaz en el idioma de las capturas, sacados de los diccionarios.
+const tx = (key, params = {}) => (LANG === 'en' ? EN : ES)[key].replace(/\{(\w+)\}/g, (all, k) => String(params[k] ?? all));
+const NOTES = LANG === 'en'
+  ? 'Received by three people in Accounting. Sender blocked at the gateway.'
+  : 'Recibido por tres personas de Administración. Bloqueado el remitente en la pasarela.';
+const pick = (item) => (LANG === 'en' ? item.titleEn : item.title);
+const title = (id) => pick(id === 'lote' ? BATCHES[0] : SAMPLES.find((s) => s.id === id));
 
 // [archivo, muestra ('lote' = el lote de campaña; 'historial' = tres análisis guardados; 'panel' = tres sueltos y el lote)
 // o null (portada), hash, ancho, tema]
@@ -47,7 +61,7 @@ async function savedHistory(page) {
   await page.locator('#history-toggle').check();
   for (const [i, id] of ['03-phishing-banco', '04-phishing-correos', '02-legitimo-pedido'].entries()) {
     await page.getByRole('button', { name: title(id), exact: true }).click();
-    await page.waitForFunction((t) => document.querySelector('#history-open').textContent === t, `Ver historial (${i + 1})`);
+    await page.waitForFunction((t) => document.querySelector('#history-open').textContent === t, tx('app.history.open', { n: i + 1 }));
     await page.goto(`${server.url}/index.html`);
   }
   await page.locator('#history-open').click();
@@ -55,7 +69,7 @@ async function savedHistory(page) {
   const boxes = page.locator('#report [data-action="history-select"]');
   await boxes.nth(1).check();
   await boxes.nth(2).check();
-  await page.getByRole('button', { name: 'Comparar los dos marcados' }).click();
+  await page.getByRole('button', { name: tx('history.compare.two') }).click();
   await page.locator('#report .history__compare').waitFor();
   await page.locator('#report').evaluate((n) => n.scrollIntoView({ block: 'start' }));
 }
@@ -63,7 +77,7 @@ async function savedHistory(page) {
 /** Enciende el historial, guarda tres análisis sueltos y el lote de campaña, y abre el Panel. */
 async function savedPanel(page) {
   await page.locator('#history-toggle').check();
-  const wait = (n) => page.waitForFunction((t) => document.querySelector('#history-open').textContent === t, `Ver historial (${n})`);
+  const wait = (n) => page.waitForFunction((t) => document.querySelector('#history-open').textContent === t, tx('app.history.open', { n }));
   for (const [i, id] of ['03-phishing-banco', '04-phishing-correos', '02-legitimo-pedido'].entries()) {
     await page.getByRole('button', { name: title(id), exact: true }).click();
     await wait(i + 1);
@@ -81,21 +95,21 @@ async function rulesPreview(page) {
   await page.locator('#history-toggle').check();
   for (const [i, id] of ['03-phishing-banco', '04-phishing-correos', '02-legitimo-pedido'].entries()) {
     await page.getByRole('button', { name: title(id), exact: true }).click();
-    await page.waitForFunction((t) => document.querySelector('#history-open').textContent === t, `Ver historial (${i + 1})`);
+    await page.waitForFunction((t) => document.querySelector('#history-open').textContent === t, tx('app.history.open', { n: i + 1 }));
     await page.goto(`${server.url}/index.html`);
   }
   await page.locator('#rules > summary').click();
   await page.locator('#rules-file').setInputFiles(new URL('../samples/rules/ejemplo.json', import.meta.url).pathname);
-  await page.locator('#rules-panel', { hasText: '3 reglas válidas' }).waitFor();
+  await page.locator('#rules-panel', { hasText: tx('rules.preview.summary.other', { count: 3 }).split('.')[0] }).waitFor();
   // La cabecera fija tapa lo primero: se deja a la vista el interruptor y el resumen «Reglas propias».
   await page.locator('.history-toggle').evaluate((n) => n.scrollIntoView({ block: 'start' }));
 }
 
 const server = await serve();
 const browser = await chromium.launch();
-const only = process.argv.slice(2);
+const only = args;
 for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !only.length || only.includes(n))) {
-  const page = await browser.newPage({ viewport: { width, height: width < 600 ? 844 : 900 }, deviceScaleFactor: 2, colorScheme, reducedMotion: 'reduce', locale: 'es-ES' });
+  const page = await browser.newPage({ viewport: { width, height: width < 600 ? 844 : 900 }, deviceScaleFactor: 2, colorScheme, reducedMotion: 'reduce', locale: LOCALE });
   await page.goto(`${server.url}/index.html${hash}`);
   if (sample === 'historial') await savedHistory(page);
   else if (sample === 'panel') await savedPanel(page);
@@ -103,11 +117,11 @@ for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !on
   else if (sample === 'forense' || sample === 'forense-dialogo') {
     await page.getByRole('button', { name: title('12-pdf-activo-zip'), exact: true }).click();
     await page.locator('#report .report__toolbar').waitFor();
-    await page.getByRole('button', { name: 'Exportar' }).click();
-    await page.getByRole('menuitem', { name: 'Informe forense' }).click();
-    await page.locator('[data-role="forensic-notes"]').fill('Recibido por tres personas de Administración. Bloqueado el remitente en la pasarela.');
+    await page.getByRole('button', { name: tx('export.label') }).click();
+    await page.getByRole('menuitem', { name: tx('export.forensic') }).click();
+    await page.locator('[data-role="forensic-notes"]').fill(NOTES);
     if (sample === 'forense') {
-      await page.getByRole('button', { name: 'Cerrar' }).click();
+      await page.getByRole('button', { name: tx('common.close') }).click();
       await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
       await page.emulateMedia({ media: 'print' });
     }
@@ -132,7 +146,7 @@ for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !on
   }
   else await page.screenshot({ path: `${OUT}${name}.png` });
   await page.close();
-  console.log(`docs/img/${name}.png`);
+  console.log(`${LANG === 'en' ? 'docs/img/en/' : 'docs/img/'}${name}.png`);
 }
 await browser.close();
 await server.close();

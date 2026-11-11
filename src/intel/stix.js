@@ -60,9 +60,12 @@ export function stixPattern(type, value) {
 const LABELS = { url: 'URL', 'domain-name': 'Dominio', 'ipv4-addr': 'IP', 'ipv6-addr': 'IP', 'email-addr': 'Dirección de correo', file: 'Adjunto' };
 const REASONS = { 'sender-domain': 'dominio de envío', 'entry-ip': 'IP de entrada', 'link-domain': 'dominio en los enlaces', sha256: 'adjunto', template: 'plantilla' };
 
-function list(words) {
-  return words.length > 1 ? `${words.slice(0, -1).join(', ')} y ${words.at(-1)}` : words[0] ?? '';
+function list(words, and = 'y') {
+  return words.length > 1 ? `${words.slice(0, -1).join(', ')} ${and} ${words.at(-1)}` : words[0] ?? '';
 }
+
+// Traductor por defecto: deja el texto en español (intel/ no importa i18n; la interfaz pasa el suyo).
+const KEEP = (code, params, fallback) => fallback;
 
 function isoDate(text) {
   const d = new Date(String(text ?? ''));
@@ -71,9 +74,11 @@ function isoDate(text) {
 
 /**
  * @param {Array<{key, name, report}>} entries un correo, una URL o un lote
- * @param {{campaigns?: Array, now?: Date}} options
+ * @param {{campaigns?: Array, now?: Date, lang?: 'es'|'en', tr?: Function}} options. Los ids no dependen del idioma:
+ * salen de patrones e ids. `lang` va en cada SDO y `tr(code, params, fallback)` traduce los textos.
  */
-export function toStixBundle(entries, { campaigns = [], now = new Date() } = {}) {
+export function toStixBundle(entries, { campaigns = [], now = new Date(), lang = 'es', tr = KEEP } = {}) {
+  const language = lang === 'en' ? 'en' : 'es';
   const stamp = now.toISOString();
   const objects = new Map();
   const add = (o) => {
@@ -81,7 +86,7 @@ export function toStixBundle(entries, { campaigns = [], now = new Date() } = {})
     return o.id;
   };
   const sco = (type, props) => add({ type, spec_version: '2.1', id: scoId(type, props), ...props });
-  const sdo = (type, name, props) => add({ type, spec_version: '2.1', id: sdoId(type, name), created: stamp, modified: stamp, ...props });
+  const sdo = (type, name, props) => add({ type, spec_version: '2.1', id: sdoId(type, name), created: stamp, modified: stamp, lang: language, ...props });
   const relate = (type, source, target) => sdo('relationship', `${type}|${source}|${target}`, { relationship_type: type, source_ref: source, target_ref: target });
   const indicatorsOf = new Map(); // clave del correo -> ids de sus indicadores
 
@@ -97,8 +102,8 @@ export function toStixBundle(entries, { campaigns = [], now = new Date() } = {})
     const indicator = (type, value, observable, patternType = type) => {
       const pattern = stixPattern(patternType, value);
       const id = sdo('indicator', pattern, {
-        name: `${LABELS[type]}: ${value}`,
-        description: `Visto en un correo que PhishLens clasifica como «${report.label ?? report.level}».`,
+        name: `${tr(`report.stix.label.${type}`, {}, LABELS[type])}: ${value}`,
+        description: tr('report.stix.seen', { label: report.label ?? report.level }, `Visto en un correo que PhishLens clasifica como «${report.label ?? report.level}».`),
         indicator_types: ['malicious-activity'],
         pattern,
         pattern_type: 'stix',
@@ -161,8 +166,12 @@ export function toStixBundle(entries, { campaigns = [], now = new Date() } = {})
   }
 
   for (const c of campaigns) {
-    const kinds = [...new Set(c.reasons.map((r) => REASONS[r.type]).filter(Boolean))];
-    const id = sdo('campaign', c.id, { name: c.name, description: `${c.emails.length} correos que comparten ${list(kinds)}.` });
+    const types = [...new Set(c.reasons.map((r) => r.type).filter((x) => Object.hasOwn(REASONS, x)))];
+    const kinds = types.map((x) => REASONS[x]);
+    const kindsEn = types.map((x) => tr(`report.stix.reason.${x}`, {}, REASONS[x]));
+    const name = c.nameRef ? tr(c.nameRef.code, c.nameRef.params, c.name) : c.name;
+    const description = tr('report.stix.campaign', { count: c.emails.length, kinds: list(kindsEn, 'and') }, `${c.emails.length} correos que comparten ${list(kinds)}.`);
+    const id = sdo('campaign', c.id, { name, description });
     for (const t of c.techniques ?? []) relate('uses', id, attackPattern(sdo, t));
     for (const k of c.emails) for (const ind of indicatorsOf.get(k) ?? []) relate('indicates', ind, id);
   }

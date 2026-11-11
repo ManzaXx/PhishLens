@@ -152,8 +152,8 @@ test('cambiar de idioma no borra lo que el analista tenía a medias', { skip }, 
   await page.getByRole('button', { name: 'Activar reglas' }).waitFor();
   await page.locator('#lang-toggle').click();
   await page.locator('#rules-panel').getByRole('button', { name: 'Turn on rules' }).waitFor();
-  // Registros DNS pegados en «Check locally» y una búsqueda sin enviar.
-  await page.getByRole('button', { name: title03(), exact: true }).click();
+  // Registros DNS pegados en «Check locally» y una búsqueda sin enviar. Las muestras ya salen en inglés.
+  await page.getByRole('button', { name: SAMPLES.find((s) => s.id === '03-phishing-banco').titleEn, exact: true }).click();
   await page.locator('#report .verdict-card').waitFor();
   await page.goto(`${server.url}/index.html#analista/autenticacion`);
   await page.locator('#report .view--autenticacion').waitFor();
@@ -165,6 +165,32 @@ test('cambiar de idioma no borra lo que el analista tenía a medias', { skip }, 
   assert.equal(await page.locator('#dkim-key').inputValue(), 'v=DKIM1; k=rsa; p=ABC');
   assert.equal(await page.locator('#spf-record').inputValue(), 'v=spf1 -all');
   assert.equal(await page.locator('#report details.auth-local').getAttribute('open'), '');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('PR15: con el navegador en en-GB, la muestra 03 da veredicto, señales e informe forense en inglés', { skip }, async () => {
+  const { analyzeInput } = await import('../../src/core/engine.js');
+  const { setLang } = await import('../../src/i18n/index.js');
+  const { localizeReport } = await import('../../src/ui/localize.js');
+  const s03 = SAMPLES.find((s) => s.id === '03-phishing-banco');
+  setLang('en');
+  const expected = localizeReport(analyzeInput({ kind: 'eml', value: readFileSync(new URL(`../../samples/${s03.file}`, import.meta.url), 'utf8') }));
+  setLang('es');
+  const { context, page, errors } = await open({ locale: 'en-GB' });
+  await page.getByRole('button', { name: s03.titleEn, exact: true }).click();
+  await page.locator('#report .verdict-card').waitFor();
+  assert.equal(await page.locator('#report .verdict-card__headline').textContent(), "Don't trust it: it's phishing");
+  assert.equal(await page.locator('#report .signal__text').first().textContent(), expected.verdict.top[0].plain);
+  await page.locator('#report [aria-haspopup="menu"]', { hasText: 'Export' }).click();
+  await page.getByRole('menuitem', { name: 'Forensic report' }).click();
+  await page.locator('dialog.forensic-dialog[open]').waitFor();
+  await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+  await page.emulateMedia({ media: 'print' });
+  const forensic = await page.locator('#report').innerText();
+  assert.match(forensic, /Phishing almost certain/);
+  assert.ok(forensic.includes(expected.findings[0].title), expected.findings[0].title);
+  assert.doesNotMatch(forensic, /Phishing casi seguro|No te fíes/);
   assert.deepEqual(errors, []);
   await context.close();
 });

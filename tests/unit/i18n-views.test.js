@@ -105,3 +105,50 @@ test('en inglés: panel vacío y autenticación', () => {
   assert.match(auth.textContent, /SPF, DKIM and DMARC/);
   assert.match(auth.textContent, /Check locally/);
 });
+
+test('en inglés: los avisos de cada salto de la ruta salen traducidos', async () => {
+  const { headersPanel } = await import('../../src/ui/panels/headers.js');
+  const { hopWarningCodes } = await import('../../src/detectors/route.js');
+  const route = [{ helo: 'a', by: 'b', time: 2e12 }, { helo: 'c', by: 'd', entry: true, ip: '10.0.0.1', time: 1e12 }];
+  assert.deepEqual(hopWarningCodes(route), [[], ['route.warn.entry', 'route.warn.private-ip', 'route.warn.backwards']]);
+  setLang('en');
+  const text = headersPanel({ email: { route } }).textContent;
+  assert.match(text, /Entry to the receiving server/);
+  assert.match(text, /Private IP at the boundary/);
+  assert.match(text, /Time earlier than the previous hop/);
+});
+
+test('en inglés: el tipo real de un adjunto sale traducido', async () => {
+  const { attachmentsPanel } = await import('../../src/ui/panels/attachments.js');
+  setLang('en');
+  const report = { findings: [], email: { attachments: [{ filename: 'a.pdf', contentType: 'application/pdf', size: 3, inspection: { realType: 'pe', realLabel: 'Ejecutable de Windows' } }] } };
+  assert.match(attachmentsPanel(report).textContent, /Windows executable/);
+});
+
+test('en inglés: las secciones de IOCs y su texto para copiar', async () => {
+  const { iocsToText } = await import('../../src/intel/ioc.js');
+  setLang('en');
+  const { iocsPanel } = await import('../../src/ui/panels/iocs.js');
+  const r = report('03');
+  assert.match(iocsPanel(r).textContent, /Domains \(\d+\)/);
+  const { t } = await import('../../src/i18n/index.js');
+  assert.match(iocsToText(r.iocs, (k) => t(`ioc.section.${k}`)), /^# URLs[\s\S]*# Domains/);
+});
+
+test('en inglés: los consejos del lateral del analista salen traducidos', () => {
+  setLang('en');
+  const side = find(V.renderAnalyst(report('03'), 'resumen'), tag('aside'));
+  const items = findAll(side, (n) => n.localName === 'li' && n.parentNode?.className === 'advice__list').map((n) => n.textContent);
+  assert.ok(items.length >= 2, items.join(' | '));
+  assert.match(items[0], /^Don't/);
+  assert.doesNotMatch(items.join(' '), /pulses|INCIBE en el/);
+});
+
+test('en inglés: la leyenda y la tabla del grafo de IOCs nombran los tipos en inglés', async () => {
+  setLang('en');
+  const { iocsPanel } = await import('../../src/ui/panels/iocs.js');
+  const text = iocsPanel(report('03')).textContent;
+  assert.match(text, /Email/);
+  assert.match(text, /Address/);
+  assert.doesNotMatch(text, /Correo|Dirección|Dominio/);
+});

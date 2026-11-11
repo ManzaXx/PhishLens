@@ -1,11 +1,11 @@
 // Panel «Campañas»: correos del lote que comparten infraestructura, un adjunto o la misma plantilla.
 import { el, nextId } from '../dom.js';
-import { reasonText, hashNames } from '../campaign-reasons.js';
+import { reasonText, hashNames, campaignName } from '../campaign-reasons.js';
 import { LEVELS } from '../../core/scoring.js';
 import { emptyState } from '../components/empty-state.js';
 import { t, getLang, LOCALE } from '../../i18n/index.js';
 
-const LEVEL_LABEL = new Map(LEVELS.map((l) => [l.level, l.label]));
+const levelLabel = (level) => (LEVELS.some((l) => l.level === level) ? t(`level.${level}`) : '');
 const emailsCount = (n) => t('campaigns.emails.count', { count: n });
 
 /** Campaña elegida (por id) o la primera. */
@@ -24,7 +24,7 @@ export function campaignsPanel(report, { batch, campaign } = {}) {
     if (c === chosen) attrs['aria-current'] = 'true';
     list.append(el('li', {}, el('button', {
       className: `campaign-list__btn level-${c.level}`,
-      text: `${c.name} · ${emailsCount(c.emails.length)} · ${LEVEL_LABEL.get(c.level) ?? ''}`,
+      text: `${campaignName(c)} · ${emailsCount(c.emails.length)} · ${levelLabel(c.level)}`,
       attrs,
     })));
   }
@@ -50,7 +50,7 @@ export function campaignsPanel(report, { batch, campaign } = {}) {
   const id = nextId('campaign');
   const block = (title, body) => el('section', { className: 'campaign__block' }, el('h4', { className: 'group__title', text: title }), body);
   const detail = el('section', { className: 'campaign card', attrs: { 'aria-labelledby': id } },
-    el('h3', { className: 'campaign__title', text: `${chosen.name}: ${emailsCount(chosen.emails.length)}`, attrs: { id, tabindex: '-1' } }),
+    el('h3', { className: 'campaign__title', text: `${campaignName(chosen)}: ${emailsCount(chosen.emails.length)}`, attrs: { id, tabindex: '-1' } }),
     block(t('campaigns.emails'), emails),
     block(t('campaigns.reasons'), reasons),
     block(t('campaigns.brand'), el('p', { text: chosen.brands.length ? chosen.brands.join(', ') : t('campaigns.noBrand') })),

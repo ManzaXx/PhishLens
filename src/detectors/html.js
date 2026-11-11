@@ -47,6 +47,7 @@ export function detect(email) {
     out.push(finding({
       id: 'html.form', detector: name, severity: 'high',
       title: 'Formulario dentro del email',
+      params: {},
       detail: 'El email contiene un formulario para escribir datos. Ninguna empresa legítima te pide rellenar datos dentro de un correo.',
       evidence: short(flags.form),
     }));
@@ -55,6 +56,7 @@ export function detect(email) {
     out.push(finding({
       id: 'html.script', detector: name, severity: 'high',
       title: 'Código ejecutable en el email',
+      params: {},
       detail: 'Contiene JavaScript, iframes u objetos incrustados. Los clientes de correo los bloquean, así que su presencia indica un mensaje malicioso.',
       evidence: short(flags.script),
     }));
@@ -63,6 +65,7 @@ export function detect(email) {
     out.push(finding({
       id: 'html.data-uri', detector: name, severity: 'high',
       title: 'Enlace con código o contenido incrustado',
+      params: {},
       detail: 'Un enlace data: o javascript: ejecuta código o abre una página creada dentro del propio email, sin dominio que se pueda comprobar.',
       evidence: short(flags.dataUri),
     }));
@@ -71,6 +74,7 @@ export function detect(email) {
     out.push(finding({
       id: 'html.hidden-text', detector: name, severity: 'low',
       title: 'Mucho texto oculto',
+      params: { chars: hiddenChars },
       detail: `Hay ${hiddenChars} caracteres invisibles para el lector. Se usa para engañar a los filtros antispam con texto inocente.`,
     }));
   }
@@ -78,6 +82,7 @@ export function detect(email) {
     out.push(finding({
       id: 'html.image-only', detector: name, severity: 'low',
       title: 'Email formado solo por imágenes',
+      params: {},
       detail: 'Sin texto que analizar, los filtros no pueden leer el mensaje. Es una técnica de evasión habitual.',
     }));
   }

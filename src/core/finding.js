@@ -38,7 +38,7 @@ function oneOf(list, value, label) {
 }
 
 /** Crea un hallazgo. Los campos que no se indican toman el valor por defecto de su detector. */
-export function finding({ id, detector, severity, title, detail, evidence = '', category, reliability, provenance, polarity, brand = null }) {
+export function finding({ id, detector, severity, title, detail, evidence = '', category, reliability, provenance, polarity, brand = null, params = null }) {
   if (own(SEVERITY_POINTS, severity) === undefined) throw new Error(`Severidad desconocida: ${severity}`);
   const defaults = own(DETECTOR_DEFAULTS, detector) ?? FALLBACK;
   const techniques = techniquesFor(id);
@@ -53,5 +53,7 @@ export function finding({ id, detector, severity, title, detail, evidence = '', 
     techniques,
     // Marca suplantada, si la hay: permite correlacionar remitente y enlaces de la misma marca.
     brand: brand ?? null,
+    // Valores neutros (dominios, marcas, números o {key}) para que la interfaz traduzca título y detalle.
+    params: params ?? null,
   };
 }

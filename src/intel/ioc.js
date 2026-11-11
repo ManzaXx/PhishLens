@@ -67,10 +67,10 @@ export const PLAIN = new Set(['attachments', 'hashes', 'sha1', 'md5']);
 /** Secciones de los IOCs, en el orden en que se muestran y se copian. */
 export const IOC_SECTIONS = [['urls', 'URLs'], ['domains', 'Dominios'], ['ips', 'IPs'], ['emails', 'Emails'], ['attachments', 'Adjuntos'], ['hashes', 'SHA-256'], ['sha1', 'SHA-1'], ['md5', 'MD5']];
 
-/** Texto plano con los IOCs "defanged", listo para pegar en un ticket. */
-export function iocsToText(iocs) {
+/** Texto plano con los IOCs "defanged", listo para pegar en un ticket. labelOf(key, label) pone el título de cada sección. */
+export function iocsToText(iocs, labelOf = (key, label) => label) {
   return IOC_SECTIONS
     .filter(([key]) => iocs[key]?.length)
-    .map(([key, label]) => `# ${label}\n${iocs[key].map((v) => (PLAIN.has(key) ? v : defang(v))).join('\n')}`)
+    .map(([key, label]) => `# ${labelOf(key, label)}\n${iocs[key].map((v) => (PLAIN.has(key) ? v : defang(v))).join('\n')}`)
     .join('\n\n');
 }

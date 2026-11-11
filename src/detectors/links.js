@@ -23,27 +23,27 @@ function urlChecks(a) {
   const jumps = a.hops.length - 1;
   if (a.flags.nestedRedirect) {
     out.push(['nested-redirect', 'medium', 'Enlace que pasa por varias webs antes de llegar',
-      `El enlace salta ${jumps} veces antes de llegar a ${a.hostname}: así se esconde el destino real.`, chain]);
+      `El enlace salta ${jumps} veces antes de llegar a ${a.hostname}: así se esconde el destino real.`, chain, { jumps, host: a.hostname }]);
   }
   if (a.flags.openRedirect) {
     out.push(['open-redirect', 'medium', 'Enlace que se aprovecha de otra web',
-      `El enlace empieza en ${hosts[0]}, pero esa web te reenvía a ${a.hostname}. Se usa una web conocida para parecer de fiar.`, chain]);
+      `El enlace empieza en ${hosts[0]}, pero esa web te reenvía a ${a.hostname}. Se usa una web conocida para parecer de fiar.`, chain, { first: hosts[0], host: a.hostname }]);
   }
   if (a.flags.obfuscatedIp) {
     out.push(['obfuscated-ip', 'high', 'Dirección IP disfrazada',
-      `El enlace escribe la dirección ${a.hostname} de una forma rara para que no parezca una IP.`, chain]);
+      `El enlace escribe la dirección ${a.hostname} de una forma rara para que no parezca una IP.`, chain, { host: a.hostname }]);
   }
   if (a.flags.credentials) {
     out.push(['credentials-in-url', 'high', 'Enlace con usuario y contraseña dentro',
-      `El enlace lleva un usuario y una contraseña antes de ${a.hostname}. Ninguna web seria los pone ahí: sirve para engañar o para colar un acceso robado.`, chain]);
+      `El enlace lleva un usuario y una contraseña antes de ${a.hostname}. Ninguna web seria los pone ahí: sirve para engañar o para colar un acceso robado.`, chain, { host: a.hostname }]);
   }
   if (a.flags.highEntropy) {
     out.push(['high-entropy', 'low', 'Dirección con aspecto aleatorio',
-      `${a.hostname} o su ruta parecen escritos al azar, algo típico de webs de usar y tirar.`, chain]);
+      `${a.hostname} o su ruta parecen escritos al azar, algo típico de webs de usar y tirar.`, chain, { host: a.hostname }]);
   }
   if (a.flags.nonStandardPort) {
     out.push(['non-standard-port', 'low', 'Enlace con un puerto poco habitual',
-      `El enlace usa el puerto ${a.port}. Las webs normales no lo indican.`, chain]);
+      `El enlace usa el puerto ${a.port}. Las webs normales no lo indican.`, chain, { port: a.port }]);
   }
   return out;
 }
@@ -54,19 +54,19 @@ function checksFor(link, url, analysis) {
   if (shown && registrableDomain(shown) !== url.registrableDomain) {
     if (TRACKING_DOMAINS.has(url.registrableDomain)) {
       out.push(['tracking', 'low', 'Enlace de seguimiento',
-        `El enlace pasa por ${url.registrableDomain}, una plataforma de email marketing que mide los clics. Es habitual en newsletters legítimas, pero oculta el destino final.`]);
+        `El enlace pasa por ${url.registrableDomain}, una plataforma de email marketing que mide los clics. Es habitual en newsletters legítimas, pero oculta el destino final.`, null, { domain: url.registrableDomain }]);
     } else {
       out.push(['mismatch', 'high', 'El enlace no lleva a donde dice',
-        `El texto muestra ${shown.toLowerCase()}, pero al pulsar irías a ${url.hostname}.`]);
+        `El texto muestra ${shown.toLowerCase()}, pero al pulsar irías a ${url.hostname}.`, null, { shown: shown.toLowerCase(), host: url.hostname }]);
     }
   }
   if (url.hasAt && !analysis.flags.credentials) {
     out.push(['at-sign', 'high', 'URL con @ que oculta el destino real',
-      `Todo lo que va antes de la @ se ignora: el navegador iría a ${url.hostname}.`]);
+      `Todo lo que va antes de la @ se ignora: el navegador iría a ${url.hostname}.`, null, { host: url.hostname }]);
   }
   if (url.isIp) {
     out.push(['ip', 'high', 'Enlace a una dirección IP',
-      'Las empresas legítimas usan nombres de dominio, no direcciones IP.']);
+      'Las empresas legítimas usan nombres de dominio, no direcciones IP.', null, {}]);
   }
   if (url.isPunycode) {
     // Grave solo si las letras imitan a otras (eso lo detalla lookalike); un IDN normal es leve.
@@ -74,31 +74,31 @@ function checksFor(link, url, analysis) {
     out.push(['punycode', spoof ? 'high' : 'low', 'Dominio con caracteres internacionales (punycode)',
       spoof
         ? `${url.hostname} es en realidad ${toUnicode(url.hostname)}: usa letras de otros alfabetos que parecen latinas.`
-        : `${url.hostname} es ${toUnicode(url.hostname)}, un dominio con letras no inglesas. Comprueba que es el que esperas.`]);
+        : `${url.hostname} es ${toUnicode(url.hostname)}, un dominio con letras no inglesas. Comprueba que es el que esperas.`, null, { host: url.hostname, unicode: toUnicode(url.hostname), ...(spoof ? { variant: 'spoof' } : {}) }]);
   }
   if (URL_SHORTENERS.has(url.registrableDomain) || URL_SHORTENERS.has(url.hostname)) {
     out.push(['shortener', 'medium', 'Enlace acortado',
-      `${url.hostname} es un acortador: oculta el destino final del enlace.`]);
+      `${url.hostname} es un acortador: oculta el destino final del enlace.`, null, { host: url.hostname }]);
   }
   if (SUSPICIOUS_TLDS.has(url.tld)) {
     out.push(['tld', 'medium', `Dominio .${url.tld}`,
-      `.${url.tld} es una extensión barata muy usada en campañas de phishing.`]);
+      `.${url.tld} es una extensión barata muy usada en campañas de phishing.`, null, { tld: url.tld }]);
   }
   const pathWords = ` ${url.path.toLowerCase().replace(/[^a-z0-9]+/g, ' ')} `;
   const brandInPath = BRANDS.find((b) => b.keywords.some((k) => !k.includes(' ') && pathWords.includes(` ${k} `)));
   if (brandInPath && !isOfficialDomain(brandInPath, url.hostname)) {
     out.push(['brand-in-path', 'medium', `Menciona a ${brandInPath.name} en un sitio ajeno`,
-      `La ruta del enlace usa el nombre de ${brandInPath.name}, pero el sitio es ${url.hostname}.`]);
+      `La ruta del enlace usa el nombre de ${brandInPath.name}, pero el sitio es ${url.hostname}.`, null, { brand: brandInPath.name, host: url.hostname }]);
   }
   const ext = /\.([a-z0-9]{2,5})$/i.exec(url.pathOnly)?.[1]?.toLowerCase();
   if (ext && (DANGEROUS_EXTENSIONS.has(ext) && !['html', 'htm', 'com'].includes(ext) || ARCHIVE_EXTENSIONS.has(ext) || MACRO_EXTENSIONS.has(ext))) {
     const severe = DANGEROUS_EXTENSIONS.has(ext);
     out.push(['download', severe ? 'high' : 'medium', 'Enlace que descarga un archivo',
-      `Al pulsar se descargaría un .${ext}${severe ? ', un tipo de archivo que puede ejecutar programas' : ''}.`]);
+      `Al pulsar se descargaría un .${ext}${severe ? ', un tipo de archivo que puede ejecutar programas' : ''}.`, null, { ext, ...(severe ? { variant: 'severe' } : {}) }]);
   }
   if (url.protocol === 'http' && LOGIN_PATH.test(url.path)) {
     out.push(['insecure-login', 'medium', 'Página de acceso sin HTTPS',
-      'Un formulario de acceso sin cifrar no lo usaría ninguna empresa seria.']);
+      'Un formulario de acceso sin cifrar no lo usaría ninguna empresa seria.', null, {}]);
   }
   return out;
 }
@@ -115,7 +115,7 @@ export function detect(email) {
     const url = parseUrl(target);
     if (!url) continue;
     const shownText = link.text === link.href ? target : link.text;
-    for (const [id, severity, title, detail, chain] of [...checksFor({ text: shownText, href: target }, url, analysis), ...urlChecks(analysis)]) {
+    for (const [id, severity, title, detail, chain, params] of [...checksFor({ text: shownText, href: target }, url, analysis), ...urlChecks(analysis)]) {
       const entry = byId.get(id);
       if (entry) {
         entry.hrefs.add(url.href);
@@ -126,6 +126,7 @@ export function detect(email) {
         severity,
         title,
         detail,
+        params,
         evidence: chain ?? (link.text !== link.href ? `"${link.text}" → ` : '') + (real ? `${real} (envuelto en ${new URL(analysis.hops[0].href).hostname})` : link.href),
       });
     }
@@ -136,6 +137,7 @@ export function detect(email) {
     severity: e.severity,
     title: e.hrefs.size > 1 ? `${e.title} (${e.hrefs.size} enlaces)` : e.title,
     detail: e.detail,
+    params: { ...e.params, count: e.hrefs.size },
     evidence: e.evidence,
   }));
 }

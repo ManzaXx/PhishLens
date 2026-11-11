@@ -1,6 +1,6 @@
 // Panel «Cabeceras y ruta».
 import { el } from '../dom.js';
-import { hopWarnings } from '../../detectors/route.js';
+import { hopWarningCodes } from '../../detectors/route.js';
 import { t } from '../../i18n/index.js';
 
 
@@ -25,12 +25,12 @@ export function headersPanel(report) {
   }
   if (email.route?.length) {
     const ol = el('ol', { className: 'route' });
-    const warnings = hopWarnings(email.route);
+    const warnings = hopWarningCodes(email.route);
     email.route.forEach((hop, i) => {
       const tags = el('p', { className: 'route__tags' });
       for (const w of warnings[i]) {
-        const kind = w.startsWith('Entrada') ? 'entry' : 'warn';
-        tags.append(el('span', { className: `route__tag route__tag--${kind}`, text: w }));
+        const kind = w === 'route.warn.entry' ? 'entry' : 'warn';
+        tags.append(el('span', { className: `route__tag route__tag--${kind}`, text: t(w) }));
       }
       ol.append(el('li', { className: warnings[i].length > (hop.entry ? 1 : 0) ? 'route__hop--warn' : '' },
         el('span', { className: 'route__step', text: String(i + 1) }),

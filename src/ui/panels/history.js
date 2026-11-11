@@ -13,7 +13,7 @@ const typeLabel = (type) => (TYPES.has(type) ? t(`ioc.type.${type}`) : type);
 
 const button = (text, action, extra = {}, className = 'btn') => el('button', { className, text, attrs: { type: 'button', 'data-action': action, ...extra } });
 const when = (iso) => fmtDate(new Date(iso), { dateStyle: 'short', timeStyle: 'short' });
-const levelLabel = (level) => LEVELS.find((l) => l.level === level)?.label ?? level;
+const levelLabel = (level) => (LEVELS.some((l) => l.level === level) ? t(`level.${level}`) : level);
 
 function field(label, control) {
   const id = nextId('history-field');
@@ -46,7 +46,7 @@ function searchBox(search) {
 
 function filters(current, techniques) {
   return el('div', { className: 'history__filters' },
-    field(t('history.filter.level'), select('history-filter', 'level', [['', t('history.filter.allLevels')], ...LEVELS.map((l) => [l.level, l.label])], current.level)),
+    field(t('history.filter.level'), select('history-filter', 'level', [['', t('history.filter.allLevels')], ...LEVELS.map((l) => [l.level, t(`level.${l.level}`)])], current.level)),
     field(t('history.filter.date'), select('history-filter', 'range', ranges(), current.range)),
     field(t('history.filter.technique'), select('history-filter', 'technique', [['', t('history.filter.allTechniques')], ...techniques.map((tech) => [tech, tech])], current.technique)));
 }
