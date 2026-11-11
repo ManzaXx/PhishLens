@@ -26,6 +26,7 @@ export function detect(email) {
         severity: rule.severity,
         title: rule.title,
         detail: rule.detail,
+        params: {},
         evidence: excerpt(text, m.index, m[0].length),
       }));
       break;

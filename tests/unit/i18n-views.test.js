@@ -117,3 +117,10 @@ test('en inglés: los avisos de cada salto de la ruta salen traducidos', async (
   assert.match(text, /Private IP at the boundary/);
   assert.match(text, /Time earlier than the previous hop/);
 });
+
+test('en inglés: el tipo real de un adjunto sale traducido', async () => {
+  const { attachmentsPanel } = await import('../../src/ui/panels/attachments.js');
+  setLang('en');
+  const report = { findings: [], email: { attachments: [{ filename: 'a.pdf', contentType: 'application/pdf', size: 3, inspection: { realType: 'pe', realLabel: 'Ejecutable de Windows' } }] } };
+  assert.match(attachmentsPanel(report).textContent, /Windows executable/);
+});

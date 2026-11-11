@@ -57,7 +57,7 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `links.high-entropy` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.insecure-login` | T1566.002, T1204.001 | 03, 07 | `unit/coverage-matrix.test.js`, `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.ip` | T1566.002, T1204.001 | 07 | `unit/coverage-matrix.test.js`, `unit/engine.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js` | ✅ |
-| `links.mismatch` | T1566.002, T1204.001 | 03, 07 | `unit/advice.test.js`, `unit/finding.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
+| `links.mismatch` | T1566.002, T1204.001 | 03, 07 | `unit/advice.test.js`, `unit/finding.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/rules-en.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.nested-redirect` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.non-standard-port` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.obfuscated-ip` | T1566.002, T1204.001 | — | `unit/links.test.js`, `unit/plain.test.js` | ✅ |

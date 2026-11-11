@@ -73,7 +73,8 @@ const refKey = (v) => v.key ?? v.code;
 
 // Valor de un parámetro ya en inglés: las referencias se traducen y las listas se unen con «; ».
 function resolveParam(v) {
-  if (Array.isArray(v)) return v.map(resolveParam).join('; ');
+  // Frases ({code}) se unen con un espacio; palabras sueltas ({key} o valores) con «; ».
+  if (Array.isArray(v)) return v.map(resolveParam).join(v.every((x) => isRef(x) && x.code) ? ' ' : '; ');
   if (isRef(v)) return englishTemplate(refKey(v), v.params).replace(/\{(\w+)\}/g, (all, name) => String(resolveParam(v.params[name])));
   return v;
 }
@@ -82,10 +83,11 @@ function resolveParam(v) {
 export function trProblem(key, params) {
   const tpl = englishTemplate(key, params);
   if (tpl == null) return `sin traducción`;
-  for (const [, name] of tpl.matchAll(/\{(\w+)\}/g)) {
+  const used = [...tpl.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
+  for (const name of used) {
     if (!params || !Object.prototype.hasOwnProperty.call(params, name) || params[name] == null) return `falta {${name}}`;
   }
-  for (const v of Object.values(params ?? {})) {
+  for (const v of used.map((name) => params[name])) {
     for (const ref of (Array.isArray(v) ? v : [v]).filter(isRef)) {
       const inner = trProblem(refKey(ref), ref.params ?? {});
       if (inner) return `${refKey(ref)}: ${inner}`;

@@ -122,6 +122,7 @@ export function analyzeInput({ kind, value, spfRecord, dkim, rules = [] }) {
         detector: 'input',
         severity: 'info',
         title: 'No parece una URL válida',
+        params: {},
         detail: 'Escribe una dirección que empiece por http://, https:// o www.',
         evidence: String(value ?? '').slice(0, 200),
       }));
@@ -138,6 +139,7 @@ export function analyzeInput({ kind, value, spfRecord, dkim, rules = [] }) {
       detector: 'input',
       severity: 'info',
       title: 'Sin cabeceras',
+      params: {},
       detail: 'Solo se ha analizado el texto. Para un análisis completo pega el email original con sus cabeceras (en Gmail: ⋮ → "Mostrar original").',
     }));
   }

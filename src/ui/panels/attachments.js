@@ -16,13 +16,16 @@ export function formatSize(bytes) {
   return `${decimal(Math.round((kb / 1024) * 10) / 10)} MB`;
 }
 
+// Tipo real en el idioma activo; un tipo que no conocemos se muestra tal cual lo dio el lector.
+const typeLabel = (i) => (i.realType && t(`filetype.${i.realType}`) !== `filetype.${i.realType}` ? t(`filetype.${i.realType}`) : i.realLabel);
+
 function realType(a, mismatched) {
   const i = a.inspection;
   if (!i) return chip(t('attachments.unread'));
-  if (!mismatched) return chip(i.realLabel);
+  if (!mismatched) return chip(typeLabel(i));
   // El color no es la única señal: se dice también en texto (WCAG 1.4.1).
   return el('span', { className: 'real-type' },
-    chip(i.realLabel, { tone: 'phishing' }),
+    chip(typeLabel(i), { tone: 'phishing' }),
     el('span', { className: 'real-type__note', text: i.declaredExt ? t('attachments.mismatch.ext', { ext: i.declaredExt }) : t('attachments.mismatch.name') }));
 }
 

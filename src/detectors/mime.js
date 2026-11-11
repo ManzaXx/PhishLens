@@ -20,7 +20,7 @@ export function detect(email) {
   const out = [];
   for (const n of notes) {
     const rule = Object.hasOwn(RULES, n.code) ? RULES[n.code] : null;
-    if (rule) out.push(finding({ ...rule, detector: name, detail: n.detail, evidence: n.code }));
+    if (rule) out.push(finding({ ...rule, detector: name, detail: n.detail, evidence: n.code, params: { ...n.params } }));
   }
   const limits = notes.filter((n) => n.code.startsWith('limit.'));
   if (limits.length) {
@@ -28,6 +28,7 @@ export function detect(email) {
       id: 'mime.limit', detector: name, severity: 'info',
       title: 'Parte del correo no se ha analizado',
       detail: limits.map((n) => n.detail).join(' '),
+      params: { notes: limits.map((n) => ({ code: `rule.note.${n.code}`, params: n.params ?? {} })) },
       evidence: limits.map((n) => n.code).join(', '),
     }));
   }

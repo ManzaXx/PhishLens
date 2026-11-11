@@ -9,14 +9,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PLAIN } from '../../src/data/plain.js';
-import { setLang } from '../../src/i18n/index.js';
+import { setLang, tr } from '../../src/i18n/index.js';
 import RULES_EN from '../../src/i18n/rules-en.js';
 import { localizeReport, missingEnglish } from '../../src/ui/localize.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const UNIT = join(ROOT, 'tests/unit');
-// Detectores ya traducidos. La Tarea 3 añade el resto.
-export const DONE = new Set(['auth', 'sender', 'lookalike', 'headers', 'route']);
+// Todos los detectores de PhishLens (las reglas propias no se traducen).
+const DONE = new Set(['auth', 'sender', 'lookalike', 'headers', 'route', 'links', 'html', 'attachments', 'mime', 'language', 'input']);
 
 // Un proceso de test hijo con NODE_TEST_CONTEXT heredado no ejecuta nada: se quita.
 const withoutTestContext = ({ NODE_TEST_CONTEXT, ...env }) => env;
@@ -24,7 +24,11 @@ const withoutTestContext = ({ NODE_TEST_CONTEXT, ...env }) => env;
 let captured = [];
 before(() => {
   const dir = mkdtempSync(join(tmpdir(), 'phishlens-findings-'));
-  const files = readdirSync(UNIT).filter((f) => f.endsWith('.test.js') && f !== 'rules-en.test.js').map((f) => join(UNIT, f));
+  const DIFF = join(ROOT, 'tests/differential');
+  const files = [
+    ...readdirSync(UNIT).filter((f) => f.endsWith('.test.js') && f !== 'rules-en.test.js').map((f) => join(UNIT, f)),
+    ...readdirSync(DIFF).filter((f) => f.endsWith('.test.js')).map((f) => join(DIFF, f)),
+  ];
   const run = spawnSync(process.execPath, ['--import', join(ROOT, 'tests/helpers/capture-findings.mjs'), '--test', ...files], {
     cwd: ROOT, env: { ...withoutTestContext(process.env), CAPTURE_DIR: dir }, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
   });
@@ -63,4 +67,22 @@ test('el recorrido ve todas las reglas traducidas', () => {
   assert.ok(captured.length > 100, `solo ${captured.length} hallazgos`);
   const seen = new Set(captured.map((f) => f.id));
   assert.deepEqual(Object.keys(PLAIN).filter((id) => DONE.has(detectorOf(id)) && !seen.has(id)), []);
+});
+
+test('paridad: las 86 reglas tienen título, detalle y texto llano en inglés, y no sobra ninguna', () => {
+  assert.equal(Object.keys(PLAIN).length, 86);
+  const ids = new Set(Object.keys(PLAIN));
+  const extra = Object.keys(RULES_EN).filter((k) => {
+    const m = /^rule\.(.+?)\.(title|detail|plain)(\.[\w-]+)?$/.exec(k);
+    return m && !ids.has(m[1]);
+  });
+  assert.deepEqual(extra, []);
+});
+
+test('un hallazgo de enlaces que agrupa varios dice «(3 links)» y con uno solo no lleva sufijo', () => {
+  setLang('en');
+  const f = (count) => ({ id: 'links.mismatch', detector: 'links', title: 'El enlace no lleva a donde dice', detail: 'd', plain: 'p', params: { shown: 'a.com', host: 'b.com', count } });
+  assert.equal(localizeReport({ findings: [f(3)] }).findings[0].title, "The link doesn't go where it says (3 links)");
+  assert.equal(localizeReport({ findings: [f(1)] }).findings[0].title, "The link doesn't go where it says");
+  assert.equal(tr('rule.links.mismatch.title', {}, 'es'), "The link doesn't go where it says");
 });
