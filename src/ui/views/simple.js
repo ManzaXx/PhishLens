@@ -5,6 +5,7 @@ import { stepList } from '../components/step-list.js';
 import { signalRow } from '../components/signal-row.js';
 import { emptyState } from '../components/empty-state.js';
 import { t } from '../../i18n/index.js';
+import { campaignName } from '../campaign-reasons.js';
 
 const section = (title, ...children) => el('section', { className: 'simple__section' }, el('h3', { className: 'simple__title', text: title }), ...children);
 
@@ -14,7 +15,7 @@ function campaignNote(batch) {
   if (!c) return null;
   const others = c.emails.length - 1;
   return el('div', { className: 'campaign-note' },
-    el('p', { text: t('simple.campaign', { name: c.name, count: others }) }),
+    el('p', { text: t('simple.campaign', { name: campaignName(c), count: others }) }),
     el('button', { className: 'btn btn--small', text: t('simple.viewCampaign'), attrs: { type: 'button', 'data-action': 'view-campaign', 'data-id': c.id } }));
 }
 

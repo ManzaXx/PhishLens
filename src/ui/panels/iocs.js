@@ -73,7 +73,7 @@ function iocLists(report) {
     el('p', { className: 'hint', text: t('iocs.hint') }),
     el('button', { className: 'btn btn--small', text: t('export.copy-iocs'), attrs: { type: 'button', 'data-action': 'copy-iocs' } })));
   const grid = el('div', { className: 'ioc-grid' });
-  for (const [key, label] of IOC_LABELS) {
+  for (const [key] of IOC_LABELS) {
     const values = report.iocs[key] ?? [];
     if (!values.length) continue;
     const ul = el('ul', { className: 'ioc-list' });
@@ -83,7 +83,7 @@ function iocLists(report) {
       const unicode = key === 'domains' && /(^|\.)xn--/i.test(v) ? toUnicode(v) : null;
       ul.append(el('li', { text: unicode && unicode !== v ? `${shown} (${defang(unicode)})` : shown }));
     }
-    grid.append(el('section', {}, el('h4', { className: 'group__title', text: `${label} (${values.length})` }), ul));
+    grid.append(el('section', {}, el('h4', { className: 'group__title', text: `${t(`ioc.section.${key}`)} (${values.length})` }), ul));
   }
   panel.append(grid);
   return panel;

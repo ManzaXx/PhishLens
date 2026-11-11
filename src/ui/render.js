@@ -52,15 +52,15 @@ export function renderReport(container, original, options = {}) {
 /** Versión de PhishLens: va en los informes y en cada entrada del historial. */
 export const VERSION = '3.0.0';
 
-/** Informe serializado para descargar. */
-export function reportToJson(report) {
-  return JSON.stringify({ tool: 'PhishLens', version: VERSION, generatedAt: new Date().toISOString(), ...report }, null, 2);
+/** Informe serializado para descargar: `report` ya en el idioma `lang`, que también va en el JSON. */
+export function reportToJson(report, lang = 'es') {
+  return JSON.stringify({ tool: 'PhishLens', version: VERSION, lang: lang === 'en' ? 'en' : 'es', generatedAt: new Date().toISOString(), ...report }, null, 2);
 }
 
 export { iocsToText };
 
 /** STIX 2.1 de un correo o de un lote: el texto JSON (lo único que se serializa) y cuántos objetos lleva. */
-export function stixJson(entries, { campaigns = [], now = new Date() } = {}) {
-  const bundle = toStixBundle(entries, { campaigns, now });
+export function stixJson(entries, { campaigns = [], now = new Date(), lang = 'es', tr } = {}) {
+  const bundle = toStixBundle(entries, { campaigns, now, lang, tr });
   return { json: JSON.stringify(bundle, null, 2), count: bundle.objects.length };
 }

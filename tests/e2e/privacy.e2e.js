@@ -85,7 +85,7 @@ test('en inglés, las muestras tampoco hacen peticiones externas', { skip }, asy
   await w.page.goto(`${server.url}/index.html`);
   assert.equal(await w.page.getAttribute('html', 'lang'), 'en');
   for (const sample of SAMPLES) {
-    await w.page.getByRole('button', { name: sample.title, exact: true }).click();
+    await w.page.getByRole('button', { name: sample.titleEn, exact: true }).click();
     await visitAllReportTabs(w.page);
   }
   // Y el cambio de idioma en sí tampoco pide nada: los dos diccionarios ya van en la página.

@@ -19,7 +19,9 @@ export async function buildBatchGolden() {
     return { name: f.split('/').pop(), size: text.length, text: async () => text };
   });
   const { entries } = await analyzeBatch(files, { yieldFn: async () => {} });
-  return JSON.parse(JSON.stringify({ graph: buildGraph(entries), campaigns: findCampaigns(entries) }));
+  // nameRef (3.1) es la referencia de traducción del nombre: no forma parte del golden.
+  const campaigns = findCampaigns(entries).map(({ nameRef, ...c }) => c);
+  return JSON.parse(JSON.stringify({ graph: buildGraph(entries), campaigns }));
 }
 
 const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj?.[k] ?? null]));

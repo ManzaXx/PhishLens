@@ -124,3 +124,13 @@ test('en inglés: el tipo real de un adjunto sale traducido', async () => {
   const report = { findings: [], email: { attachments: [{ filename: 'a.pdf', contentType: 'application/pdf', size: 3, inspection: { realType: 'pe', realLabel: 'Ejecutable de Windows' } }] } };
   assert.match(attachmentsPanel(report).textContent, /Windows executable/);
 });
+
+test('en inglés: las secciones de IOCs y su texto para copiar', async () => {
+  const { iocsToText } = await import('../../src/intel/ioc.js');
+  setLang('en');
+  const { iocsPanel } = await import('../../src/ui/panels/iocs.js');
+  const r = report('03');
+  assert.match(iocsPanel(r).textContent, /Domains \(\d+\)/);
+  const { t } = await import('../../src/i18n/index.js');
+  assert.match(iocsToText(r.iocs, (k) => t(`ioc.section.${k}`)), /^# URLs[\s\S]*# Domains/);
+});

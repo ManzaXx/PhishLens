@@ -14,9 +14,13 @@ export const LIMITS_TEXT = 'PhishLens no resuelve DNS, no consulta reputación n
 
 const str = (v) => (v == null ? null : String(v));
 const list = (v) => (Array.isArray(v) ? v : []);
+// Traductor por defecto: deja el texto en español (intel/ no importa i18n; la interfaz pasa el suyo).
+const KEEP = (code, params, fallback) => fallback;
+const LOCALES = { es: 'es-ES', en: 'en-GB' };
+
 const iso = (ms) => (Number.isFinite(ms) ? new Date(ms).toISOString() : null);
 
-function identification(source, analyzedAt, version) {
+function identification(source, analyzedAt, version, lang) {
   const base = { name: str(source?.name), size: null, sha256: null, sha1: null, md5: null, hashOf: 'text' };
   if (source?.kind === 'saved') {
     Object.assign(base, { sha256: str(source.sha256) });
@@ -31,7 +35,7 @@ function identification(source, analyzedAt, version) {
   }
   return {
     ...base,
-    analyzedAt: { utc: analyzedAt.toISOString(), local: analyzedAt.toLocaleString('es-ES', { timeZoneName: 'short' }) },
+    analyzedAt: { utc: analyzedAt.toISOString(), local: analyzedAt.toLocaleString(LOCALES[lang] ?? LOCALES.es, { timeZoneName: 'short' }) },
     version: String(version),
     savedAt: source?.kind === 'saved' ? str(source.savedAt) : null,
   };
@@ -74,37 +78,56 @@ function timeline(report) {
   return { date: str(report.email?.date), hops };
 }
 
-function iocs(report) {
-  return IOC_SECTIONS.map(([type, label]) => ({ type, label, items: list(report.iocs?.[type]).map((v) => (PLAIN.has(type) ? String(v) : defang(v))) }))
+function iocs(report, tr) {
+  return IOC_SECTIONS.map(([type, label]) => ({ type, label: tr(`ioc.section.${type}`, {}, label), items: list(report.iocs?.[type]).map((v) => (PLAIN.has(type) ? String(v) : defang(v))) }))
     .filter((g) => g.items.length);
 }
 
 /** Lo visto dentro de un adjunto, en una frase. */
-function seen(i) {
-  if (!i) return 'No se ha mirado.';
-  if (i.partial) return 'No se ha mirado dentro: el adjunto está recortado o no se pudo leer entero.';
+// Lo visto dentro de un adjunto, en una frase. Los motivos de bajo nivel (zip.reason, ole.reason) son
+// textos técnicos cortos que no se traducen (docs/limitations.md).
+function seen(i, tr) {
+  const say = (code, params, text) => tr(`report.forensic.seen.${code}`, params, text);
+  if (!i) return say('none', {}, 'No se ha mirado.');
+  if (i.partial) return say('partial', {}, 'No se ha mirado dentro: el adjunto está recortado o no se pudo leer entero.');
   const parts = [];
   if (i.zip) {
-    if (!i.zip.ok) parts.push(`ZIP que no se pudo leer: ${i.zip.reason}.`);
+    if (!i.zip.ok) parts.push(say('zip-bad', { reason: i.zip.reason }, `ZIP que no se pudo leer: ${i.zip.reason}.`));
     else {
       const locked = list(i.zip.entries).filter((e) => e.encrypted).length;
       const names = list(i.zip.entries).slice(0, 20).map((e) => e.name).join(', ');
-      parts.push(`ZIP con ${list(i.zip.entries).length}${i.zip.truncated ? ' o más' : ''} entradas${locked ? `, ${locked} cifradas` : ''}${i.zip.vbaProject ? ', con macros VBA' : ''}${names ? `: ${names}` : ''}.`);
+      const count = list(i.zip.entries).length;
+      const params = {
+        count,
+        more: i.zip.truncated ? { key: 'report.forensic.seen.or-more' } : '',
+        locked: locked ? { code: 'report.forensic.seen.locked', params: { n: locked } } : '',
+        vba: i.zip.vbaProject ? { key: 'report.forensic.seen.with-vba' } : '',
+        names: names ? `: ${names}` : '',
+      };
+      parts.push(say('zip', params, `ZIP con ${count}${i.zip.truncated ? ' o más' : ''} entradas${locked ? `, ${locked} cifradas` : ''}${i.zip.vbaProject ? ', con macros VBA' : ''}${names ? `: ${names}` : ''}.`));
     }
   }
-  if (i.ole) parts.push(!i.ole.ok ? `Documento que no se pudo leer: ${i.ole.reason}.` : i.ole.hasVba ? 'Lleva macros VBA.' : 'Sin macros.');
-  if (i.pdf) {
-    parts.push(list(i.pdf.tokens).length ? `Instrucciones activas: ${i.pdf.tokens.map((t) => `/${t}`).join(', ')}.` : 'Sin instrucciones activas en el texto visible.');
-    if (i.pdf.compressedStreams) parts.push(`${i.pdf.compressedStreams} flujos comprimidos sin mirar.`);
+  if (i.ole) {
+    parts.push(!i.ole.ok ? say('ole-bad', { reason: i.ole.reason }, `Documento que no se pudo leer: ${i.ole.reason}.`)
+      : i.ole.hasVba ? say('vba', {}, 'Lleva macros VBA.') : say('no-macros', {}, 'Sin macros.'));
   }
-  if (i.html) parts.push(i.html.suspicious ? `Crea archivos desde un script: ${list(i.html.markers).join(', ')}.` : 'Sin señales de que fabrique archivos.');
-  return parts.join(' ') || 'Nada que señalar.';
+  if (i.pdf) {
+    const tokens = list(i.pdf.tokens).map((t) => `/${t}`).join(', ');
+    parts.push(tokens ? say('pdf-active', { tokens }, `Instrucciones activas: ${tokens}.`) : say('pdf-quiet', {}, 'Sin instrucciones activas en el texto visible.'));
+    if (i.pdf.compressedStreams) parts.push(say('pdf-streams', { n: i.pdf.compressedStreams }, `${i.pdf.compressedStreams} flujos comprimidos sin mirar.`));
+  }
+  if (i.html) {
+    const markers = list(i.html.markers).join(', ');
+    parts.push(i.html.suspicious ? say('html-smuggling', { markers }, `Crea archivos desde un script: ${markers}.`) : say('html-quiet', {}, 'Sin señales de que fabrique archivos.'));
+  }
+  return parts.join(' ') || say('nothing', {}, 'Nada que señalar.');
 }
 
-function attachments(report) {
+function attachments(report, tr) {
+  const realType = (i) => (i?.realType ? tr(`filetype.${i.realType}`, {}, str(i.realLabel)) : str(i?.realLabel));
   return list(report.email?.attachments).map((a) => ({
-    name: str(a?.filename), declaredType: str(a?.contentType), realType: str(a?.inspection?.realLabel), size: Number.isFinite(a?.size) ? a.size : null,
-    sha256: str(a?.sha256), sha1: str(a?.sha1), md5: str(a?.md5), seen: seen(a?.inspection),
+    name: str(a?.filename), declaredType: str(a?.contentType), realType: realType(a?.inspection), size: Number.isFinite(a?.size) ? a.size : null,
+    sha256: str(a?.sha256), sha1: str(a?.sha1), md5: str(a?.md5), seen: seen(a?.inspection, tr),
   }));
 }
 
@@ -125,24 +148,26 @@ function urls(report) {
 
 /**
  * @param {{report: object, source: {kind: 'live', name: string|null, text: string, bytes?: Uint8Array} | {kind: 'saved', name: string|null, sha256: string, savedAt: string},
- *   analyzedAt: Date, version: string, notes?: string}} input
+ *   analyzedAt: Date, version: string, notes?: string, lang?: 'es'|'en', tr?: (code, params, fallback) => string}} input
+ * `report` llega ya en el idioma del informe (la interfaz lo localiza); `tr` traduce lo que se escribe aquí.
  */
-export function forensicReport({ report, source, analyzedAt, version, notes = '' }) {
+export function forensicReport({ report, source, analyzedAt, version, notes = '', lang = 'es', tr = KEEP }) {
   const r = report ?? {};
   const note = String(notes ?? '').slice(0, MAX_NOTES);
   return {
     tool: 'PhishLens',
     format: 'forensic/1',
-    identification: identification(source, analyzedAt, version),
+    lang: lang === 'en' ? 'en' : 'es',
+    identification: identification(source, analyzedAt, version, lang),
     verdict: { level: str(r.level), label: str(r.label), score: Number.isFinite(r.score) ? r.score : null, confidence: str(r.confidence?.level), headline: str(r.verdict?.headline) },
     findings: findings(r),
     auth: auth(r),
     timeline: timeline(r),
-    iocs: iocs(r),
-    attachments: attachments(r),
+    iocs: iocs(r, tr),
+    attachments: attachments(r, tr),
     urls: urls(r),
     notes: note.trim() ? note : null,
-    limits: LIMITS_TEXT,
+    limits: tr('report.forensic.limits', {}, LIMITS_TEXT),
   };
 }
 

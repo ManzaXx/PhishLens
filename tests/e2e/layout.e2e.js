@@ -9,7 +9,8 @@ import { DEFAULT_DETECTORS } from '../../src/core/engine.js';
 const { browser, skip } = await openBrowser();
 const WIDTHS = [360, 768, 1280];
 const IDS = ['01-legitimo-newsletter', '03-phishing-banco', '07-phishing-avanzado', '12-pdf-activo-zip', '13-redireccion-anidada'];
-const title = (id) => SAMPLES.find((s) => s.id === id).title;
+// Las muestras salen en el idioma de la página (titleEn en inglés).
+const title = (id, locale = 'es-ES') => { const s = SAMPLES.find((x) => x.id === id); return locale === 'en-GB' ? s.titleEn : s.title; };
 let server;
 
 before(async () => {
@@ -46,7 +47,7 @@ for (const [width, locale] of RUNS) {
     assert.equal(await page.locator('[data-fact="detectors"]').textContent(), String(DEFAULT_DETECTORS.length));
     const problems = [];
     for (const id of IDS) {
-      await page.getByRole('button', { name: title(id), exact: true }).click();
+      await page.getByRole('button', { name: title(id, locale), exact: true }).click();
       await page.locator('#report .verdict-card').waitFor();
       if (await overflow(page) > 0) problems.push(`${id} sencillo: scroll horizontal`);
       problems.push(...(await smallTargets(page)).map((t) => `${id} sencillo: ${t}`));
