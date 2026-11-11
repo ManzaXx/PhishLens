@@ -1,5 +1,7 @@
 # Seguridad de PhishLens
 
+> **Reporting a vulnerability (English):** please use GitHub's private advisory form, [Report a vulnerability](https://github.com/ManzaXx/PhishLens/security/advisories/new), so details stay private until a fix ships. Only the latest version on `main` (the [live demo](https://manzaxx.github.io/PhishLens/)) is supported. The threat model below is in Spanish; an English summary is in the [README](README.md).
+
 PhishLens analiza emails que pueden haber sido escritos por un atacante, así que el propio analizador es un objetivo. Este documento explica de qué se protege y cómo.
 
 ## Modelo de amenazas
@@ -45,4 +47,4 @@ npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y a
 
 ## Reportar una vulnerabilidad
 
-Abre un issue en [ManzaXx/PhishLens](https://github.com/ManzaXx/PhishLens/issues) sin detalles explotables y te contactaré para ver el resto en privado.
+Usa el aviso privado de GitHub: [Report a vulnerability](https://github.com/ManzaXx/PhishLens/security/advisories/new) (pestaña *Security*). Así los detalles no quedan públicos hasta que haya arreglo. Si no te funciona, abre un issue sin detalles explotables y te contactaré para ver el resto en privado.
