@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { serve } from './server.js';
 import { openBrowser } from './browser.js';
 import { SAMPLES } from '../../samples/index.js';
+import { readFileSync } from 'node:fs';
 
 const { browser, skip } = await openBrowser();
 let server;
@@ -89,8 +90,9 @@ test('en un análisis: pasa a inglés sin volver a analizar, la ruta sigue en #a
   assert.equal(await page.locator('#report nav').getAttribute('aria-label'), 'Report sections');
   assert.match(await page.locator('#report nav').innerText(), /Signals[\s\S]*Dashboard/);
   assert.equal(await page.locator('#report .view__title').textContent(), 'Summary');
-  // Los avisos de fuera del informe también cambian, y no hay un análisis nuevo en el historial.
-  assert.equal(await page.locator('#history-status').textContent(), 'History turned on.');
+  // No hay un análisis nuevo en el historial, y los avisos de antes (regiones vivas) no se repiten:
+  // el lector de pantalla solo oye el cambio de idioma (Review Focus 5).
+  assert.equal(await page.locator('#history-status').textContent(), '');
   assert.equal(await page.locator('#history-open').textContent(), 'View history (1)');
   assert.equal(await page.evaluate(() => document.activeElement?.id), 'lang-toggle');
   // Review Focus 5: el aviso dice exactamente el idioma nuevo.
@@ -120,20 +122,49 @@ test('Review Focus 4: las notas forenses sobreviven al cambio de idioma', { skip
   await context.close();
 });
 
-test('un fichero elegido y un error del formulario siguen en pantalla al cambiar de idioma', { skip }, async () => {
+test('al cambiar de idioma, el fichero elegido sigue y el error de antes se quita', { skip }, async () => {
   const { context, page, errors } = await open({ locale: 'es-ES' });
   await page.locator('#tab-url').click();
   await page.locator('#analyze-btn').click();
   await page.locator('#input-error', { hasText: 'Escribe una URL.' }).waitFor();
   await page.locator('#lang-toggle').click();
-  assert.equal(await page.locator('#input-error').textContent(), 'Type a URL.');
+  // El error era de la acción anterior y es role="alert": se quita en vez de volver a gritarlo.
+  assert.equal(await page.locator('#input-error').isHidden(), true);
+  assert.equal(await page.locator('#input-error').textContent(), '');
   await page.locator('#tab-eml').click();
   await page.locator('#file-input').setInputFiles({ name: 'prueba.eml', mimeType: 'message/rfc822', buffer: Buffer.from('From: a@b.c\nSubject: hola\n\nhola') });
   await page.locator('#report .verdict-card').waitFor();
   assert.equal(await page.locator('.dropzone__title').textContent(), 'prueba.eml');
+  assert.match(await page.locator('.dropzone__hint').textContent(), /^0\.\d KB · ready to analyze$/);
   await page.locator('#lang-toggle').click();
   assert.equal(await page.locator('.dropzone__title').textContent(), 'prueba.eml');
-  assert.match(await page.locator('.dropzone__hint').textContent(), /listo para analizar/);
+  // El separador decimal sigue al idioma también en lo ya escrito.
+  assert.match(await page.locator('.dropzone__hint').textContent(), /^0,\d KB · listo para analizar$/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('cambiar de idioma no borra lo que el analista tenía a medias', { skip }, async () => {
+  const { context, page, errors } = await open({ locale: 'es-ES' });
+  // Vista previa de reglas sin activar.
+  await page.locator('#rules > summary').click();
+  await page.locator('#rules-file').setInputFiles({ name: 'reglas.json', mimeType: 'application/json', buffer: readFileSync(new URL('../../samples/rules/ejemplo.json', import.meta.url)) });
+  await page.getByRole('button', { name: 'Activar reglas' }).waitFor();
+  await page.locator('#lang-toggle').click();
+  await page.locator('#rules-panel').getByRole('button', { name: 'Turn on rules' }).waitFor();
+  // Registros DNS pegados en «Check locally» y una búsqueda sin enviar.
+  await page.getByRole('button', { name: title03(), exact: true }).click();
+  await page.locator('#report .verdict-card').waitFor();
+  await page.goto(`${server.url}/index.html#analista/autenticacion`);
+  await page.locator('#report .view--autenticacion').waitFor();
+  await page.locator('#report details.auth-local summary').click();
+  await page.locator('#dkim-key').fill('v=DKIM1; k=rsa; p=ABC');
+  await page.locator('#spf-record').fill('v=spf1 -all');
+  await page.locator('#lang-toggle').click();
+  await page.locator('#report .view__title', { hasText: 'Autenticación' }).waitFor();
+  assert.equal(await page.locator('#dkim-key').inputValue(), 'v=DKIM1; k=rsa; p=ABC');
+  assert.equal(await page.locator('#spf-record').inputValue(), 'v=spf1 -all');
+  assert.equal(await page.locator('#report details.auth-local').getAttribute('open'), '');
   assert.deepEqual(errors, []);
   await context.close();
 });

@@ -155,7 +155,9 @@ async function savedEntries() {
   return h ? (await h.list({ limit: HISTORY_MAX }).catch(() => ({ items: [] }))).items : [];
 }
 
+let rulesModel = null;
 function paintRules(model, focus = false) {
+  rulesModel = model;
   rulesPanelBox.replaceChildren(rulesPanel(model));
   if (focus) rulesPanelBox.querySelector('[tabindex="-1"]')?.focus();
 }
@@ -413,10 +415,32 @@ function paintLangToggle() {
 function rerender() {
   translatePage(document);
   paintLangToggle();
-  for (const [node, text] of live) node.textContent = text();
-  showActiveRules();
-  if (state.lastReport && !reportBox.hidden) paint();
+  for (const [node, text] of live) {
+    if (!node.isConnected) live.delete(node);
+    // Los avisos de una acción anterior viven en regiones role="status"/"alert": se quitan en vez de
+    // repetirlos, para que el lector de pantalla solo oiga el cambio de idioma (Review Focus 5).
+    else if (MOMENTARY.has(node.id)) show(node, null);
+    else node.textContent = text();
+  }
+  errorBox.hidden = !errorBox.textContent;
+  // La vista previa de reglas sin activar (o sus errores) se repinta tal cual, no como «sin reglas».
+  if (rulesModel) paintRules(rulesModel);
+  if (state.lastReport && !reportBox.hidden) paintKeepingInput();
 }
+
+/** Repinta el informe sin perder lo escrito a medias: registros DNS, «Comprobar en local» abierto y la búsqueda. */
+function paintKeepingInput() {
+  const value = (sel) => reportBox.querySelector(sel)?.value;
+  const dkimKey = value('#dkim-key') ?? '';
+  const spfRecord = value('#spf-record') ?? '';
+  const open = reportBox.querySelector('details.auth-local')?.open;
+  const query = value('[data-role="history-query"]');
+  paint({ dkimKey, spfRecord });
+  if (open) reportBox.querySelector('details.auth-local')?.setAttribute('open', '');
+  const box = reportBox.querySelector('[data-role="history-query"]');
+  if (box && query != null) box.value = query;
+}
+const MOMENTARY = new Set(['history-status', 'rules-status', 'batch-progress-text', 'input-error']);
 // El idioma de arranque se pone antes de escuchar cambios: así se pinta una vez y sin aviso.
 setLang(initialLang(storage((s) => s.getItem(LANG_KEY)), navigator.language));
 rerender();
@@ -505,7 +529,7 @@ async function loadFile(file) {
   state.fileBytes = bytes;
   dropzone.classList.add('has-file');
   show(dropzone.querySelector('.dropzone__title'), () => file.name);
-  say(dropzone.querySelector('.dropzone__hint'), 'app.drop.ready', { size: decimal((file.size / 1024).toFixed(1)) });
+  show(dropzone.querySelector('.dropzone__hint'), () => t('app.drop.ready', { size: decimal((file.size / 1024).toFixed(1)) }));
   run();
 }
 
