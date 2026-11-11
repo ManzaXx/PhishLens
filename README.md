@@ -7,7 +7,7 @@
 **¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
 
 [![Tests](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml/badge.svg)](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml)
-![Tests](https://img.shields.io/badge/tests-691%20%2B%2062%20e2e-15803d)
+![Tests](https://img.shields.io/badge/tests-730%20%2B%2068%20e2e-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
@@ -37,6 +37,7 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 - **Historial opcional en el navegador** (apagado por defecto): guarda el informe de cada análisis, nunca el correo. Busca un IOC en todo lo guardado, filtra por nivel, fecha o técnica, compara dos análisis y exporta o importa el historial en `.json`. «Borrar todo» borra la base entera.
 - **Panel SOC** sobre el historial: cifras clave, niveles en el tiempo, técnicas ATT&CK más vistas, IOCs que se repiten (un clic los busca), remitentes y dominios más frecuentes y campañas recientes. Gráficas SVG propias, con su tabla de datos y colores comprobados para daltonismo.
 - **Informe forense** en PDF (desde el diálogo de impresión) y en JSON: identificación con SHA-256, SHA-1 y MD5, veredicto, hallazgos por gravedad, autenticación, cronología, IOCs, adjuntos, URLs y las notas del analista. El JSON lleva `reportSha256` para comprobar que nadie lo ha tocado ([docs/forensic.md](docs/forensic.md)).
+- **Reglas propias en JSON**: añade tus señales (dominios de tu empresa, adjuntos que nunca recibes, combinaciones con las reglas de PhishLens) con un formato cerrado sin expresiones regulares. Se validan enteras, se prueban contra el historial antes de activarlas y nunca bajan la nota ([docs/rules.md](docs/rules.md)).
 - **13 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
 
 | Modo sencillo (oscuro) | Móvil | Email legítimo |
@@ -68,6 +69,10 @@ Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una C
 | Informe forense impreso | Diálogo del informe en el móvil |
 |---|---|
 | ![Informe forense: identificación con hashes, veredicto y hallazgos por gravedad](docs/img/informe-forense.png) | ![Diálogo «Informe forense» con notas del analista, tema oscuro](docs/img/forense-dialogo.png) |
+
+| Reglas propias: vista previa | Reglas propias en el móvil |
+|---|---|
+| ![Tres reglas propias cargadas con su vista previa sobre el historial](docs/img/reglas-vista-previa.png) | ![Reglas propias en el móvil, tema oscuro](docs/img/movil-reglas.png) |
 
 ## 🔍 Qué detecta
 
@@ -136,12 +141,14 @@ proyectoCiber/
 │   ├── data/                # Marcas, listas de referencia, patrones y mapa MITRE ATT&CK
 │   ├── parser/              # eml.js (RFC 5322 + MIME), received.js, html.js (sin DOM), url.js
 │   ├── detectors/           # 10 detectores con la misma interfaz: detect(email) -> Finding[]
-│   ├── intel/               # IOCs defanged, URLs desenvueltas, grafo, campañas y STIX 2.1
+│   ├── intel/               # IOCs defanged, URLs desenvueltas, grafo, campañas, STIX 2.1, panel e informe forense
+│   ├── rules/               # Reglas propias: validador, motor sin regex y vista previa
+│   ├── storage/             # Historial opcional en IndexedDB, con su validador
 │   ├── core/                # Modelo de hallazgo, motor y recomendaciones
 │   └── ui/                  # Render del informe, resaltado y controlador de la página
 ├── docs/                    # Arquitectura, ADRs, especificaciones y planes
 ├── SECURITY.md              # Modelo de amenazas y mitigaciones
-├── samples/                 # 13 emails .eml de ejemplo y un lote de campaña
+├── samples/                 # 13 emails .eml de ejemplo, un lote de campaña y reglas de ejemplo
 ├── tools/                   # Muestras, capturas, matriz de cobertura y validador STIX
 └── tests/                   # unit/, e2e/, fuzz/ y perf/ con node:test
 ```

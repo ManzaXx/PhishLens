@@ -82,6 +82,12 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | Informe forense: la impresión solo muestra el informe abierto; privacidad y axe del diálogo en claro y oscuro | ✅ | `tests/e2e/forensic.e2e.js`, `tests/e2e/a11y.e2e.js` |
 | Revisión de seguridad del PR12 sin hallazgos explotables | 👁️ | revisión del diff |
 
+| Reglas propias: sin `RegExp` en `src/rules/`, campos y operadores en listas cerradas, claves peligrosas rechazadas | ✅ | `tests/unit/rules-validate.test.js` |
+| Reglas propias: el validador nunca lanza ni pasa de 50 ms con 2.000 ficheros mutados | ✅ | `tests/fuzz/rules.test.js` |
+| Reglas propias: nunca bajan la nota; 100 × 20 condiciones sobre 1 MB en menos de 300 ms | ✅ | `tests/unit/rules-evaluate.test.js` |
+| Reglas propias: con el historial apagado no se crea la base; se van con «Borrar todo»; migración v1 → v2; privacidad y axe en claro y oscuro | ✅ | `tests/e2e/rules.e2e.js` |
+| Revisión de seguridad del PR13 | 👁️ | revisión del diff |
+
 ## Pendiente
 
 - Probar la privacidad también en Firefox y WebKit.

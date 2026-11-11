@@ -7,7 +7,7 @@ import { severityTag } from './severity-tag.js';
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 function previewText(p) {
-  if (!p.testable) return 'No se puede probar con el historial: necesita el correo, y el correo no se guarda';
+  if (!p.testable) return 'No se puede probar: el historial no guarda el correo';
   if (!p.total) return 'Sin análisis guardados para probarla';
   return `Cumpliría en ${p.matches} de ${p.total} análisis guardados`;
 }

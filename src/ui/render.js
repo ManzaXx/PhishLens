@@ -50,7 +50,7 @@ export function renderReport(container, report, options = {}) {
 }
 
 /** Versión de PhishLens: va en los informes y en cada entrada del historial. */
-export const VERSION = '2.3.0';
+export const VERSION = '3.0.0';
 
 /** Informe serializado para descargar. */
 export function reportToJson(report) {

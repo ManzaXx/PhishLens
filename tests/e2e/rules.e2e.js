@@ -56,7 +56,8 @@ test('cargar, ver la vista previa y activar: la muestra 03 gana «Regla propia»
     await home(w.page, '#analista');
     await load(w.page, EXAMPLE);
     await w.page.locator('#rules-panel', { hasText: '3 reglas válidas' }).waitFor();
-    assert.match(await w.page.locator('#rules-panel').innerText(), /No se puede probar con el historial/);
+    assert.match(await w.page.locator('#rules-panel').innerText(), /No se puede probar: el historial no guarda el correo/);
+    assert.match(await w.page.locator('#rules-panel').innerText(), /Sin análisis guardados para probarla/);
     assert.equal(await w.page.evaluate(() => document.activeElement?.classList.contains('rules__summary')), true, 'el foco va al resumen');
     assert.deepEqual(await axe(w.page), [], `axe en la vista previa (${colorScheme})`);
     await w.page.getByRole('button', { name: 'Activar reglas' }).click();
@@ -65,7 +66,7 @@ test('cargar, ver la vista previa y activar: la muestra 03 gana «Regla propia»
     await w.page.locator('#report .report__toolbar').waitFor();
     await w.page.evaluate(() => { location.hash = '#analista/senales'; });
     await w.page.locator('#report .finding__custom').first().waitFor();
-    assert.match(await w.page.locator('#report').innerText(), /Dominio parecido a una marca y con enlaces/);
+    assert.match(await w.page.locator('#report').innerText(), /Dominio parecido a una marca y un enlace sospechoso/);
     assert.deepEqual(await axe(w.page), [], `axe en las señales con una regla propia (${colorScheme})`);
     assert.ok(!(await databases(w.page)).includes('phishlens'), 'sin historial no se crea la base');
     assert.deepEqual(w.external, [], 'peticiones fuera del origen');

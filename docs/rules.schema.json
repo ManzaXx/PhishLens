@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ManzaXx/ProyectosPersonales/proyectoCiber/docs/rules.schema.json",
+  "title": "Reglas propias de PhishLens (rules/1)",
+  "description": "Solo documentación: la validación la hace src/rules/validate.js, que además pone los topes de profundidad (4 niveles) y de condiciones (20 por regla).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phishlens",
+    "rules"
+  ],
+  "properties": {
+    "phishlens": {
+      "const": "rules/1"
+    },
+    "rules": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "severity",
+        "category",
+        "when"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9.-]{3,64}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "category": {
+          "enum": [
+            "authentication",
+            "sender",
+            "links",
+            "attachments",
+            "language",
+            "infrastructure"
+          ]
+        },
+        "technique": {
+          "type": "string",
+          "pattern": "^T[0-9]{4}(\\.[0-9]{3})?$",
+          "description": "Tiene que existir en src/data/mitre.js."
+        },
+        "when": {
+          "$ref": "#/$defs/node"
+        }
+      }
+    },
+    "node": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "all"
+          ],
+          "properties": {
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/node"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "any"
+          ],
+          "properties": {
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/node"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "not"
+          ],
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/node"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/condition"
+        }
+      ]
+    },
+    "field": {
+      "enum": [
+        "subject",
+        "sender.address",
+        "sender.domain",
+        "sender.display",
+        "reply-to.domain",
+        "return-path.domain",
+        "link.domain",
+        "link.url",
+        "attachment.name",
+        "attachment.extension",
+        "attachment.type",
+        "attachment.sha256",
+        "body.text",
+        "finding.id",
+        "header:from",
+        "header:to",
+        "header:cc",
+        "header:reply-to",
+        "header:return-path",
+        "header:sender",
+        "header:subject",
+        "header:date",
+        "header:message-id",
+        "header:x-mailer",
+        "header:user-agent",
+        "header:x-originating-ip",
+        "header:x-priority",
+        "header:importance",
+        "header:list-unsubscribe",
+        "header:authentication-results",
+        "header:received-spf",
+        "header:x-spam-status",
+        "header:x-ms-exchange-organization-scl",
+        "header:content-type"
+      ]
+    },
+    "listField": {
+      "enum": [
+        "link.domain",
+        "link.url",
+        "attachment.name",
+        "attachment.extension",
+        "attachment.type",
+        "attachment.sha256",
+        "finding.id"
+      ]
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "op",
+            "value"
+          ],
+          "properties": {
+            "field": {
+              "$ref": "#/$defs/field"
+            },
+            "op": {
+              "enum": [
+                "equals",
+                "contains",
+                "starts-with",
+                "ends-with"
+              ]
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "op",
+            "value"
+          ],
+          "properties": {
+            "field": {
+              "$ref": "#/$defs/field"
+            },
+            "op": {
+              "enum": [
+                "in",
+                "not-in"
+              ]
+            },
+            "value": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 200,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "op"
+          ],
+          "properties": {
+            "field": {
+              "$ref": "#/$defs/field"
+            },
+            "op": {
+              "const": "exists"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "op",
+            "value"
+          ],
+          "properties": {
+            "field": {
+              "$ref": "#/$defs/listField"
+            },
+            "op": {
+              "const": "count-gte"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    }
+  }
+}

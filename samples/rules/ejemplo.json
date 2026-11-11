@@ -24,13 +24,13 @@
     },
     {
       "id": "mi-org.suplantacion-con-enlace",
-      "title": "Dominio parecido a una marca y con enlaces",
+      "title": "Dominio parecido a una marca y un enlace sospechoso",
       "severity": "medium",
       "category": "links",
       "technique": "T1566.002",
       "when": { "all": [
         { "field": "finding.id", "op": "starts-with", "value": "lookalike." },
-        { "field": "link.url", "op": "count-gte", "value": 1 }
+        { "field": "finding.id", "op": "starts-with", "value": "links." }
       ] }
     }
   ]

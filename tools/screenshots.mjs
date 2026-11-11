@@ -34,6 +34,8 @@ const SHOTS = [
   ['analista-panel', 'panel', '', 1280, 'light'],
   ['informe-forense', 'forense', '#analista', 900, 'light'],
   ['forense-dialogo', 'forense-dialogo', '#analista', 390, 'dark'],
+  ['reglas-vista-previa', 'reglas', '', 1280, 'light'],
+  ['movil-reglas', 'reglas', '', 390, 'dark'],
   ['movil-panel', 'panel', '', 390, 'dark'],
   ['movil-lote', 'lote', '', 390, 'light'],
   ['movil-sencillo', '03-phishing-banco', '', 390, 'light'],
@@ -74,6 +76,21 @@ async function savedPanel(page) {
   await page.locator('#report').evaluate((n) => n.scrollIntoView({ block: 'start' }));
 }
 
+/** Enciende el historial, guarda tres análisis y carga las reglas de ejemplo: la vista previa. */
+async function rulesPreview(page) {
+  await page.locator('#history-toggle').check();
+  for (const [i, id] of ['03-phishing-banco', '04-phishing-correos', '02-legitimo-pedido'].entries()) {
+    await page.getByRole('button', { name: title(id), exact: true }).click();
+    await page.waitForFunction((t) => document.querySelector('#history-open').textContent === t, `Ver historial (${i + 1})`);
+    await page.goto(`${server.url}/index.html`);
+  }
+  await page.locator('#rules > summary').click();
+  await page.locator('#rules-file').setInputFiles(new URL('../samples/rules/ejemplo.json', import.meta.url).pathname);
+  await page.locator('#rules-panel', { hasText: '3 reglas válidas' }).waitFor();
+  // La cabecera fija tapa lo primero: se deja a la vista el interruptor y el resumen «Reglas propias».
+  await page.locator('.history-toggle').evaluate((n) => n.scrollIntoView({ block: 'start' }));
+}
+
 const server = await serve();
 const browser = await chromium.launch();
 const only = process.argv.slice(2);
@@ -82,6 +99,7 @@ for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !on
   await page.goto(`${server.url}/index.html${hash}`);
   if (sample === 'historial') await savedHistory(page);
   else if (sample === 'panel') await savedPanel(page);
+  else if (sample === 'reglas') await rulesPreview(page);
   else if (sample === 'forense' || sample === 'forense-dialogo') {
     await page.getByRole('button', { name: title('12-pdf-activo-zip'), exact: true }).click();
     await page.locator('#report .report__toolbar').waitFor();

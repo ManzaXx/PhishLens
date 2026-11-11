@@ -310,7 +310,7 @@
 
 /* Reglas propias (3.0, PR13) */
 .rules { margin-top: var(--space-4); }
-.rules__title { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+.rules__title { display: list-item; min-height: 44px; padding-block: var(--space-2); box-sizing: border-box; font-weight: 600; cursor: pointer; }
 .rules .btn { min-height: 44px; }
 .rules__panel { margin-top: var(--space-3); display: grid; gap: var(--space-3); }
 .rules__summary { margin: 0; }

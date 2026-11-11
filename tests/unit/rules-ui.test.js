@@ -26,11 +26,11 @@ test('previewRules: solo prueba las reglas que usan únicamente finding.id, con 
   const extra = validateRules(JSON.stringify({ phishlens: 'rules/1', rules: [{ id: 'solo-hallazgos', title: 'Solo hallazgos', severity: 'low', category: 'sender', when: { any: [{ field: 'finding.id', op: 'starts-with', value: 'lookalike.' }, { not: { field: 'finding.id', op: 'exists' } }] } }] })).rules;
   const entries = ['03-phishing-banco', '04-phishing-correos', '02-legitimo-pedido'].map(entry);
   const p = previewRules([...rules, ...extra], entries);
-  // La regla 3 mira también link.url, que no se guarda: no se puede probar. La 02 no tiene hallazgos: cumple el «not exists».
+  // Las reglas 1 y 2 miran el asunto, el remitente o los adjuntos, que no se guardan. La 02 no tiene hallazgos: cumple el «not exists».
   assert.deepEqual(p.map((x) => [x.id, x.testable, x.matches, x.total]), [
     ['mi-org.factura-falsa', false, 0, 3],
     ['mi-org.ejecutable-o-imagen', false, 0, 3],
-    ['mi-org.suplantacion-con-enlace', false, 0, 3],
+    ['mi-org.suplantacion-con-enlace', true, 2, 3],
     ['solo-hallazgos', true, 3, 3],
   ]);
 });
@@ -62,7 +62,7 @@ test('vista previa: tabla con cada regla y «Activar reglas»; activas: «N regl
   assert.ok(find(p, (n) => attr(n, 'data-action') === 'rules-activate'));
   assert.ok(find(p, (n) => attr(n, 'data-action') === 'rules-discard'));
   const all = texts(p);
-  assert.ok(all.includes('No se puede probar con el historial: necesita el correo, y el correo no se guarda'));
+  assert.ok(all.includes('No se puede probar: el historial no guarda el correo'));
   const testable = validateRules(JSON.stringify({ phishlens: 'rules/1', rules: [{ id: 'solo-hallazgos', title: 'S', severity: 'low', category: 'sender', when: { field: 'finding.id', op: 'starts-with', value: 'lookalike.' } }] })).rules;
   assert.ok(texts(rulesPanel({ state: 'preview', rules: testable, preview: previewRules(testable, [entry('03-phishing-banco')]) })).includes('Cumpliría en 1 de 1 análisis guardados'));
   const a = rulesPanel({ state: 'active', rules, preview: previewRules(rules, []) });
@@ -77,4 +77,11 @@ test('título con <script> y RLO sale como texto revelado', () => {
   const root = rulesPanel({ state: 'preview', rules: hostile, preview: previewRules(hostile, []) });
   assert.equal(findAll(root, (n) => (n.localName ?? n.tagName?.toLowerCase()) === 'script').length, 0);
   assert.ok(texts(root).some((t) => t.startsWith('<script>x</script>⟦U+202E⟧')));
+});
+
+test('crítica de diseño: el resumen «Reglas propias» conserva su triángulo de desplegable (display: list-item)', () => {
+  const css = readFileSync(new URL('../../assets/css/components.css', import.meta.url), 'utf8');
+  const rule = css.match(/\.rules__title \{([^}]*)\}/)?.[1] ?? '';
+  assert.match(rule, /display: list-item/);
+  assert.match(rule, /min-height: 44px/);
 });

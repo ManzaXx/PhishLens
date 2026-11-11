@@ -180,9 +180,7 @@ test('golden: con las 3 reglas de ejemplo cambian solo las muestras que se esper
   assert.deepEqual(hit, {
     '03-phishing-banco': ['custom.mi-org.suplantacion-con-enlace'],
     '04-phishing-correos': ['custom.mi-org.suplantacion-con-enlace'],
-    '05-phishing-microsoft365': ['custom.mi-org.suplantacion-con-enlace'],
     '06-phishing-factura-adjunto': ['custom.mi-org.ejecutable-o-imagen', 'custom.mi-org.factura-falsa'],
-    '08-ruta-falsificada': ['custom.mi-org.suplantacion-con-enlace'],
     '10-dominio-unicode': ['custom.mi-org.suplantacion-con-enlace'],
     '11-adjunto-tipo-falso': ['custom.mi-org.factura-falsa'],
   });

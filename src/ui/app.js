@@ -163,17 +163,19 @@ rulesFile.addEventListener('change', async () => {
   pendingRules = null;
   rulesStatus.textContent = '';
   let res;
+  let text = '';
   if ((file.size ?? 0) > RULES_LIMITS.fileBytes) res = { ok: false, errors: [{ rule: null, path: '', reason: 'el fichero pasa de 200 KB' }] };
   else {
     try {
-      res = validateRules(await file.text());
+      text = await file.text();
+      res = validateRules(text);
     } catch {
       res = { ok: false, errors: [{ rule: null, path: '', reason: 'no se pudo leer el fichero' }] };
     }
   }
   if (!res.ok) return paintRules({ state: 'errors', errors: res.errors.map(formatRuleError) }, true);
-  // file.text() otra vez no: el texto validado es el que se guarda.
-  pendingRules = { source: await file.text(), rules: res.rules };
+  // Se guarda el mismo texto que se ha validado (leerlo otra vez podría dar otro si el fichero cambia).
+  pendingRules = { source: text, rules: res.rules };
   return paintRules({ state: 'preview', rules: res.rules, preview: previewRules(res.rules, await savedEntries()) }, true);
 });
 rulesPanelBox.addEventListener('click', async (e) => {

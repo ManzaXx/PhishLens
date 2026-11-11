@@ -78,7 +78,7 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 - **500 análisis como mucho.** Al pasar, se borra el más antiguo y se avisa.
 - **Sin cifrado.** Lo guardado está en el perfil del navegador: quien use ese perfil lo puede ver. La exportación `.json` tampoco va cifrada.
 - **Ventana privada o almacenamiento bloqueado:** el historial se apaga y lo dice; el análisis sigue funcionando.
-- **Las reglas propias del PR13** no podrán mirar el cuerpo de un análisis guardado, porque no está.
+- **Las reglas propias** no pueden mirar el cuerpo de un análisis guardado, porque no está.
 
 ## Panel
 
@@ -95,3 +95,13 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 - **El pie con el SHA-256 y el número de página** usa las cajas de margen de `@page`, que solo pinta Chromium. En Firefox y Safari el PDF sale sin pie, pero el SHA-256 sigue en «Identificación».
 - **`reportSha256` detecta cambios, no firma:** quien edite el JSON puede recalcularlo.
 - **La hora local** es la del navegador que hizo el análisis.
+
+## Reglas propias
+
+- **Sin expresiones regulares.** No se pueden escribir patrones con comodines; `contains`, `starts-with`, `ends-with` y las listas cubren lo habitual.
+- **La vista previa solo prueba las reglas que miran `finding.id`.** El historial no guarda el correo, así que una regla sobre el asunto, el remitente o los enlaces no se puede probar con lo guardado.
+- **`body.text` mira hasta 256 K caracteres** del cuerpo. Lo que venga después no lo ve ninguna regla.
+- **Sin historial, las reglas duran lo que la pestaña.** Con historial se guardan en el navegador, sin cifrar, y «Borrar todo» las borra.
+- **Activarlas rehace el análisis abierto**, pero no un lote ni un análisis abierto desde el historial: hay que volver a soltar el lote.
+- **Una regla propia no puede bajar la nota** ni quitar un hallazgo de PhishLens. Para ignorar un falso positivo no hay reglas de excepción.
+- **`finding.id` solo ve los hallazgos de PhishLens**, no los de otras reglas propias: no se encadenan.

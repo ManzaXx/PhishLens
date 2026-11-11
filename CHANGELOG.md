@@ -1,6 +1,6 @@
 # Changelog
 
-## Sin publicar · 3.0.0 en desarrollo
+## 3.0.0 · 2026-11-11 · Plataforma de Threat Intel local
 
 Especificación en [docs/specs/2026-11-07-phishlens-3.0-design.md](docs/specs/2026-11-07-phishlens-3.0-design.md).
 
@@ -13,6 +13,8 @@ Especificación en [docs/specs/2026-11-07-phishlens-3.0-design.md](docs/specs/20
 - Los lotes guardados conservan sus campañas con las pistas en texto.
 - **Informe forense** ([docs/forensic.md](docs/forensic.md)) en «Exportar»: PDF desde el diálogo de impresión, con el SHA-256 y el número de página al pie, y JSON `phishlens-forense-AAAA-MM-DD.json` con `reportSha256` para detectar cambios. Identificación con SHA-256, SHA-1 y MD5, hallazgos por gravedad, autenticación, cronología con los saltos que van atrás, IOCs, adjuntos, URLs y límites. Sustituye a «Imprimir».
 - **Notas del analista** (5.000 caracteres como mucho) en el informe; con el historial activado se guardan con el análisis y entran en la exportación.
+- **Reglas propias en JSON** ([docs/rules.md](docs/rules.md), [ADR 0005](docs/adr/0005-reglas-declarativas-sin-regex.md)): «Reglas propias → Cargar reglas (.json)» en la portada valida el fichero entero (errores con regla, ruta y motivo), enseña una vista previa sobre el historial y las activa como un detector más (`custom`). Campos y operadores en listas cerradas, sin expresiones regulares, con topes de 200 KB, 100 reglas, 4 niveles, 20 condiciones y 200 valores. Una regla propia nunca baja la nota. Con el historial se guardan en un store nuevo (`rules`, base v2).
+- `samples/rules/ejemplo.json` con tres reglas de ejemplo y `docs/rules.schema.json` (JSON Schema 2020-12).
 - `src/storage/` con su validador de esquema y su informe recortado, y e2e del historial (privacidad, recarga, borrar, exportar e importar, axe, teclado y diseño).
 
 ## 2.3.0 · 2026-11-07 · Threat Intel local
