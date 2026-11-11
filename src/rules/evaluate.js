@@ -10,6 +10,8 @@ import { HEADER_FIELDS, LIST_FIELDS, normalize } from './validate.js';
 
 const EVIDENCE_MAX = 200;
 const LIST_SET = new Set(LIST_FIELDS);
+const BODY_FIELDS = new Set(['body.text']);
+const TEXT_OPS = new Set(['equals', 'contains', 'starts-with', 'ends-with']);
 
 const str = (v) => (typeof v === 'string' && v ? v : null);
 const domainOf = (address) => {
@@ -71,12 +73,15 @@ const TEXT_TESTS = {
 
 function leaf({ field, op, value }, email, prior, cache) {
   const values = valuesOf(field, email, prior, cache);
-  if (op === 'exists') return values.length ? values[0].raw : null;
+  if (op === 'exists') return values.length ? (BODY_FIELDS.has(field) ? '' : values[0].raw) : null;
   if (op === 'count-gte') return LIST_SET.has(field) && values.length >= value ? String(values.length) : null;
   const check = Object.hasOwn(TEXT_TESTS, op) ? TEXT_TESTS[op] : null;
   if (!check) return null;
   const hit = values.find((v) => check(v.norm, value));
-  return hit ? hit.norm : null;
+  if (!hit) return null;
+  // Del cuerpo solo sale lo que buscaba la regla, nunca el texto del correo (el historial no lo guarda).
+  if (BODY_FIELDS.has(field)) return TEXT_OPS.has(op) ? value : '';
+  return hit.norm;
 }
 
 /** Devuelve la evidencia (texto) si el nodo se cumple, o null. */

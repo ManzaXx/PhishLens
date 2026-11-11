@@ -11,7 +11,8 @@ const MAX_DEPTH = 16;
 const MAX_FINDINGS = 500;
 const BODY_EXCERPT = 40;
 // Detectores cuya evidencia copia trozos del cuerpo del correo (Ruling 2 del plan del PR10).
-const BODY_DETECTORS = new Set(['language', 'html']);
+// «custom»: una regla propia puede mirar el cuerpo (PR13); su evidencia se recorta igual.
+const BODY_DETECTORS = new Set(['language', 'html', 'custom']);
 const BANNED = new Set(['__proto__', 'constructor', 'prototype']);
 const KINDS = new Set(['eml', 'text', 'url']);
 const LEVEL_SET = new Set(LEVELS.map((l) => l.level));

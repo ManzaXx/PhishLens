@@ -198,3 +198,25 @@ test('teclado: Tab llega a «Reglas propias» y a «Cargar reglas»; Enter abre 
   assert.equal(await page.evaluate(() => document.activeElement?.textContent), 'Activar reglas');
   await context.close();
 });
+
+test('revisión final: quitar las reglas con el historial apagado y volver a encenderlo no las resucita', { skip }, async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await home(page);
+  const toggle = page.locator('#history-toggle');
+  await toggle.check();
+  await page.locator('#history-status', { hasText: 'Historial activado.' }).waitFor();
+  await activate(page);
+  await toggle.uncheck();
+  await page.locator('#history-status', { hasText: 'Historial desactivado.' }).waitFor();
+  await page.getByRole('button', { name: 'Quitar reglas' }).click();
+  await page.locator('#rules-status', { hasText: 'Reglas propias quitadas.' }).waitFor();
+  await toggle.check();
+  await page.locator('#history-status', { hasText: 'Historial activado.' }).waitFor();
+  await page.waitForTimeout(300);
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector('#history-toggle').checked);
+  await page.waitForTimeout(500);
+  assert.match(await page.locator('#rules-panel').textContent(), /No hay reglas propias cargadas\./);
+  await context.close();
+});

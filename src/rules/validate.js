@@ -38,7 +38,8 @@ const ID = /^[a-z0-9.-]{3,64}$/;
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
-const show = (v) => String(typeof v === 'string' ? v : JSON.stringify(v)).slice(0, 60);
+// Sin JSON.stringify: un valor anidado miles de niveles desbordaría la pila.
+const show = (v) => (typeof v === 'string' ? v : Array.isArray(v) ? 'una lista' : v === null ? 'null' : typeof v === 'object' ? 'un objeto' : String(v)).slice(0, 60);
 
 /** Texto para comparar: Unicode NFKC y minúsculas. */
 export const normalize = (v) => String(v).normalize('NFKC').toLowerCase();

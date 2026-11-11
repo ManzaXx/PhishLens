@@ -170,3 +170,19 @@ test('no hay new RegExp ni RegExp( en src/rules/', () => {
     assert.ok(!/RegExp\s*\(/.test(code), name);
   }
 });
+
+test('revisión final: listas anidadas 5.000 niveles en field, op o technique no hacen lanzar al validador', () => {
+  // El texto se arma a mano: JSON.stringify de algo tan anidado ya desborda la pila en el propio test.
+  const deep = `${'['.repeat(5000)}${']'.repeat(5000)}`;
+  const base = withRule({ when: { field: 'subject', op: 'exists' }, technique: 'T1566.002' });
+  for (const text of [
+    base.replace('"field":"subject"', `"field":${deep}`),
+    base.replace('"op":"exists"', `"op":${deep}`),
+    base.replace('"technique":"T1566.002"', `"technique":${deep}`),
+  ]) {
+    assert.notEqual(text, base);
+    let out;
+    assert.doesNotThrow(() => { out = validateRules(text); });
+    assert.equal(out.ok, false);
+  }
+});

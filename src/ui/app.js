@@ -91,8 +91,9 @@ historyToggle.addEventListener('change', async () => {
   if (historyToggle.checked) {
     const res = await historyControl.enable();
     if (res.ok) historyStatus.textContent = 'Historial activado.';
-    // Las reglas propias activas pasan a guardarse con el historial.
-    if (res.ok && state.rules) await historyControl.saveRules(state.rules.source);
+    // La base queda como la pestaña: las reglas activas se guardan y, si no hay, se borran las viejas
+    // (pudieron quitarse con el historial apagado y volverían al recargar).
+    if (res.ok) await (state.rules ? historyControl.saveRules(state.rules.source) : historyControl.clearRules());
   } else {
     historyControl.disable();
     historyStatus.textContent = 'Historial desactivado. Lo ya guardado sigue ahí hasta que lo borres.';

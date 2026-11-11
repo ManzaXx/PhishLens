@@ -73,7 +73,7 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 ## Historial
 
 - **Opcional y apagado por defecto.** Con el interruptor apagado no se crea la base de datos.
-- **Qué se guarda:** el informe (nivel, puntuación, hallazgos, técnicas, IOCs, remitente y asunto) y el SHA-256 del texto analizado. **Qué no:** el cuerpo, el HTML, las cabeceras en bruto ni los bytes de los adjuntos. La evidencia de las reglas de lenguaje y HTML se recorta a 40 caracteres.
+- **Qué se guarda:** el informe (nivel, puntuación, hallazgos, técnicas, IOCs, remitente y asunto) y el SHA-256 del texto analizado. **Qué no:** el cuerpo, el HTML, las cabeceras en bruto ni los bytes de los adjuntos. La evidencia de las reglas de lenguaje, de HTML y de las reglas propias se recorta a 40 caracteres; la de una regla propia sobre `body.text` es solo el término buscado, nunca el cuerpo.
 - **Un análisis guardado no se puede volver a analizar** ni verificar su DKIM: el correo no está.
 - **500 análisis como mucho.** Al pasar, se borra el más antiguo y se avisa.
 - **Sin cifrado.** Lo guardado está en el perfil del navegador: quien use ese perfil lo puede ver. La exportación `.json` tampoco va cifrada.

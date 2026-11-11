@@ -250,3 +250,17 @@ test('findingCard pinta «Regla propia» y el título con textContent (<script> 
   assert.equal(title.textContent, '<script>alert(1)</script>');
   assert.equal(find(card, (n) => (n.localName ?? n.tagName?.toLowerCase()) === 'script'), null);
 });
+
+test('revisión final: una regla sobre body.text no lleva el cuerpo a la evidencia ni al historial', async () => {
+  const { slimReport } = await import('../../src/storage/schema.js');
+  const secret = 'Cuenta bancaria 1234-5678-9012. Diga su PIN secreto al operador.';
+  const value = `Subject: x\r\nFrom: a@b.es\r\n\r\n${secret}`;
+  const rules = rulesOf({ any: [c('body.text', 'contains', 'pin'), c('body.text', 'exists')] });
+  const report = analyzeInput({ kind: 'eml', value, rules });
+  const f = report.findings.find((x) => x.id === 'custom.prueba');
+  assert.equal(f.evidence, 'pin');
+  const [g] = customFindings(rulesOf(c('body.text', 'exists')), parseEml(value), []);
+  assert.ok(!g.evidence.includes('1234'), g.evidence);
+  const slim = JSON.stringify(slimReport(analyzeInput({ kind: 'eml', value, rules: rulesOf(c('body.text', 'exists')) })));
+  assert.ok(!slim.includes('1234-5678'), 'el cuerpo no entra en el informe recortado');
+});
