@@ -1,4 +1,3 @@
-# Copia autocontenida para cuando proyectoCiber/ sea la raíz de su propio repositorio.
 # Actualizaciones semanales de las dependencias de desarrollo de PhishLens (solo tests: la web no tiene
 # dependencias en tiempo de ejecución) y de las Actions fijadas por SHA.
 version: 2

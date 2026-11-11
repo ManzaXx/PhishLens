@@ -6,7 +6,7 @@
 
 **¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
 
-[![Tests](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml/badge.svg)](https://github.com/ManzaXx/ProyectosPersonales/actions/workflows/phishlens-tests.yml)
+[![Tests](https://github.com/ManzaXx/PhishLens/actions/workflows/tests.yml/badge.svg)](https://github.com/ManzaXx/PhishLens/actions/workflows/tests.yml)
 ![Tests](https://img.shields.io/badge/tests-732%20%2B%2069%20e2e-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
@@ -18,6 +18,8 @@
 ![PhishLens en modo sencillo: «No te fíes: es phishing», qué hacer ahora y por qué](docs/img/sencillo-claro.png)
 
 PhishLens analiza un email (archivo `.eml` o texto pegado) o una URL y devuelve una **puntuación de riesgo de 0 a 100**. Explica cada señal en lenguaje claro, la relaciona con su técnica de **MITRE ATT&CK** y extrae los **indicadores de compromiso (IOCs)** listos para compartir con un equipo de seguridad.
+
+**[Pruébalo en el navegador → manzaxx.github.io/PhishLens](https://manzaxx.github.io/PhishLens/)**
 
 Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una Content-Security-Policy estricta impide cualquier conexión a terceros.
 
@@ -108,8 +110,8 @@ Aparte de la nota, el informe da la **confianza del análisis** (alta, media o b
 ## 🚀 Pruébalo
 
 ```bash
-git clone https://github.com/ManzaXx/ProyectosPersonales.git
-cd ProyectosPersonales/proyectoCiber
+git clone https://github.com/ManzaXx/PhishLens.git
+cd PhishLens
 python -m http.server 8080      # o: npx serve .
 # abre http://localhost:8080
 ```
@@ -133,7 +135,7 @@ flowchart LR
 ```
 
 ```
-proyectoCiber/
+PhishLens/
 ├── index.html               # Página única con CSP estricta
 ├── assets/                  # CSS (tema claro/oscuro), favicon e imagen para compartir
 ├── src/
@@ -166,23 +168,17 @@ proyectoCiber/
 ## 🧪 Tests
 
 ```bash
-cd proyectoCiber
 node --test                 # unitarios, golden, fuzzing (2.000 casos), diferenciales y rendimiento
 npm run fuzz                # 20.000 casos de fuzzing
 npm run bench               # reescribe docs/benchmark.md
 npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
 ```
 
-GitHub Actions ejecuta todo en cada push (`.github/workflows/phishlens-tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 13 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
+GitHub Actions ejecuta todo en cada push (`.github/workflows/tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 13 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
 
 ## 🌐 Publicar la demo
 
-El workflow `.github/workflows/phishlens-pages.yml` publica la web en GitHub Pages:
-
-1. Elige *GitHub Actions* como origen en *Settings → Pages*.
-2. Lanza el workflow a mano desde la pestaña *Actions*.
-
-GitHub Pages en un repositorio privado requiere GitHub Pro. Sin Pro, puedes hacer el repositorio público o copiar `proyectoCiber/` a un repositorio público.
+La demo está en **https://manzaxx.github.io/PhishLens/**. El workflow `.github/workflows/pages.yml` la vuelve a publicar en cada push a `main`, después de pasar los tests. En un fork, elige *GitHub Actions* como origen en *Settings → Pages*.
 
 ## ⚠️ Limitaciones
 

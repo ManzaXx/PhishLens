@@ -48,7 +48,7 @@ test('«Cómo funciona» explica topes, combinaciones y confianza y enlaza a sco
   assert.match(how, /tope/);
   assert.match(how, /combinaciones/);
   assert.match(how, /confianza/);
-  assert.match(how, /href="https:\/\/github\.com\/ManzaXx\/ProyectosPersonales\/blob\/main\/proyectoCiber\/docs\/scoring\.md"/);
+  assert.match(how, /href="https:\/\/github\.com\/ManzaXx\/PhishLens\/blob\/main\/docs\/scoring\.md"/);
 });
 
 test('el informe no es una región viva entera: un aviso corto anuncia el resultado', () => {

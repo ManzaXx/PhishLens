@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ManzaXx/ProyectosPersonales/proyectoCiber/docs/rules.schema.json",
+  "$id": "https://github.com/ManzaXx/PhishLens/blob/main/docs/rules.schema.json",
   "title": "Reglas propias de PhishLens (rules/1)",
   "description": "Solo documentación: la validación la hace src/rules/validate.js, que además pone los topes de profundidad (4 niveles) y de condiciones (20 por regla).",
   "type": "object",

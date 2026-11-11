@@ -32,7 +32,6 @@ Versión completa, con la prueba de cada mitigación, en [docs/threat-model.md](
 ## Cómo se comprueba
 
 ```bash
-cd proyectoCiber
 node --test tests/unit/security.test.js   # sin navegador
 npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
 ```
@@ -46,4 +45,4 @@ npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y a
 
 ## Reportar una vulnerabilidad
 
-Abre un issue en [ManzaXx/ProyectosPersonales](https://github.com/ManzaXx/ProyectosPersonales/issues) sin detalles explotables y te contactaré para ver el resto en privado.
+Abre un issue en [ManzaXx/PhishLens](https://github.com/ManzaXx/PhishLens/issues) sin detalles explotables y te contactaré para ver el resto en privado.

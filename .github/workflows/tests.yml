@@ -1,5 +1,3 @@
-# Copia autocontenida para cuando proyectoCiber/ sea la raíz de su propio repositorio.
-# En ProyectosPersonales GitHub solo lee los workflows de la raíz, así que este no se ejecuta.
 name: PhishLens · tests
 
 on:

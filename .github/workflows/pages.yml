@@ -1,10 +1,9 @@
-# Copia autocontenida para cuando proyectoCiber/ sea la raíz de su propio repositorio.
-# En ProyectosPersonales GitHub solo lee los workflows de la raíz, así que este no se ejecuta.
 name: PhishLens · publicar en GitHub Pages
 
-# Se lanza a mano (Actions → "PhishLens · publicar en GitHub Pages" → Run workflow).
-# Antes: Settings → Pages → Source: "GitHub Actions".
+# Publica en cada push a main (y a mano desde Actions). Requiere Settings → Pages → Source: "GitHub Actions".
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -36,8 +35,8 @@ jobs:
         run: |
           mkdir -p _site
           cp -r index.html assets src samples _site/
-      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
-      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: _site
       - id: deployment
