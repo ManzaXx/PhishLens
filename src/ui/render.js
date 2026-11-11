@@ -9,6 +9,7 @@ import { menuButton } from './components/menu-button.js';
 import { batchBar } from './components/batch-bar.js';
 import { renderSimple } from './views/simple.js';
 import { renderAnalyst } from './views/analyst.js';
+import { localizeReport } from './localize.js';
 
 const EXPORTS = ['export-json', 'export-stix', 'copy-iocs', 'forensic'];
 /** Opciones del menú Exportar, en el idioma activo. */
@@ -26,7 +27,7 @@ function toolbar(mode) {
 /** Barra del lote a partir de su estado: {entries, skipped, campaigns, current}. */
 function lotBar(batch) {
   const items = batch.entries
-    .map(({ key, name, report }) => ({ key, name, level: report.level, label: report.label, score: report.score }))
+    .map(({ key, name, report }) => ({ key, name, level: report.level, label: t(`level.${report.level}`), score: report.score }))
     .sort((a, b) => String(a.name).localeCompare(String(b.name), LOCALE[getLang()]) || (a.key < b.key ? -1 : 1));
   return batchBar({ items, current: batch.current, campaigns: batch.campaigns?.length ?? 0, skipped: batch.skipped?.length ?? 0 });
 }
@@ -37,7 +38,8 @@ function lotBar(batch) {
  * options.authStatus, dkimKey y spfRecord: estado de la comprobación local de DKIM y SPF.
  * options.batch: el lote analizado (si lo hay), con su grafo y sus campañas.
  */
-export function renderReport(container, report, options = {}) {
+export function renderReport(container, original, options = {}) {
+  const report = localizeReport(original);
   const mode = options.mode === 'analyst' ? 'analyst' : 'simple';
   container.replaceChildren();
   container.className = `wrap report report--${mode} level-${report.level}`;

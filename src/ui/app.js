@@ -27,6 +27,7 @@ import { rulesPanel } from './components/rules-panel.js';
 import { HISTORY_MAX } from '../storage/history.js';
 import { t, getLang, setLang, onLangChange, initialLang, LANG_KEY, LOCALE, fmtDate } from '../i18n/index.js';
 import { translatePage } from './translate-page.js';
+import { localizeReport } from './localize.js';
 
 const MAX_BYTES = LIMITS.inputBytes;
 const MAX_MB = Math.round(MAX_BYTES / 1024 / 1024);
@@ -680,7 +681,7 @@ async function runBatch(files) {
   say(dropzone.querySelector('.dropzone__hint'), 'app.drop.batch');
   paint();
   historyControl.recordBatch(state.batch, state.batchTexts);
-  announce(t('app.batch.announce', { emails: t('campaigns.emails.count', { count: done }), campaigns: t('app.campaigns.count', { count: state.batch.campaigns.length }), headline: state.lastReport.verdict.headline }));
+  announce(t('app.batch.announce', { emails: t('campaigns.emails.count', { count: done }), campaigns: t('app.campaigns.count', { count: state.batch.campaigns.length }), headline: localizeReport(state.lastReport).verdict.headline }));
   reportBox.scrollIntoView({ block: 'start' });
 }
 
@@ -725,7 +726,7 @@ function run() {
     state.analyzedAt = new Date();
     state.lastReport = analyzeWith(input);
     paint();
-    announce(t('app.result', { headline: state.lastReport.verdict.headline, score: state.lastReport.score }));
+    announce(t('app.result', { headline: localizeReport(state.lastReport).verdict.headline, score: state.lastReport.score }));
     historyControl.record(input, state.lastReport, input.kind === 'eml' ? state.fileName ?? null : null);
   } catch {
     // Un email malformado nunca debe dejar la página rota.
@@ -921,7 +922,7 @@ reportBox.addEventListener('change', (e) => {
   paint();
   const select = $('#batch-email');
   select?.focus();
-  announce(t('app.batch.email', { headline: state.lastReport.verdict.headline, score: state.lastReport.score }));
+  announce(t('app.batch.email', { headline: localizeReport(state.lastReport).verdict.headline, score: state.lastReport.score }));
 });
 
 // ---------- Menús (patrón ARIA menu button) ----------
@@ -1187,7 +1188,7 @@ if (legendBox) {
   legendBox.replaceChildren(...levelLegend().map((l) => {
     const li = document.createElement('li');
     li.className = `legend__item legend__item--${l.level}`;
-    li.textContent = `${l.min}–${l.max} ${l.label}`;
+    li.textContent = `${l.min}–${l.max} ${t(`level.${l.level}`)}`;
     return li;
   }));
 }

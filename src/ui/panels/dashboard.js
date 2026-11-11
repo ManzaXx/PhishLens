@@ -7,7 +7,7 @@ import { emptyState } from '../components/empty-state.js';
 import { stackedBars, hBars } from '../components/bar-chart.js';
 import { t, fmtDate } from '../../i18n/index.js';
 
-const SERIES = [...LEVELS].reverse().map((l) => ({ key: l.level, label: l.label }));
+const series = () => [...LEVELS].reverse().map((l) => ({ key: l.level, label: t(`level.${l.level}`) }));
 const TYPES = new Set(['domains', 'ips', 'hashes', 'sha1', 'md5']);
 const typeLabel = (type) => (TYPES.has(type) ? t(`ioc.type.${type}`) : type);
 const button = (text, action, attrs = {}) => el('button', { className: 'btn', text, attrs: { type: 'button', 'data-action': action, ...attrs } });
@@ -32,7 +32,7 @@ function timelineCard({ timeline }) {
   const note = timeline.unit === 'day' ? t('dashboard.timeline.day') : t('dashboard.timeline.week');
   const omitted = timeline.omitted ? ` ${t('dashboard.timeline.omitted', { count: timeline.omitted })}` : '';
   return card(t('dashboard.timeline'),
-    stackedBars({ caption: t('dashboard.timeline'), series: SERIES, buckets: timeline.buckets.map((b) => ({ label: fmtDay(b.start), counts: b.counts })) }),
+    stackedBars({ caption: t('dashboard.timeline'), series: series(), buckets: timeline.buckets.map((b) => ({ label: fmtDay(b.start), counts: b.counts })) }),
     el('p', { className: 'hint', text: `${note}${omitted}` }));
 }
 

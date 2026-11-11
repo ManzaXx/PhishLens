@@ -5,7 +5,7 @@ import { LEVELS } from '../../core/scoring.js';
 import { emptyState } from '../components/empty-state.js';
 import { t, getLang, LOCALE } from '../../i18n/index.js';
 
-const LEVEL_LABEL = new Map(LEVELS.map((l) => [l.level, l.label]));
+const levelLabel = (level) => (LEVELS.some((l) => l.level === level) ? t(`level.${level}`) : '');
 const emailsCount = (n) => t('campaigns.emails.count', { count: n });
 
 /** Campaña elegida (por id) o la primera. */
@@ -24,7 +24,7 @@ export function campaignsPanel(report, { batch, campaign } = {}) {
     if (c === chosen) attrs['aria-current'] = 'true';
     list.append(el('li', {}, el('button', {
       className: `campaign-list__btn level-${c.level}`,
-      text: `${c.name} · ${emailsCount(c.emails.length)} · ${LEVEL_LABEL.get(c.level) ?? ''}`,
+      text: `${c.name} · ${emailsCount(c.emails.length)} · ${levelLabel(c.level)}`,
       attrs,
     })));
   }

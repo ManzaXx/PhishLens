@@ -86,7 +86,7 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `route.time-travel` | T1684.002 | 08 | `unit/mitre.test.js`, `unit/route.test.js`, `unit/samples.test.js` | ✅ |
 | `route.too-many-hops` | — | — | `unit/route.test.js` | ✅ |
 | `route.unparseable` | — | — | `unit/route.test.js` | ✅ |
-| `sender.brand-impersonation` | T1684.001 | 03, 04, 05, 08, 09, 12 | `unit/advice.test.js`, `unit/engine.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
+| `sender.brand-impersonation` | T1684.001 | 03, 04, 05, 08, 09, 12 | `unit/advice.test.js`, `unit/engine.test.js`, `unit/localize.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
 | `sender.display-name-address` | T1684.001 | 09 | `unit/samples.test.js`, `unit/scoring.test.js`, `unit/sender.test.js` | ✅ |
 | `sender.invisible-chars` | T1027 | 07 | `unit/sender.test.js` | ✅ |
 | `sender.mixed-script` | T1684.001 | 07 | `unit/sender.test.js` | ✅ |

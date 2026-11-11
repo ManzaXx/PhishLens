@@ -3,19 +3,21 @@
 // sustituyen en una sola pasada: un valor del correo con llaves no se vuelve a interpolar.
 import ES from './es.js';
 import EN from './en.js';
+import RULES_EN from './rules-en.js';
 
 export const LANG_KEY = 'phishlens-lang';
 export const LOCALE = Object.freeze({ es: 'es-ES', en: 'en-GB' });
 const LANGS = new Set(['es', 'en']);
 
 const toMap = (dict) => new Map(Object.entries(dict ?? {}));
-let dicts = { es: toMap(ES), en: toMap(EN) };
+const REAL = () => ({ es: toMap(ES), en: toMap({ ...EN, ...RULES_EN }) });
+let dicts = REAL();
 let lang = 'es';
 const listeners = new Set();
 
 /** Solo para tests: cambia los diccionarios (null vuelve a los de verdad). */
 export function _setDictionaries(next) {
-  dicts = next ? { es: toMap(next.es), en: toMap(next.en) } : { es: toMap(ES), en: toMap(EN) };
+  dicts = next ? { es: toMap(next.es), en: toMap(next.en) } : REAL();
 }
 
 export const getLang = () => lang;
@@ -53,6 +55,39 @@ export function t(key, params) {
   if (text == null) return key;
   if (!params) return text;
   return text.replace(/\{(\w+)\}/g, (all, name) => (Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : all));
+}
+
+// Plantilla inglesa de una clave del informe: con count, su plural; sin count, la clave o su «.one».
+function englishTemplate(key, params) {
+  const en = dicts.en;
+  if (typeof params?.count === 'number') {
+    const form = new Intl.PluralRules(LOCALE.en).select(params.count);
+    return en.get(`${key}.${form}`) ?? en.get(`${key}.other`) ?? en.get(key) ?? null;
+  }
+  return en.get(key) ?? en.get(`${key}.one`) ?? null;
+}
+
+// Un parámetro {key} es una palabra que elige el detector: se traduce antes de sustituirla.
+const resolveParam = (v) => (v && typeof v === 'object' && typeof v.key === 'string' ? t(v.key) : v);
+
+/** Por qué tr() no puede usar la traducción inglesa de `key` (null si puede). */
+export function trProblem(key, params) {
+  const tpl = englishTemplate(key, params);
+  if (tpl == null) return 'sin traducción';
+  for (const [, name] of tpl.matchAll(/\{(\w+)\}/g)) {
+    if (!params || !Object.prototype.hasOwnProperty.call(params, name) || params[name] == null) return `falta {${name}}`;
+  }
+  return null;
+}
+
+/**
+ * Texto del informe en el idioma activo. En español, `fallback` (el texto del núcleo). En inglés, la
+ * plantilla con sus parámetros; si falta la clave o algún parámetro, `fallback` entero, nunca media frase.
+ */
+export function tr(key, params, fallback) {
+  if (lang === 'es' || trProblem(key, params)) return fallback;
+  const tpl = englishTemplate(key, params);
+  return tpl.replace(/\{(\w+)\}/g, (all, name) => String(resolveParam(params[name])));
 }
 
 /** Fecha en el idioma activo; '' si no es válida. */
