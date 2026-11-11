@@ -5,9 +5,12 @@
 ### Corregido
 - **Correos legítimos marcados como «Resultados de autenticación falsificados».** Postfix con OpenDKIM/OpenDMARC y Gmail escriben su `Authentication-Results` justo debajo de su propio `Received`; hasta ahora eso se tomaba como una cabecera inventada (grave, fiabilidad alta) y un correo legítimo con `dmarc=pass` podía llegar a «Probable phishing». Ahora esa zona queda «sin confirmar», y solo es falsificada si el receptor ya escribió la suya por encima, si la contradice o si debajo hay `Received` inventados con su nombre.
 - **El receptor de Gmail era `2002:a05:…`**: la línea interna `Received: by 2002:…` se tomaba como el servidor receptor. Ahora se saltan las líneas sin nombre de host.
+- **Dominios de servicios multiusuario alineados por error.** El dominio registrable se calculaba con ocho sufijos a mano: `attacker.github.io` y `legit.github.io` contaban como el mismo dominio para DMARC, el Reply-To o el Return-Path, igual que dos clientes de pages.dev, herokuapp.com o duckdns.org, y sufijos como `ne.jp` o `nom.es` se juntaban enteros. Ahora se usa la Public Suffix List completa empaquetada ([ADR 0006](docs/adr/0006-public-suffix-list.md)).
+- **IDN**: un dominio en Unicode (`münchen.de`) y su forma punycode (`xn--mnchen-3ya.de`) ya son el mismo dominio.
 - **Microsoft 365 con saltos internos**: los saltos de Exchange Online entre sus propias redes (IP en 2603:10a6::/32 o 2603:10b6::/32, sin corchetes) alargan la zona de confianza. La IP entre paréntesis sin corchetes (formato de Exchange) también se lee.
 
 ### Añadido
+- `src/data/psl.js` (Public Suffix List del 2026-11-11, 6.951 reglas ICANN y 3.468 privadas, bajo MPL 2.0), generado con `tools/gen-psl.mjs` desde una copia local; la web no descarga nada. `tests/unit/psl.test.js` pasa la batería oficial `test_psl.txt`.
 - Se lee `ARC-Authentication-Results` del receptor cuando está por encima de su entrada (Gmail, Microsoft 365): es la fuente de confianza cuando la otra cabecera quedó en la zona ambigua.
 - `tests/fixtures/auth/` con disposiciones reales de cabeceras (Gmail completo y recortado, Postfix + OpenDKIM, Microsoft 365) y `tests/unit/trust-layouts.test.js`, con los ataques que deben seguir cazándose.
 
