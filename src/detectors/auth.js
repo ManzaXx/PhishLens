@@ -41,7 +41,7 @@ function declaredFindings(header) {
       detector: name,
       severity,
       title: `${check.label}: ${r.result}`,
-      params: { result: r.result, ...(header.trusted ? {} : { variant: 'untrusted' }) },
+      params: { result: r.result, authserv: header.parsed.authservId || null, ...(header.trusted ? {} : { variant: 'untrusted' }) },
       detail: header.trusted ? check.detail : check.detail + UNTRUSTED_NOTE,
       evidence: `${check.key}=${r.result}${header.parsed.authservId ? ` (según ${header.parsed.authservId})` : ''}`,
       reliability: header.trusted ? 'medium' : 'low',

@@ -118,3 +118,14 @@ test('un informe de la 3.0 sin referencias se queda en español sin errores', ()
   assert.equal(en.auth.spf.detail, r.auth.spf.detail);
   assert.equal(en.label, 'Phishing almost certain');
 });
+
+test('en inglés: la evidencia de SPF, DKIM y DMARC declarados no lleva «según»', () => {
+  setLang('en');
+  const r = analyzed.map(({ r: x }) => localizeReport(x));
+  const ev = r.flatMap((x) => x.findings).filter((f) => /^auth\.(spf|dkim|dmarc)$/.test(f.id)).map((f) => f.evidence);
+  assert.ok(ev.some((e) => /\(per [^)]+\)$/.test(e)), ev.join(' | '));
+  assert.ok(ev.every((e) => !e.includes('según')), ev.join(' | '));
+  setLang('es');
+  const es = sample('01');
+  assert.equal(localizeReport(es), es);
+});

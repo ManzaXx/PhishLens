@@ -1,12 +1,15 @@
 // Panel «IOCs»: el grafo del lote (o del correo) con su tabla, y los indicadores del correo en formato defanged.
 import { el } from '../dom.js';
 import { defang, PLAIN, IOC_SECTIONS as IOC_LABELS } from '../../intel/ioc.js';
-import { buildGraph, NODE_LABELS, NODE_TYPES } from '../../intel/graph.js';
+import { buildGraph, NODE_TYPES } from '../../intel/graph.js';
 import { layoutGraph } from '../../intel/layout.js';
 import { toUnicode } from '../../parser/punycode.js';
 import { graphView } from '../components/graph.js';
 import { dataTable } from '../components/data-table.js';
 import { t, getLang, LOCALE } from '../../i18n/index.js';
+
+/** Nombre del tipo de nodo en el idioma de la interfaz. */
+const typeLabels = () => Object.fromEntries(NODE_TYPES.map((k) => [k, t(`graph.type.${k}`)]));
 
 const TABLE_LIMIT = 500;
 
@@ -24,17 +27,18 @@ function degrees(graph) {
 
 /** Datos listos para graphView a partir del grafo y su disposición. */
 export function graphModel(graph, layout, current = null) {
+  const labels = typeLabels();
   const byId = new Map(graph.nodes.map((n) => [n.id, n]));
   const d = degrees(graph);
   return {
     nodes: layout.nodes.map(({ id, x, y }) => {
       const n = byId.get(id);
-      return { id, type: n.type, typeLabel: NODE_LABELS[n.type], text: nodeText(n), x, y, relations: d.get(id) ?? 0 };
+      return { id, type: n.type, typeLabel: labels[n.type], text: nodeText(n), x, y, relations: d.get(id) ?? 0 };
     }),
     edges: layout.edges,
     total: graph.nodes.length,
     hidden: layout.hidden,
-    typeLabels: NODE_LABELS,
+    typeLabels: labels,
     current,
   };
 }
@@ -56,7 +60,8 @@ export function graphTable(graph, names = new Map()) {
   const d = degrees(graph);
   const order = (t) => NODE_TYPES.indexOf(t);
   const sorted = [...graph.nodes].sort((a, b) => b.emails.length - a.emails.length || order(a.type) - order(b.type) || cmp(a.id, b.id));
-  const rows = sorted.slice(0, TABLE_LIMIT).map((n) => [NODE_LABELS[n.type], nodeText(n), emailNames(n.emails, names), String(d.get(n.id) ?? 0)]);
+  const labels = typeLabels();
+  const rows = sorted.slice(0, TABLE_LIMIT).map((n) => [labels[n.type], nodeText(n), emailNames(n.emails, names), String(d.get(n.id) ?? 0)]);
   return el('div', { className: 'stack' },
     dataTable({ caption: t('iocs.table.caption'), columns: [t('iocs.table.type'), t('iocs.table.value'), t('iocs.table.emails'), t('iocs.table.relations')], rows, className: 'data-table--graph' }),
     graph.nodes.length > TABLE_LIMIT ? el('p', { className: 'graph__note', text: t('iocs.table.limit', { shown: TABLE_LIMIT, total: graph.nodes.length }) }) : null);

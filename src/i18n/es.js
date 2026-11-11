@@ -597,4 +597,10 @@ export default Object.freeze({
   "ioc.section.hashes": "SHA-256",
   "ioc.section.sha1": "SHA-1",
   "ioc.section.md5": "MD5",
+  "graph.type.email": "Correo",
+  "graph.type.address": "Dirección",
+  "graph.type.domain": "Dominio",
+  "graph.type.ip": "IP",
+  "graph.type.url": "URL",
+  "graph.type.hash": "Hash",
 });

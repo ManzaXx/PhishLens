@@ -22,6 +22,8 @@ function localizeFinding(f) {
   const out = { ...f };
   for (const [field, key, params] of findingParts(f)) out[field] = tr(key, params, f[field]);
   if (f.plain === f.title) out.plain = out.title;
+  // Solo la evidencia que escribe el motor con palabras (spf=fail (según X)); el resto es dato tal cual.
+  if (f.params?.authserv && f.evidence) out.evidence = tr(ruleKey(f, 'evidence'), f.params, f.evidence);
   return out;
 }
 

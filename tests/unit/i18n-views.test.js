@@ -134,3 +134,21 @@ test('en inglés: las secciones de IOCs y su texto para copiar', async () => {
   const { t } = await import('../../src/i18n/index.js');
   assert.match(iocsToText(r.iocs, (k) => t(`ioc.section.${k}`)), /^# URLs[\s\S]*# Domains/);
 });
+
+test('en inglés: los consejos del lateral del analista salen traducidos', () => {
+  setLang('en');
+  const side = find(V.renderAnalyst(report('03'), 'resumen'), tag('aside'));
+  const items = findAll(side, (n) => n.localName === 'li' && n.parentNode?.className === 'advice__list').map((n) => n.textContent);
+  assert.ok(items.length >= 2, items.join(' | '));
+  assert.match(items[0], /^Don't/);
+  assert.doesNotMatch(items.join(' '), /pulses|INCIBE en el/);
+});
+
+test('en inglés: la leyenda y la tabla del grafo de IOCs nombran los tipos en inglés', async () => {
+  setLang('en');
+  const { iocsPanel } = await import('../../src/ui/panels/iocs.js');
+  const text = iocsPanel(report('03')).textContent;
+  assert.match(text, /Email/);
+  assert.match(text, /Address/);
+  assert.doesNotMatch(text, /Correo|Dirección|Dominio/);
+});

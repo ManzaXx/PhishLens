@@ -28,6 +28,10 @@ El mismo correo da siempre los mismos ids. Así, si exportas dos veces o desde d
 
 El JSON se genera con `JSON.stringify`, nunca concatenando texto. Los valores dentro de un patrón se escapan (`\` → `\\`, `'` → `\'`).
 
+## Idioma
+
+Desde la 3.1 cada objeto de dominio y cada relación llevan `lang` (`es` o `en`, la propiedad común de STIX 2.1, §3.2), según el idioma de la interfaz al exportar. El idioma solo cambia los textos (`name`, `description`): los ids no dependen de él, así que dos exportaciones del mismo correo, una en español y otra en inglés, casan objeto a objeto. Los observables no llevan `lang` porque no tienen texto.
+
 ## Validar un fichero
 
 ```bash

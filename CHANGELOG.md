@@ -1,6 +1,6 @@
 # Changelog
 
-## Sin publicar · 3.1.0 en desarrollo
+## 3.1.0 · 2026-11-11 · Español e inglés
 
 Especificación en [docs/specs/2026-11-11-phishlens-3.1-i18n-design.md](docs/specs/2026-11-11-phishlens-3.1-i18n-design.md).
 
@@ -9,9 +9,12 @@ Especificación en [docs/specs/2026-11-11-phishlens-3.1-i18n-design.md](docs/spe
 - `src/i18n/`: diccionarios `es.js` y `en.js` (unos 545 textos cada uno) y `t(clave, params)` con plurales (`Intl.PluralRules`), fechas y números del idioma activo. Sin dependencias.
 - La ruta no cambia (`#analista/senales`): los enlaces ya compartidos siguen funcionando, solo cambian los rótulos.
 - Pruebas: paridad de claves y `{param}` entre los dos idiomas, un test que falla si queda un texto fijo en `src/ui/`, y e2e en inglés (axe en claro y oscuro, 360 px, privacidad, cambio en mitad de un análisis).
-
-### Pendiente para la 3.1.0 (PR15)
-- Los hallazgos, el veredicto, los consejos, las muestras y los datos del informe forense siguen en español.
+- **El informe también en inglés**: las 86 reglas (título, detalle y texto llano), el veredicto, los tres pasos, la confianza, el resumen, la autenticación, las campañas, los errores de las reglas propias, los títulos de las muestras y el informe forense.
+- El motor sigue escribiendo en español y deja al lado referencias neutras (`params` en cada hallazgo; `summaryRef`, `mainReasonRef`, `verdict.stepCodes`, `confidence.codes`, `auth.*.detailRef`). La interfaz traduce en un solo sitio (`src/ui/localize.js`) y, si falta una traducción o un parámetro, usa el texto en español entero: los análisis guardados con la 3.0 se siguen leyendo.
+- Las exportaciones llevan `lang` (`es` o `en`): el JSON del informe, cada objeto STIX ([docs/stix.md](docs/stix.md)) y el informe forense. Los ids no cambian con el idioma y el `reportSha256` vale en los dos.
+- Las reglas propias se muestran tal cual las escribió su autor, en cualquier idioma.
+- Capturas en inglés en `docs/img/en/` (`node tools/screenshots.mjs --lang en`).
+- `tests/unit/rules-en.test.js` ejecuta los tests de los detectores guardando cada hallazgo real y comprueba que su texto en inglés no pierde ningún parámetro.
 
 ## 3.0.0 · 2026-11-11 · Plataforma de Threat Intel local
 

@@ -3,6 +3,9 @@
 // They exist only in English: in Spanish the engine's own text is used.
 export default Object.freeze({
   'rule.brand.generic': 'a well-known company',
+  "rule.auth.spf.evidence": "spf={result} (per {authserv})",
+  "rule.auth.dkim.evidence": "dkim={result} (per {authserv})",
+  "rule.auth.dmarc.evidence": "dmarc={result} (per {authserv})",
   "rule.auth.spf.title": "SPF check: {result}",
   "rule.auth.spf.detail": "SPF checks that the server that sent the email is authorized by the domain. If it fails, the sender may be forged.",
   "rule.auth.spf.detail.untrusted": "SPF checks that the server that sent the email is authorized by the domain. If it fails, the sender may be forged. Careful: this header was not added by the server that received the email, so it could be made up.",
