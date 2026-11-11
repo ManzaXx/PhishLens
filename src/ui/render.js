@@ -1,6 +1,7 @@
 // Pinta el informe en el modo elegido. Todo el contenido del email se inserta con textContent
 // (src/ui/dom.js): nunca se interpreta como HTML ni se generan enlaces clicables a partir del email.
 import { el } from './dom.js';
+import { t, getLang, LOCALE } from '../i18n/index.js';
 import { iocsToText } from '../intel/ioc.js';
 import { toStixBundle } from '../intel/stix.js';
 import { modeSwitch } from './components/mode-switch.js';
@@ -9,27 +10,24 @@ import { batchBar } from './components/batch-bar.js';
 import { renderSimple } from './views/simple.js';
 import { renderAnalyst } from './views/analyst.js';
 
-export const EXPORT_ITEMS = [
-  { action: 'export-json', text: 'Descargar informe (JSON)' },
-  { action: 'export-stix', text: 'Descargar STIX 2.1' },
-  { action: 'copy-iocs', text: 'Copiar IOCs' },
-  { action: 'forensic', text: 'Informe forense' },
-];
+const EXPORTS = ['export-json', 'export-stix', 'copy-iocs', 'forensic'];
+/** Opciones del menú Exportar, en el idioma activo. */
+export const exportItems = () => EXPORTS.map((action) => ({ action, text: t(`export.${action}`) }));
 
 /** Barra del informe: nivel de detalle, menú Exportar y la acción principal. */
 function toolbar(mode) {
   return el('div', { className: 'report__toolbar' },
     modeSwitch(mode),
     el('div', { className: 'report__actions' },
-      menuButton({ label: 'Exportar', items: EXPORT_ITEMS }),
-      el('button', { className: 'btn btn--primary', text: 'Analizar otro', attrs: { type: 'button', 'data-action': 'new' } })));
+      menuButton({ label: t('export.label'), items: exportItems() }),
+      el('button', { className: 'btn btn--primary', text: t('report.new'), attrs: { type: 'button', 'data-action': 'new' } })));
 }
 
 /** Barra del lote a partir de su estado: {entries, skipped, campaigns, current}. */
 function lotBar(batch) {
   const items = batch.entries
     .map(({ key, name, report }) => ({ key, name, level: report.level, label: report.label, score: report.score }))
-    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'es') || (a.key < b.key ? -1 : 1));
+    .sort((a, b) => String(a.name).localeCompare(String(b.name), LOCALE[getLang()]) || (a.key < b.key ? -1 : 1));
   return batchBar({ items, current: batch.current, campaigns: batch.campaigns?.length ?? 0, skipped: batch.skipped?.length ?? 0 });
 }
 

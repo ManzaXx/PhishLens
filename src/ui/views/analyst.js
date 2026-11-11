@@ -17,6 +17,7 @@ import { urlsPanel } from '../panels/urls.js';
 import { campaignsPanel } from '../panels/campaigns.js';
 import { historyPanel } from '../panels/history.js';
 import { dashboardPanel } from '../panels/dashboard.js';
+import { t } from '../../i18n/index.js';
 
 const PANELS = new Map([
   ['resumen', summaryPanel], ['senales', findingsPanel], ['vista-segura', safeViewPanel], ['autenticacion', authPanel],
@@ -28,7 +29,7 @@ const IOC_KEYS = IOC_SECTIONS.map(([key]) => key);
 
 /** Riesgo por categoría: cada fila dice su número en texto; la barra solo acompaña. */
 function categoryList(report) {
-  const list = el('ul', { className: 'meter-list', attrs: { 'aria-label': 'Riesgo por categoría' } });
+  const list = el('ul', { className: 'meter-list', attrs: { 'aria-label': t('analyst.categories') } });
   for (const c of report.categories ?? []) list.append(el('li', {}, meter({ label: c.label, value: c.score, max: c.max })));
   return list;
 }
@@ -42,15 +43,15 @@ function listCard(title, className, items) {
 function adviceBox(report) {
   const list = el('ul', { className: 'advice__list' });
   for (const line of adviceFor(report)) list.append(el('li', { text: line }));
-  return el('div', { className: 'advice' }, el('h3', { text: 'Qué hacer ahora' }), list);
+  return el('div', { className: 'advice' }, el('h3', { text: t('analyst.advice') }), list);
 }
 
 function sidebar(report) {
-  const side = el('aside', { className: 'side', attrs: { 'aria-label': 'Contexto del informe' } });
-  side.append(el('div', { className: 'card' }, el('h3', { text: 'Riesgo por categoría' }), categoryList(report)));
-  if (report.correlations?.length) side.append(listCard('Combinaciones peligrosas', 'correlations', report.correlations.map((c) => c.label)));
+  const side = el('aside', { className: 'side', attrs: { 'aria-label': t('analyst.side') } });
+  side.append(el('div', { className: 'card' }, el('h3', { text: t('analyst.categories') }), categoryList(report)));
+  if (report.correlations?.length) side.append(listCard(t('analyst.correlations'), 'correlations', report.correlations.map((c) => c.label)));
   const trusted = report.findings.filter((f) => f.polarity === 'trust');
-  if (trusted.length) side.append(listCard('Señales a favor', 'trust-list', trusted.map((f) => f.title)));
+  if (trusted.length) side.append(listCard(t('analyst.trust'), 'trust-list', trusted.map((f) => f.title)));
   side.append(el('div', { className: 'card' }, adviceBox(report)));
   return side;
 }

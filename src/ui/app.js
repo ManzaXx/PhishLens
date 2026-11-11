@@ -20,10 +20,13 @@ import { VERSION } from './render.js';
 
 import { LIMITS } from '../lib/limits.js';
 import { reveal } from '../lib/text.js';
+import { decimal } from './dom.js';
 import { validateRules, formatRuleError, RULES_LIMITS } from '../rules/validate.js';
 import { previewRules } from '../rules/preview.js';
 import { rulesPanel } from './components/rules-panel.js';
 import { HISTORY_MAX } from '../storage/history.js';
+import { t, getLang, setLang, onLangChange, initialLang, LANG_KEY, LOCALE, fmtDate } from '../i18n/index.js';
+import { translatePage } from './translate-page.js';
 
 const MAX_BYTES = LIMITS.inputBytes;
 const MAX_MB = Math.round(MAX_BYTES / 1024 / 1024);
@@ -36,11 +39,27 @@ if (window.top !== window.self) {
   a.href = window.location.href;
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
-  a.textContent = 'Abre PhishLens en su propia pestaña';
+  a.textContent = t('app.frame');
   document.body.append(a);
   throw new Error('PhishLens no se ejecuta dentro de un iframe');
 }
 const $ = (sel) => document.querySelector(sel);
+
+// Textos de estado fuera del informe: se guarda cómo escribirlos para repetirlo al cambiar de idioma.
+const live = new Map();
+/** Pone en `node` el texto que da `text()` y lo recuerda; con null lo vacía y lo olvida. */
+function show(node, text) {
+  if (!node) return;
+  if (text == null) {
+    live.delete(node);
+    node.textContent = '';
+    return;
+  }
+  live.set(node, text);
+  node.textContent = text();
+}
+const say = (node, key, params) => show(node, () => t(key, params));
+const searchMessage = (n) => (n ? t('app.search', { count: n }) : t('app.search.none'));
 
 const state = {
   tab: 'eml', fileText: null, rules: null, lastReport: null, lastInput: null, analyst: {}, route: { mode: 'simple', view: 'resumen' },
@@ -80,23 +99,23 @@ let evictedShown = false;
 historyControl.on('unavailable', () => {
   // Se apaga pero se puede volver a intentar: la cuota se puede liberar o el bloqueo quitar.
   historyToggle.checked = false;
-  historyStatus.textContent = 'Este navegador no deja guardar el historial (ventana privada, almacenamiento bloqueado o lleno).';
+  say(historyStatus, 'app.history.unavailable');
 });
 historyControl.on('evicted', () => {
   if (evictedShown) return;
   evictedShown = true;
-  historyStatus.textContent = 'Se ha borrado el análisis más antiguo para no pasar de 500.';
+  say(historyStatus, 'app.history.evicted', { max: HISTORY_MAX });
 });
 historyToggle.addEventListener('change', async () => {
   if (historyToggle.checked) {
     const res = await historyControl.enable();
-    if (res.ok) historyStatus.textContent = 'Historial activado.';
+    if (res.ok) say(historyStatus, 'app.history.on');
     // La base queda como la pestaña: las reglas activas se guardan y, si no hay, se borran las viejas
     // (pudieron quitarse con el historial apagado y volverían al recargar).
     if (res.ok) await (state.rules ? historyControl.saveRules(state.rules.source) : historyControl.clearRules());
   } else {
     historyControl.disable();
-    historyStatus.textContent = 'Historial desactivado. Lo ya guardado sigue ahí hasta que lo borres.';
+    say(historyStatus, 'app.history.off');
   }
   // Con el Panel abierto, sus cifras siguen al interruptor (apagado: estado vacío con «Activar historial»).
   if (state.lastReport && state.route.mode === 'analyst' && state.route.view === 'panel') await refreshDashboard();
@@ -109,7 +128,7 @@ historyControl.ready().then(async () => {
   const saved = await historyControl.rules();
   if (saved && !state.rules) {
     state.rules = { source: saved.source, rules: saved.rules };
-    rulesStatus.textContent = `${rulesCount(saved.rules.length)} del historial.`;
+    say(rulesStatus, 'app.rules.fromHistory', { count: saved.rules.length });
   }
   await showActiveRules();
 });
@@ -119,7 +138,7 @@ async function updateHistoryButton() {
   const h = historyControl.history();
   const n = h ? await h.count().catch(() => 0) : 0;
   historyOpen.hidden = !n;
-  historyOpen.textContent = `Ver historial (${n})`;
+  say(historyOpen, 'app.history.open', { n });
 }
 
 // ---------- Reglas propias (spec 3.0, §5.2): se validan enteras, se prueban y luego se activan ----------
@@ -128,7 +147,6 @@ const rulesPanelBox = $('#rules-panel');
 const rulesStatus = $('#rules-status');
 const rulesLoad = $('#rules-load');
 let pendingRules = null;
-const rulesCount = (n) => `${n} ${n === 1 ? 'regla propia activa' : 'reglas propias activas'}`;
 
 /** Análisis guardados para la vista previa (vacío con el historial apagado). */
 async function savedEntries() {
@@ -137,7 +155,9 @@ async function savedEntries() {
   return h ? (await h.list({ limit: HISTORY_MAX }).catch(() => ({ items: [] }))).items : [];
 }
 
+let rulesModel = null;
 function paintRules(model, focus = false) {
+  rulesModel = model;
   rulesPanelBox.replaceChildren(rulesPanel(model));
   if (focus) rulesPanelBox.querySelector('[tabindex="-1"]')?.focus();
 }
@@ -162,16 +182,16 @@ rulesFile.addEventListener('change', async () => {
   rulesFile.value = '';
   if (!file) return;
   pendingRules = null;
-  rulesStatus.textContent = '';
+  show(rulesStatus, null);
   let res;
   let text = '';
-  if ((file.size ?? 0) > RULES_LIMITS.fileBytes) res = { ok: false, errors: [{ rule: null, path: '', reason: 'el fichero pasa de 200 KB' }] };
+  if ((file.size ?? 0) > RULES_LIMITS.fileBytes) res = { ok: false, errors: [{ rule: null, path: '', reason: t('app.rules.tooBig') }] };
   else {
     try {
       text = await file.text();
       res = validateRules(text);
     } catch {
-      res = { ok: false, errors: [{ rule: null, path: '', reason: 'no se pudo leer el fichero' }] };
+      res = { ok: false, errors: [{ rule: null, path: '', reason: t('app.rules.unreadable') }] };
     }
   }
   if (!res.ok) return paintRules({ state: 'errors', errors: res.errors.map(formatRuleError) }, true);
@@ -185,18 +205,18 @@ rulesPanelBox.addEventListener('click', async (e) => {
     state.rules = pendingRules;
     pendingRules = null;
     const saved = await historyControl.saveRules(state.rules.source);
-    rulesStatus.textContent = `${rulesCount(state.rules.rules.length)}.${saved ? ' Se guardan con el historial.' : ''}`;
+    say(rulesStatus, saved ? 'app.rules.activeSaved' : 'app.rules.active', { count: state.rules.rules.length });
     await showActiveRules(true);
     rerunWithRules();
   } else if (action === 'rules-discard') {
     pendingRules = null;
-    rulesStatus.textContent = 'Reglas descartadas.';
+    say(rulesStatus, 'app.rules.discarded');
     await showActiveRules();
     rulesLoad.focus();
   } else if (action === 'rules-remove') {
     state.rules = null;
     await historyControl.clearRules();
-    rulesStatus.textContent = 'Reglas propias quitadas.';
+    say(rulesStatus, 'app.rules.removed');
     await showActiveRules();
     rulesLoad.focus();
     rerunWithRules();
@@ -254,7 +274,7 @@ function openSaved(entry, go = true) {
   state.lastReport = entry.report;
   state.saved = entry;
   state.notes = entry.notes ?? '';
-  state.savedNote = `Informe guardado el ${new Date(entry.savedAt).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })}; el correo original no está guardado.`;
+  state.savedNote = () => t('app.savedNote', { date: fmtDate(new Date(entry.savedAt), { dateStyle: 'long', timeStyle: 'short' }) });
   if (go) {
     state.route = { mode: 'analyst', view: 'resumen' };
     if (location.hash !== '#analista') history.pushState(null, '', '#analista');
@@ -267,7 +287,7 @@ async function historyAction(action, target) {
   if (action === 'history-enable') {
     historyToggle.checked = true;
     const res = await historyControl.enable();
-    historyStatus.textContent = res.ok ? 'Historial activado.' : historyStatus.textContent;
+    if (res.ok) say(historyStatus, 'app.history.on');
     await refreshDashboard();
     return reportBox.querySelector('.view__title')?.focus();
   }
@@ -278,14 +298,14 @@ async function historyAction(action, target) {
   if (action === 'history-open') {
     const entry = await h.get(id).catch(() => null);
     if (!entry) {
-      announce('Este análisis ya no está guardado.');
+      announce(t('app.history.gone'));
       return refreshHistory();
     }
     return openSaved(entry);
   }
   if (action === 'history-delete') {
     await h.remove(id).catch(() => {});
-    announce('Análisis borrado.');
+    announce(t('app.history.deleted'));
     await refreshHistory();
     updateHistoryButton();
     return reportBox.querySelector('[data-action="history-export"]')?.focus();
@@ -299,7 +319,7 @@ async function historyAction(action, target) {
     const query = reportBox.querySelector('[data-role="history-query"]')?.value ?? '';
     const results = await h.searchIoc(query).catch(() => []);
     await refreshHistory({ search: { query, results } });
-    announce(results.length ? `${results.length} ${results.length === 1 ? 'IOC encontrado' : 'IOCs encontrados'}.` : 'Sin resultados.');
+    announce(searchMessage(results.length));
     return reportBox.querySelector('[data-role="history-query"]')?.focus();
   }
   if (action === 'history-compare') {
@@ -320,18 +340,18 @@ async function historyAction(action, target) {
     // Las reglas propias vivían en la misma base: se van con ella.
     const hadRules = Boolean(state.rules);
     state.rules = null;
-    if (hadRules) rulesStatus.textContent = 'Reglas propias quitadas.';
+    if (hadRules) say(rulesStatus, 'app.rules.removed');
     showActiveRules();
     state.historyData = null;
     state.historyQuery = { filters: {}, offset: 0 };
     await refreshHistory();
     updateHistoryButton();
-    announce(hadRules ? 'Historial borrado. Reglas propias quitadas.' : 'Historial borrado.');
+    announce(hadRules ? t('app.history.clearedRules') : t('app.history.cleared'));
     return reportBox.querySelector('.view__title')?.focus();
   }
   if (action === 'history-export') {
     download(await h.exportJson(), 'historial');
-    return announce('Historial exportado.');
+    return announce(t('app.history.exported'));
   }
   if (action === 'history-import') return historyImport.click();
   return undefined;
@@ -350,14 +370,14 @@ historyImport.addEventListener('change', async () => {
   if (!file || !h) return;
   let importResult;
   try {
-    if (file.size > 20 * 1024 * 1024) throw new Error('El fichero pasa de 20 MB.');
+    if (file.size > 20 * 1024 * 1024) throw new Error(t('app.history.importTooBig'));
     importResult = await h.importJson(await file.text());
   } catch (e) {
     importResult = { imported: 0, rejected: [{ index: -1, error: e.message }] };
   }
   await refreshHistory({ importResult });
   updateHistoryButton();
-  announce(`Importados ${importResult.imported}; rechazados ${importResult.rejected.length}.`);
+  announce(`${t('history.import.result', { imported: importResult.imported, rejected: importResult.rejected.length })}.`);
 });
 
 state.route = { mode: initialMode(storage((s) => s), location.hash), view: parseRoute(location.hash).view };
@@ -375,6 +395,63 @@ $('#theme-toggle').addEventListener('click', () => {
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   storage((s) => s.setItem('phishlens-theme', next));
+});
+
+// ---------- Idioma (spec 3.1): ES / EN sin volver a analizar ----------
+const langToggle = $('#lang-toggle');
+function paintLangToggle() {
+  // Texto visible «EN» y, para el lector de pantalla, «· Switch to English» en el idioma de destino:
+  // el nombre accesible empieza por lo que se ve (WCAG 2.5.3).
+  const hint = document.createElement('span');
+  hint.className = 'visually-hidden';
+  hint.textContent = ` · ${t('topbar.lang.to')}`;
+  langToggle.replaceChildren(t('topbar.lang.short'), hint);
+  langToggle.setAttribute('lang', t('topbar.lang.target'));
+}
+/**
+ * Vuelve a pintar todo lo visible en el idioma activo con lo que ya hay en memoria: nunca vuelve a
+ * analizar ni guarda nada en el historial (spec 3.1). Las notas forenses viven en state.notes.
+ */
+function rerender() {
+  translatePage(document);
+  paintLangToggle();
+  for (const [node, text] of live) {
+    if (!node.isConnected) live.delete(node);
+    // Los avisos de una acción anterior viven en regiones role="status"/"alert": se quitan en vez de
+    // repetirlos, para que el lector de pantalla solo oiga el cambio de idioma (Review Focus 5).
+    else if (MOMENTARY.has(node.id)) show(node, null);
+    else node.textContent = text();
+  }
+  errorBox.hidden = !errorBox.textContent;
+  // La vista previa de reglas sin activar (o sus errores) se repinta tal cual, no como «sin reglas».
+  if (rulesModel) paintRules(rulesModel);
+  if (state.lastReport && !reportBox.hidden) paintKeepingInput();
+}
+
+/** Repinta el informe sin perder lo escrito a medias: registros DNS, «Comprobar en local» abierto y la búsqueda. */
+function paintKeepingInput() {
+  const value = (sel) => reportBox.querySelector(sel)?.value;
+  const dkimKey = value('#dkim-key') ?? '';
+  const spfRecord = value('#spf-record') ?? '';
+  const open = reportBox.querySelector('details.auth-local')?.open;
+  const query = value('[data-role="history-query"]');
+  paint({ dkimKey, spfRecord });
+  if (open) reportBox.querySelector('details.auth-local')?.setAttribute('open', '');
+  const box = reportBox.querySelector('[data-role="history-query"]');
+  if (box && query != null) box.value = query;
+}
+const MOMENTARY = new Set(['history-status', 'rules-status', 'batch-progress-text', 'input-error']);
+// El idioma de arranque se pone antes de escuchar cambios: así se pinta una vez y sin aviso.
+setLang(initialLang(storage((s) => s.getItem(LANG_KEY)), navigator.language));
+rerender();
+onLangChange(() => {
+  rerender();
+  announce(t('status.lang'));
+});
+langToggle.addEventListener('click', () => {
+  setLang(getLang() === 'es' ? 'en' : 'es');
+  storage((s) => s.setItem(LANG_KEY, getLang()));
+  langToggle.focus();
 });
 
 // ---------- Pestañas (patrón ARIA tabs) ----------
@@ -410,18 +487,18 @@ for (const tab of tabs) {
 }
 
 // ---------- Errores ----------
-function showError(message) {
-  errorBox.textContent = message;
-  errorBox.hidden = !message;
+/** Error del formulario por su clave (se traduce al cambiar de idioma); sin clave lo quita. */
+function showError(key, params) {
+  show(errorBox, key ? () => t(key, params) : null);
+  errorBox.hidden = !key;
 }
 
 // ---------- Fichero ----------
-// Lo que dice la zona de arrastre antes de elegir nada, para volver a ello al descartar un lote.
-const DROP_TEXT = ['.dropzone__title', '.dropzone__hint'].map((sel) => [sel, [...dropzone.querySelector(sel).childNodes].map((n) => n.cloneNode(true))]);
 
 function resetDropzone() {
   dropzone.classList.remove('has-file');
-  for (const [sel, nodes] of DROP_TEXT) dropzone.querySelector(sel).replaceChildren(...nodes.map((n) => n.cloneNode(true)));
+  for (const sel of ['.dropzone__title', '.dropzone__hint']) live.delete(dropzone.querySelector(sel));
+  translatePage(dropzone);
 }
 
 // Un fichero que no vale muestra el error pero no descarta lo que ya había (ni el lote).
@@ -429,11 +506,11 @@ async function loadFile(file) {
   showError('');
   if (!file) return;
   if (file.size > MAX_BYTES) {
-    showError(`El archivo pesa ${(file.size / 1024 / 1024).toFixed(1)} MB. El máximo es ${MAX_MB} MB.`);
+    showError('app.error.fileSize', { size: decimal((file.size / 1024 / 1024).toFixed(1)), max: MAX_MB });
     return;
   }
   if (!/\.(eml|txt)$/i.test(file.name) && file.type !== 'message/rfc822') {
-    showError('Solo se aceptan archivos .eml (o .txt con el email original).');
+    showError('app.error.fileType');
     return;
   }
   let text;
@@ -443,7 +520,7 @@ async function loadFile(file) {
     bytes = new Uint8Array(await file.arrayBuffer());
     text = new TextDecoder().decode(bytes);
   } catch {
-    showError('No se pudo leer el archivo.');
+    showError('app.error.fileRead');
     return;
   }
   cancelBatch();
@@ -451,8 +528,8 @@ async function loadFile(file) {
   state.fileName = file.name;
   state.fileBytes = bytes;
   dropzone.classList.add('has-file');
-  dropzone.querySelector('.dropzone__title').textContent = file.name;
-  dropzone.querySelector('.dropzone__hint').textContent = `${(file.size / 1024).toFixed(1)} KB · listo para analizar`;
+  show(dropzone.querySelector('.dropzone__title'), () => file.name);
+  show(dropzone.querySelector('.dropzone__hint'), () => t('app.drop.ready', { size: decimal((file.size / 1024).toFixed(1)) }));
   run();
 }
 
@@ -494,10 +571,8 @@ const batchProgress = $('#batch-progress');
 const batchProgressText = $('#batch-progress-text');
 const batchNotice = $('#batch-notice');
 
-const SKIP_REASONS = new Map([
-  ['tipo', 'no es un .eml'], ['tamano', `pesa más de ${MAX_MB} MB`], ['vacio', 'está vacío'],
-  ['limite', 'no cabe en el lote'], ['duplicado', 'está repetido'], ['error', 'no se pudo analizar'],
-]);
+const SKIP_REASONS = new Set(['tipo', 'tamano', 'vacio', 'limite', 'duplicado', 'error']);
+const skipReason = (r) => t(`app.skip.${SKIP_REASONS.has(r) ? r : 'error'}`, { max: MAX_MB });
 
 /** Descarta el lote en curso (si lo hay) y el que se estaba viendo. */
 function cancelBatch() {
@@ -521,11 +596,11 @@ function showBatchNotice(warning, skipped) {
   }
   if (skipped.length) {
     const title = document.createElement('p');
-    title.textContent = skipped.length === 1 ? 'Un archivo no se ha analizado:' : `${skipped.length} archivos no se han analizado:`;
+    say(title, 'app.skip.title', { count: skipped.length });
     const list = document.createElement('ul');
     for (const s of skipped) {
       const li = document.createElement('li');
-      li.textContent = reveal(`${s.name}: ${SKIP_REASONS.get(s.reason) ?? 'no se pudo analizar'}`);
+      show(li, () => reveal(`${s.name}: ${skipReason(s.reason)}`));
       list.append(li);
     }
     batchNotice.append(title, list);
@@ -559,7 +634,7 @@ async function runBatch(files) {
   batchStatus.hidden = false;
   batchProgress.max = files.length;
   batchProgress.value = 0;
-  batchProgressText.textContent = `Analizando 0 de ${files.length}…`;
+  say(batchProgressText, 'app.batch.progress', { i: 0, n: files.length });
   const out = await analyzeBatch(files, {
     signal: controller.signal,
     analyze: (input) => {
@@ -572,39 +647,40 @@ async function runBatch(files) {
       batchProgress.max = n;
       batchProgress.value = i;
       // La barra avanza con cada correo, pero el texto (que lee el lector de pantalla) solo cada 10.
-      if (i % 10 === 0 && i < n) batchProgressText.textContent = `Analizando ${i} de ${n}…`;
+      if (i % 10 === 0 && i < n) say(batchProgressText, 'app.batch.progress', { i, n });
     },
   });
   // Otro análisis empezó mientras tanto: este lote ya no pinta nada.
   if (!out || controller.signal.aborted || state.batchAbort !== controller) return;
   state.batchAbort = null;
-  const skippedText = !out.skipped.length ? '' : out.skipped.length === 1 ? ' Un archivo no se ha analizado.' : ` ${out.skipped.length} archivos no se han analizado.`;
-  batchProgressText.textContent = `${out.entries.length} ${out.entries.length === 1 ? 'correo analizado' : 'correos analizados'}.${skippedText}`;
+  const done = out.entries.length;
+  const skippedCount = out.skipped.length;
+  show(batchProgressText, () => [t('app.batch.done', { count: done }), skippedCount ? t('app.batch.skipped', { count: skippedCount }) : null].filter(Boolean).join(' '));
   showBatchNotice(out.warning, out.skipped);
   if (!out.entries.length) {
     batchStatus.hidden = !out.skipped.length && !out.warning;
-    showError('No se ha podido analizar ningún correo del lote.');
+    showError('app.error.batchNone');
     return;
   }
   try {
     state.batchTexts = new Map(out.entries.map((e) => [e.key, texts.get(e.report)]));
     // Se empieza por el primero por nombre, el mismo orden que el selector.
-    const first = [...out.entries].sort((a, b) => String(a.name).localeCompare(String(b.name), 'es'))[0];
+    const first = [...out.entries].sort((a, b) => String(a.name).localeCompare(String(b.name), LOCALE[getLang()]))[0];
     state.batch = { ...out, graph: buildGraph(out.entries), campaigns: findCampaigns(out.entries), current: first.key };
     state.analyzedAt = new Date();
     openBatchEmail(first.key);
   } catch {
     // Un lote raro nunca debe dejar la página a medias.
     cancelBatch();
-    showError('No se ha podido relacionar los correos del lote.');
+    showError('app.error.batchGraph');
     return;
   }
   dropzone.classList.add('has-file');
-  dropzone.querySelector('.dropzone__title').textContent = `${out.entries.length} correos`;
-  dropzone.querySelector('.dropzone__hint').textContent = 'lote analizado';
+  say(dropzone.querySelector('.dropzone__title'), 'campaigns.emails.count', { count: done });
+  say(dropzone.querySelector('.dropzone__hint'), 'app.drop.batch');
   paint();
   historyControl.recordBatch(state.batch, state.batchTexts);
-  announce(`Lote analizado: ${out.entries.length} correos y ${state.batch.campaigns.length} ${state.batch.campaigns.length === 1 ? 'campaña' : 'campañas'}. Se muestra ${state.lastReport.verdict.headline}.`);
+  announce(t('app.batch.announce', { emails: t('campaigns.emails.count', { count: done }), campaigns: t('app.campaigns.count', { count: state.batch.campaigns.length }), headline: state.lastReport.verdict.headline }));
   reportBox.scrollIntoView({ block: 'start' });
 }
 
@@ -631,11 +707,11 @@ function run() {
     return;
   }
   if (!input) {
-    showError({ eml: 'Elige o arrastra un archivo .eml.', text: 'Pega el contenido del email.', url: 'Escribe una URL.' }[state.tab]);
+    showError(`app.error.empty.${state.tab}`);
     return;
   }
   if (input.value.length > MAX_BYTES) {
-    showError(`El texto supera los ${MAX_MB} MB.`);
+    showError('app.error.textSize', { max: MAX_MB });
     return;
   }
   showError('');
@@ -649,12 +725,12 @@ function run() {
     state.analyzedAt = new Date();
     state.lastReport = analyzeWith(input);
     paint();
-    announce(`Resultado: ${state.lastReport.verdict.headline}. ${state.lastReport.score} de 100.`);
+    announce(t('app.result', { headline: state.lastReport.verdict.headline, score: state.lastReport.score }));
     historyControl.record(input, state.lastReport, input.kind === 'eml' ? state.fileName ?? null : null);
   } catch {
     // Un email malformado nunca debe dejar la página rota.
     reportBox.hidden = true;
-    showError('No se pudo analizar este contenido. Comprueba que es un email o una URL.');
+    showError('app.error.analyze');
     return;
   }
   reportBox.scrollIntoView({ block: 'start' });
@@ -677,9 +753,9 @@ function toast(message) {
 async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
-    toast('IOCs copiados al portapapeles');
+    toast(t('app.copy.ok'));
   } catch {
-    toast('No se pudo copiar: tu navegador lo ha bloqueado');
+    toast(t('app.copy.blocked'));
   }
 }
 
@@ -697,7 +773,7 @@ function paint(options = {}) {
   const context = { batch: state.batch, historyEnabled: historyControl.enabled() };
   const view = resolveView(state.route.view, state.lastReport, context);
   renderReport(reportBox, state.lastReport, {
-    mode, view, ...context, campaign: state.campaign, history: state.historyData, dashboard: state.dashboard, savedNote: state.savedNote, ...options,
+    mode, view, ...context, campaign: state.campaign, history: state.historyData, dashboard: state.dashboard, savedNote: state.savedNote ? state.savedNote() : '', ...options,
   });
   // En móvil la navegación es una fila con desplazamiento: la vista actual tiene que verse.
   const nav = reportBox.querySelector('.nav-rail');
@@ -750,14 +826,14 @@ async function dashboardAction(action, target) {
     state.route = { mode: 'analyst', view: 'historial' };
     history.pushState(null, '', formatRoute(state.route));
     await refreshHistory({ search: { query, results } });
-    announce(results.length ? `${results.length} ${results.length === 1 ? 'IOC encontrado' : 'IOCs encontrados'}.` : 'Sin resultados.');
+    announce(searchMessage(results.length));
     return reportBox.querySelector('[data-role="history-query"]')?.focus();
   }
   if (action === 'dashboard-open') {
     const h = historyControl.history();
     const entry = h ? await h.findBySha256(target.getAttribute('data-sha')).catch(() => null) : null;
     if (!entry) {
-      announce('Este análisis ya no está guardado.');
+      announce(t('app.history.gone'));
       return refreshDashboard();
     }
     return openSaved(entry);
@@ -845,7 +921,7 @@ reportBox.addEventListener('change', (e) => {
   paint();
   const select = $('#batch-email');
   select?.focus();
-  announce(`Correo del lote: ${state.lastReport.verdict.headline}. ${state.lastReport.score} de 100.`);
+  announce(t('app.batch.email', { headline: state.lastReport.verdict.headline, score: state.lastReport.score }));
 });
 
 // ---------- Menús (patrón ARIA menu button) ----------
@@ -917,7 +993,7 @@ window.addEventListener('beforeprint', () => {
     const doc = forensicDoc();
     reportBox.append(renderForensic(doc));
     // El pie de cada hoja (@page) lee el hash de esta variable; solo puede ser hexadecimal.
-    const sha = /^[0-9a-f]{64}$/.test(doc.identification.sha256 ?? '') ? doc.identification.sha256 : 'no disponible';
+    const sha = /^[0-9a-f]{64}$/.test(doc.identification.sha256 ?? '') ? doc.identification.sha256 : t('forensic.unavailable');
     document.documentElement.style.setProperty('--forensic-sha', `"${sha}"`);
   }
   openedForPrint = [...reportBox.querySelectorAll('details:not([open]):not(.auth-local)')];
@@ -936,7 +1012,7 @@ const authLive = $('#auth-live');
 /** Re-analiza con lo que ha pegado el analista y vuelve a abrir la pestaña de autenticación. */
 function reanalyze(status) {
   if (!state.lastInput) {
-    authLive.textContent = 'Este informe viene del historial: el correo no está guardado y no se puede volver a analizar.';
+    authLive.textContent = t('app.auth.saved');
     return;
   }
   state.lastReport = analyzeWith({ ...state.lastInput, ...state.analyst });
@@ -954,7 +1030,7 @@ function reanalyze(status) {
 async function verifyDkim() {
   if (!state.lastInput) return reanalyze('');
   const key = $('#dkim-key')?.value.trim();
-  if (!key) return reanalyze('Pega primero la clave pública DKIM.');
+  if (!key) return reanalyze(t('app.auth.dkimMissing'));
   const input = state.lastInput;
   try {
     const dkim = await verifyDkimForInput(input, key);
@@ -964,13 +1040,13 @@ async function verifyDkim() {
     reanalyze(`DKIM: ${dkim.reason}.`);
   } catch {
     if (state.lastInput !== input) return;
-    reanalyze('DKIM: no se pudo comprobar la firma con esa clave.');
+    reanalyze(t('app.auth.dkimFailed'));
   }
 }
 
 function evalSpf() {
   const spfRecord = $('#spf-record')?.value.trim();
-  if (!spfRecord) return reanalyze('Pega primero el registro SPF.');
+  if (!spfRecord) return reanalyze(t('app.auth.spfMissing'));
   state.analyst = { ...state.analyst, spfRecord };
   const { spf } = analyzeInput({ ...state.lastInput, ...state.analyst }).auth;
   reanalyze(spf.state === 'verified' ? `SPF: ${spf.result}.` : `SPF: ${spf.detail}`);
@@ -1006,7 +1082,7 @@ function onReportAction(e) {
   }
   if (action === 'verify-dkim') verifyDkim();
   if (action === 'eval-spf') evalSpf();
-  if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || 'Sin IOCs');
+  if (action === 'copy-iocs') copyText(iocsToText(state.lastReport.iocs) || t('forensic.iocs.none'));
   if (action === 'forensic') openForensic();
   if (action === 'export-json') download(reportToJson(state.lastReport), 'informe');
   if (action === 'export-stix') {
@@ -1014,7 +1090,7 @@ function onReportAction(e) {
     const entries = state.batch?.entries ?? [{ key: 'actual', name: 'actual', report: state.lastReport }];
     const { json, count } = stixJson(entries, { campaigns: state.batch?.campaigns ?? [] });
     download(json, 'stix');
-    announce(`STIX descargado: ${count} objetos.`);
+    announce(t('app.stix', { count }));
   }
   if (action === 'new') {
     reportBox.hidden = true;
@@ -1096,7 +1172,7 @@ async function forensicAction(action, dialog) {
   if (action === 'forensic-json') {
     await keepNotes();
     download(forensicJson(forensicDoc()), 'forense', forensicFileName(new Date()));
-    return announce('Informe forense descargado en JSON.');
+    return announce(t('app.forensic.json'));
   }
   return undefined;
 }

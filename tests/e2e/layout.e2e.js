@@ -34,9 +34,11 @@ const smallTargets = (page) => page.evaluate(() => {
 
 const overflow = (page) => page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
 
-for (const width of WIDTHS) {
-  test(`a ${width} px: sin scroll horizontal, objetivos de 44 px y navegación ordenada`, { skip }, async () => {
-    const context = await browser.newContext({ viewport: { width, height: 900 } });
+// En inglés solo a 360 px, que es donde un rótulo más largo rompería la fila (spec 3.1).
+const RUNS = [...WIDTHS.map((width) => [width, 'es-ES']), [360, 'en-GB']];
+for (const [width, locale] of RUNS) {
+  test(`a ${width} px (${locale}): sin scroll horizontal, objetivos de 44 px y navegación ordenada`, { skip }, async () => {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, locale });
     const page = await context.newPage();
     page.setDefaultTimeout(5000);
     await page.goto(`${server.url}/index.html`);

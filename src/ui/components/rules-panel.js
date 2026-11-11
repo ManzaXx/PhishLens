@@ -3,20 +3,19 @@
 import { el } from '../dom.js';
 import { dataTable } from './data-table.js';
 import { severityTag } from './severity-tag.js';
-
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+import { t } from '../../i18n/index.js';
 
 function previewText(p) {
-  if (!p.testable) return 'No se puede probar: el historial no guarda el correo';
-  if (!p.total) return 'Sin análisis guardados para probarla';
-  return `Cumpliría en ${p.matches} de ${p.total} análisis guardados`;
+  if (!p.testable) return t('rules.preview.untestable');
+  if (!p.total) return t('rules.preview.empty');
+  return t('rules.preview.matches', { matches: p.matches, total: p.total });
 }
 
 function table(rules, preview) {
   const byId = new Map(preview.map((p) => [p.id, p]));
   return dataTable({
-    caption: 'Reglas del fichero',
-    columns: ['Regla', 'Gravedad', 'Con el historial'],
+    caption: t('rules.table.caption'),
+    columns: [t('rules.table.rule'), t('rules.table.severity'), t('rules.table.history')],
     rows: rules.map((r) => [
       el('span', {}, el('strong', { text: r.title }), el('span', { className: 'rules__id mono', text: r.id })),
       severityTag(r.severity),
@@ -32,24 +31,24 @@ export function rulesPanel({ state, errors = [], preview = [], rules = [] }) {
   const box = el('div', { className: 'rules__panel', attrs: { 'data-state': state } });
   if (state === 'errors') {
     box.append(el('div', { className: 'rules__errors', attrs: { role: 'alert', tabindex: '-1' } },
-      el('p', { className: 'rules__summary', text: `No se han cargado las reglas: el fichero tiene ${plural(errors.length, 'error', 'errores')}.` }),
+      el('p', { className: 'rules__summary', text: t('rules.errors.summary', { count: errors.length }) }),
       el('ul', {}, ...errors.map((e) => el('li', { className: 'mono', text: String(e) })))));
     return box;
   }
   if (state === 'preview') {
     box.append(
-      el('p', { className: 'rules__summary', text: `${plural(rules.length, 'regla válida', 'reglas válidas')}. Revisa la vista previa antes de activarlas.`, attrs: { tabindex: '-1' } }),
+      el('p', { className: 'rules__summary', text: t('rules.preview.summary', { count: rules.length }), attrs: { tabindex: '-1' } }),
       table(rules, preview),
-      el('div', { className: 'rules__actions' }, button('Activar reglas', 'rules-activate', 'btn btn--primary'), button('Descartar', 'rules-discard')));
+      el('div', { className: 'rules__actions' }, button(t('rules.activate'), 'rules-activate', 'btn btn--primary'), button(t('rules.discard'), 'rules-discard')));
     return box;
   }
   if (state === 'active') {
     box.append(
-      el('p', { className: 'rules__summary', text: plural(rules.length, 'regla activa', 'reglas activas'), attrs: { tabindex: '-1' } }),
+      el('p', { className: 'rules__summary', text: t('rules.active.summary', { count: rules.length }), attrs: { tabindex: '-1' } }),
       table(rules, preview),
-      el('div', { className: 'rules__actions' }, button('Quitar reglas', 'rules-remove')));
+      el('div', { className: 'rules__actions' }, button(t('rules.remove'), 'rules-remove')));
     return box;
   }
-  box.append(el('p', { className: 'muted rules__summary', text: 'No hay reglas propias cargadas.' }));
+  box.append(el('p', { className: 'muted rules__summary', text: t('rules.none') }));
   return box;
 }

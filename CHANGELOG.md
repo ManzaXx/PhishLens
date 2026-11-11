@@ -1,5 +1,18 @@
 # Changelog
 
+## Sin publicar · 3.1.0 en desarrollo
+
+Especificación en [docs/specs/2026-11-11-phishlens-3.1-i18n-design.md](docs/specs/2026-11-11-phishlens-3.1-i18n-design.md).
+
+### Añadido
+- **Interfaz en español e inglés**: botón ES / EN en la cabecera, junto al tema. La primera vez se elige el idioma del navegador y luego se recuerda. Cambiar de idioma traduce lo que está a la vista sin volver a analizar ni guardar nada en el historial; las notas del informe forense se conservan. `<html lang>` cambia también.
+- `src/i18n/`: diccionarios `es.js` y `en.js` (unos 545 textos cada uno) y `t(clave, params)` con plurales (`Intl.PluralRules`), fechas y números del idioma activo. Sin dependencias.
+- La ruta no cambia (`#analista/senales`): los enlaces ya compartidos siguen funcionando, solo cambian los rótulos.
+- Pruebas: paridad de claves y `{param}` entre los dos idiomas, un test que falla si queda un texto fijo en `src/ui/`, y e2e en inglés (axe en claro y oscuro, 360 px, privacidad, cambio en mitad de un análisis).
+
+### Pendiente para la 3.1.0 (PR15)
+- Los hallazgos, el veredicto, los consejos, las muestras y los datos del informe forense siguen en español.
+
 ## 3.0.0 · 2026-11-11 · Plataforma de Threat Intel local
 
 Especificación en [docs/specs/2026-11-07-phishlens-3.0-design.md](docs/specs/2026-11-07-phishlens-3.0-design.md).

@@ -1,12 +1,12 @@
 // Panel «Resumen» del modo analista: anillo de riesgo, nivel, motivo y confianza.
 import { el, svg } from '../dom.js';
-
-const CONFIDENCE_LABELS = { high: 'alta', medium: 'media', low: 'baja' };
+import { confidenceLabel } from '../components/labels.js';
+import { t } from '../../i18n/index.js';
 
 function gauge(score) {
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
-  const root = el('div', { className: 'gauge', attrs: { role: 'img', 'aria-label': `Puntuación de riesgo: ${score} de 100` } });
+  const root = el('div', { className: 'gauge', attrs: { role: 'img', 'aria-label': t('summary.gauge', { score }) } });
   const ring = svg('svg', { viewBox: '0 0 120 120', 'aria-hidden': 'true' });
   ring.append(svg('circle', { class: 'gauge__track', cx: 60, cy: 60, r: radius, fill: 'none', 'stroke-width': 12 }));
   const value = svg('circle', {
@@ -17,7 +17,7 @@ function gauge(score) {
   if (score === 0) value.style.opacity = '0';
   ring.append(value);
   const number = el('span', { className: 'gauge__score', text: '0' });
-  root.append(ring, el('div', { className: 'gauge__label' }, number, el('span', { className: 'gauge__max', text: 'de 100' })));
+  root.append(ring, el('div', { className: 'gauge__label' }, number, el('span', { className: 'gauge__max', text: t('summary.of100') })));
 
   // Animación del anillo y del número (se respeta prefers-reduced-motion).
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -42,11 +42,11 @@ function gauge(score) {
 function confidenceBadge(confidence) {
   if (!confidence) return null;
   const box = el('div', { className: `confidence confidence--${confidence.level}` },
-    el('span', { className: 'confidence__label', text: `Confianza del análisis: ${CONFIDENCE_LABELS[confidence.level]}` }));
+    el('span', { className: 'confidence__label', text: t('summary.confidence', { level: confidenceLabel(confidence.level) ?? '' }) }));
   if (confidence.reasons.length) {
     const list = el('ul', { className: 'confidence__reasons' });
     for (const reason of confidence.reasons) list.append(el('li', { text: reason }));
-    box.append(el('details', {}, el('summary', { text: '¿Por qué?' }), list));
+    box.append(el('details', {}, el('summary', { text: t('summary.why') }), list));
   }
   return box;
 }

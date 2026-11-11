@@ -4,14 +4,12 @@ import { el, decimal } from '../dom.js';
 import { defang } from '../../intel/ioc.js';
 import { analyzeUrl, shortHop } from '../../intel/url.js';
 import { emptyState } from '../components/empty-state.js';
+import { t } from '../../i18n/index.js';
 
 const LIMIT = 100;
 
-const VIA = {
-  google: 'Google lo envolvía', safelinks: 'Safe Links de Outlook lo envolvía', facebook: 'Facebook lo envolvía',
-  linkedin: 'LinkedIn lo envolvía', base64: 'escondido en base64',
-};
-const viaText = (via) => (via.startsWith('param:') ? `sacado del parámetro «${via.slice(6)}»` : VIA[via] ?? via);
+const VIA = new Set(['google', 'safelinks', 'facebook', 'linkedin', 'base64']);
+const viaText = (via) => (via.startsWith('param:') ? t('urls.via.param', { name: via.slice(6) }) : VIA.has(via) ? t(`urls.via.${via}`) : via);
 
 // Peso de cada rasgo para ordenar: primero lo más grave.
 const WEIGHT = { obfuscatedIp: 3, credentials: 3, nestedRedirect: 2, openRedirect: 2, highEntropy: 1, nonStandardPort: 1 };
@@ -20,14 +18,14 @@ const score = (a) => Object.entries(a.flags).reduce((n, [k, v]) => n + (v ? WEIG
 function reasons(a) {
   const out = [];
   const jumps = a.hops.length - 1;
-  if (a.flags.obfuscatedIp) out.push('La dirección IP está escrita de forma rara para que no se reconozca.');
-  if (a.flags.credentials) out.push('Lleva un usuario y una contraseña antes del dominio.');
-  if (a.flags.nestedRedirect) out.push(`Salta ${jumps} veces antes de llegar al destino.`);
-  if (a.flags.openRedirect) out.push(`Empieza en ${defang(new URL(a.hops[0].href).hostname)} y esa web reenvía a otro dominio.`);
-  if (a.flags.highEntropy) out.push('El nombre del dominio parece escrito al azar.');
-  if (a.flags.nonStandardPort) out.push(`Usa el puerto ${a.port}, que las webs normales no indican.`);
-  if (a.cycle) out.push('La cadena vuelve sobre sí misma: se ha cortado ahí.');
-  if (a.truncated) out.push('Tiene más de 10 saltos: solo se muestran los 10 primeros.');
+  if (a.flags.obfuscatedIp) out.push(t('urls.why.obfuscatedIp'));
+  if (a.flags.credentials) out.push(t('urls.why.credentials'));
+  if (a.flags.nestedRedirect) out.push(t('urls.why.nested', { n: jumps }));
+  if (a.flags.openRedirect) out.push(t('urls.why.open', { host: defang(new URL(a.hops[0].href).hostname) }));
+  if (a.flags.highEntropy) out.push(t('urls.why.entropy'));
+  if (a.flags.nonStandardPort) out.push(t('urls.why.port', { port: a.port }));
+  if (a.cycle) out.push(t('urls.why.cycle'));
+  if (a.truncated) out.push(t('urls.why.truncated'));
   return out;
 }
 
@@ -49,18 +47,18 @@ function card(a, shared) {
   const hops = el('ol', { className: 'url-card__hops' },
     ...a.hops.map((h, i) => el('li', {},
       el('span', { className: 'url-card__url', text: defang(i < last ? shortHop(h.href, a.hops[i + 1].via) : h.href) }),
-      el('span', { className: 'url-card__via', text: ` · ${i === 0 ? 'enlace del correo' : viaText(h.via)}` }))));
+      el('span', { className: 'url-card__via', text: ` · ${i === 0 ? t('urls.via.email') : viaText(h.via)}` }))));
   return el('article', { className: `url-card${why.length ? ' url-card--flagged' : ''}` },
     el('h3', { className: 'url-card__host', text: host }),
     el('dl', { className: 'url-card__facts' },
-      el('dt', { text: 'Destino final' }), el('dd', { className: 'url-card__url', text: defang(a.final) }),
-      el('dt', { text: 'Aleatoriedad' }), el('dd', { text: `dominio ${decimal(a.entropy.host.toFixed(1))} · ruta ${decimal(a.entropy.path.toFixed(1))} bits por carácter` })),
-    a.hops.length > 1 ? el('div', {}, el('p', { className: 'url-card__label', text: `Cadena (${last} ${last === 1 ? 'salto' : 'saltos'})` }), hops) : null,
-    el('p', { className: 'url-card__label', text: 'Por qué es sospechosa' }),
+      el('dt', { text: t('urls.final') }), el('dd', { className: 'url-card__url', text: defang(a.final) }),
+      el('dt', { text: t('urls.entropy') }), el('dd', { text: t('urls.entropy.value', { host: decimal(a.entropy.host.toFixed(1)), path: decimal(a.entropy.path.toFixed(1)) }) })),
+    a.hops.length > 1 ? el('div', {}, el('p', { className: 'url-card__label', text: t('urls.chain', { count: last }) }), hops) : null,
+    el('p', { className: 'url-card__label', text: t('urls.why') }),
     why.length
-      ? el('ul', { className: 'url-card__reasons' }, ...why.map((t) => el('li', { text: t })))
-      : el('p', { className: 'url-card__clean', text: 'Nada raro en la dirección en sí. Revisa también las señales del correo.' }),
-    shared >= 2 ? el('p', { className: 'url-card__shared', text: `Aparece en ${shared} correos del lote.` }) : null);
+      ? el('ul', { className: 'url-card__reasons' }, ...why.map((line) => el('li', { text: line })))
+      : el('p', { className: 'url-card__clean', text: t('urls.clean') }),
+    shared >= 2 ? el('p', { className: 'url-card__shared', text: t('urls.shared', { n: shared }) }) : null);
 }
 
 export function urlsPanel(report, options = {}) {
@@ -72,11 +70,11 @@ export function urlsPanel(report, options = {}) {
     const a = analyzeUrl(link.href);
     if (a) all.push(a);
   }
-  if (!all.length) return emptyState('Sin enlaces', 'Este correo no tiene enlaces que revisar.');
+  if (!all.length) return emptyState(t('urls.empty.title'), t('urls.empty.text'));
   all.sort((x, y) => score(y) - score(x) || (x.final < y.final ? -1 : x.final > y.final ? 1 : 0));
   const counts = options.batch ? hostCounts(options.batch) : new Map();
   return el('div', { className: 'stack' },
-    el('p', { className: 'hint', text: 'Cada enlace desenvuelto sin visitarlo: de dónde sale, a dónde lleva y qué tiene de raro. Nada de esta vista se puede pulsar.' }),
-    all.length > LIMIT ? el('p', { className: 'graph__note', text: `Se muestran ${LIMIT} de ${all.length} enlaces, primero los más sospechosos.` }) : null,
+    el('p', { className: 'hint', text: t('urls.hint') }),
+    all.length > LIMIT ? el('p', { className: 'graph__note', text: t('urls.limit', { shown: LIMIT, total: all.length }) }) : null,
     el('div', { className: 'url-cards' }, ...all.slice(0, LIMIT).map((a) => card(a, counts.get(a.hostname) ?? 0))));
 }

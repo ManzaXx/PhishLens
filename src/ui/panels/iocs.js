@@ -6,6 +6,7 @@ import { layoutGraph } from '../../intel/layout.js';
 import { toUnicode } from '../../parser/punycode.js';
 import { graphView } from '../components/graph.js';
 import { dataTable } from '../components/data-table.js';
+import { t, getLang, LOCALE } from '../../i18n/index.js';
 
 const TABLE_LIMIT = 500;
 
@@ -42,8 +43,8 @@ const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
 /** «a, b, c y N más»: los correos de un nodo por nombre, ordenados. */
 function emailNames(keys, names) {
-  const list = keys.map((k) => names.get(k) ?? k).sort((a, b) => a.localeCompare(b, 'es'));
-  return list.length > 3 ? `${list.slice(0, 3).join(', ')} y ${list.length - 3} más` : list.join(', ');
+  const list = keys.map((k) => names.get(k) ?? k).sort((a, b) => a.localeCompare(b, LOCALE[getLang()]));
+  return list.length > 3 ? t('iocs.andMore', { list: list.slice(0, 3).join(', '), n: list.length - 3 }) : list.join(', ');
 }
 
 /**
@@ -57,20 +58,20 @@ export function graphTable(graph, names = new Map()) {
   const sorted = [...graph.nodes].sort((a, b) => b.emails.length - a.emails.length || order(a.type) - order(b.type) || cmp(a.id, b.id));
   const rows = sorted.slice(0, TABLE_LIMIT).map((n) => [NODE_LABELS[n.type], nodeText(n), emailNames(n.emails, names), String(d.get(n.id) ?? 0)]);
   return el('div', { className: 'stack' },
-    dataTable({ caption: 'Nodos del grafo', columns: ['Tipo', 'Valor', 'Correos', 'Relaciones'], rows, className: 'data-table--graph' }),
-    graph.nodes.length > TABLE_LIMIT ? el('p', { className: 'graph__note', text: `Se muestran ${TABLE_LIMIT} de ${graph.nodes.length}, primero los compartidos por más correos.` }) : null);
+    dataTable({ caption: t('iocs.table.caption'), columns: [t('iocs.table.type'), t('iocs.table.value'), t('iocs.table.emails'), t('iocs.table.relations')], rows, className: 'data-table--graph' }),
+    graph.nodes.length > TABLE_LIMIT ? el('p', { className: 'graph__note', text: t('iocs.table.limit', { shown: TABLE_LIMIT, total: graph.nodes.length }) }) : null);
 }
 
 function iocLists(report) {
   const panel = el('div', { className: 'stack' });
   const total = IOC_LABELS.reduce((n, [k]) => n + (report.iocs[k]?.length ?? 0), 0);
   if (!total) {
-    panel.append(el('p', { className: 'empty empty--muted', text: 'No hay indicadores que extraer.' }));
+    panel.append(el('p', { className: 'empty empty--muted', text: t('iocs.none') }));
     return panel;
   }
   panel.append(el('div', { className: 'ioc-head' },
-    el('p', { className: 'hint', text: 'Indicadores de compromiso en formato "defanged" (hxxp, [.]) para compartirlos sin riesgo de clic.' }),
-    el('button', { className: 'btn btn--small', text: 'Copiar IOCs', attrs: { type: 'button', 'data-action': 'copy-iocs' } })));
+    el('p', { className: 'hint', text: t('iocs.hint') }),
+    el('button', { className: 'btn btn--small', text: t('export.copy-iocs'), attrs: { type: 'button', 'data-action': 'copy-iocs' } })));
   const grid = el('div', { className: 'ioc-grid' });
   for (const [key, label] of IOC_LABELS) {
     const values = report.iocs[key] ?? [];
@@ -90,13 +91,13 @@ function iocLists(report) {
 
 export function iocsPanel(report, options = {}) {
   const batch = options.batch;
-  const graph = batch?.graph ?? buildGraph([{ key: 'actual', name: report.email?.subject || 'Este correo', report }]);
+  const graph = batch?.graph ?? buildGraph([{ key: 'actual', name: report.email?.subject || t('iocs.thisEmail'), report }]);
   const current = batch ? `email:${batch.current}` : null;
-  const names = new Map((batch?.entries ?? [{ key: 'actual', name: report.email?.subject || 'Este correo' }]).map((e) => [e.key, e.name]));
+  const names = new Map((batch?.entries ?? [{ key: 'actual', name: report.email?.subject || t('iocs.thisEmail') }]).map((e) => [e.key, e.name]));
   const section = (title, ...children) => el('section', { className: 'stack' }, el('h3', { text: title }), ...children);
   return el('div', { className: 'stack' },
-    section(batch ? `Relaciones del lote (${batch.entries.length} correos)` : 'Relaciones de este correo',
-      graph.nodes.length > 1 ? graphView(graphModel(graph, layoutGraph(graph), current)) : el('p', { className: 'empty empty--muted', text: 'No hay relaciones que dibujar.' }),
+    section(batch ? t('iocs.batch', { count: batch.entries.length }) : t('iocs.single'),
+      graph.nodes.length > 1 ? graphView(graphModel(graph, layoutGraph(graph), current)) : el('p', { className: 'empty empty--muted', text: t('iocs.noRelations') }),
       graph.nodes.length > 1 ? graphTable(graph, names) : null),
-    section('IOCs de este correo', iocLists(report)));
+    section(t('iocs.lists'), iocLists(report)));
 }

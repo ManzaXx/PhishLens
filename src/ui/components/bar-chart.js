@@ -3,17 +3,18 @@
 // tabla equivalente plegada debajo. Las etiquetas vienen del correo: van en textContent y recortadas.
 import { el, svgEl, nextId } from '../dom.js';
 import { dataTable } from './data-table.js';
+import { t } from '../../i18n/index.js';
 
 const MAX_LABEL = 80;
 const GAP = 2;
 const short = (s) => {
-  const t = String(s);
-  return t.length > MAX_LABEL ? `${t.slice(0, MAX_LABEL)}…` : t;
+  const text = String(s);
+  return text.length > MAX_LABEL ? `${text.slice(0, MAX_LABEL)}…` : text;
 };
 const sum = (counts, series) => series.reduce((n, s) => n + (Number(counts?.[s.key]) || 0), 0);
 
 /** La tabla equivalente, plegada: los datos exactos están a un clic sin duplicar la gráfica en pantalla. */
-const folded = (table) => el('details', { className: 'chart__data' }, el('summary', { text: 'Ver los datos en una tabla' }), table);
+const folded = (table) => el('details', { className: 'chart__data' }, el('summary', { text: t('chart.table') }), table);
 
 function figure(caption, body, legend, table) {
   const id = nextId('chart');
@@ -63,7 +64,7 @@ export function stackedBars({ caption, buckets, series }) {
     el('span', { className: `chart__swatch chart__swatch--${s.key}`, attrs: { 'aria-hidden': 'true' } }), s.label)));
   const table = dataTable({
     caption,
-    columns: ['Fecha', ...series.map((s) => s.label), 'Total'],
+    columns: [t('chart.date'), ...series.map((s) => s.label), t('chart.total')],
     rows: buckets.map((b, i) => [String(b.label), ...series.map((s) => String(Number(b.counts?.[s.key]) || 0)), String(totals[i])]),
     className: 'chart__table',
   });
@@ -89,7 +90,7 @@ export function hBars({ caption, rows }) {
   }));
   const table = dataTable({
     caption,
-    columns: ['Nombre', 'Detalle', 'Veces'],
+    columns: [t('chart.name'), t('chart.detail'), t('chart.times')],
     rows: rows.map((r) => [String(r.label), String(r.detail ?? ''), String(Number(r.value) || 0)]),
     className: 'chart__table',
   });

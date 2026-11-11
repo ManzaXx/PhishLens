@@ -1,5 +1,6 @@
 import { el, icon, nextId } from '../dom.js';
-import { CONFIDENCE } from './labels.js';
+import { confidenceLabel } from './labels.js';
+import { t } from '../../i18n/index.js';
 
 const TONE_ICON = new Map([['safe', 'check'], ['suspicious', 'alert'], ['phishing', 'alert']]);
 
@@ -7,8 +8,8 @@ const TONE_ICON = new Map([['safe', 'check'], ['suspicious', 'alert'], ['phishin
 export function verdictCard(verdict, { score, confidence } = {}) {
   const tone = TONE_ICON.has(verdict.tone) ? verdict.tone : 'suspicious';
   const id = nextId('verdict');
-  const level = confidence ? CONFIDENCE.get(confidence.level) : null;
-  const facts = [Number.isFinite(score) ? `${score} de 100` : null, level ? `confianza ${level}` : null].filter(Boolean).join(' · ');
+  const level = confidence ? confidenceLabel(confidence.level) : null;
+  const facts = [Number.isFinite(score) ? t('verdict.score', { score }) : null, level ? t('verdict.confidence', { level }) : null].filter(Boolean).join(' · ');
   return el('section', { className: `verdict-card verdict--${tone}`, attrs: { 'aria-labelledby': id } },
     el('div', { className: 'verdict-card__top' },
       icon(TONE_ICON.get(tone)),
