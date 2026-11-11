@@ -52,7 +52,7 @@ export function authPanel(report, { authStatus, dkimKey = '', spfRecord = '' } =
       const text = t(`auth.header.${kind}`);
       ul.append(el('li', {},
         el('span', { className: `auth-state auth-state--${kind}`, text }),
-        el('span', { className: 'mono', text: h.authservId || t('auth.header.noName') }),
+        el('span', { className: 'mono', text: h.arc ? t('auth.header.arc', { id: h.authservId || t('auth.header.noName') }) : h.authservId || t('auth.header.noName') }),
         el('span', { className: 'auth-detail', text: h.why })));
     }
     panel.append(el('section', {}, el('h4', { className: 'group__title', text: t('auth.headers', { n: auth.headers.length }) }), ul));

@@ -1,0 +1,13 @@
+Received: from AM0PR02MB1234.eurprd02.prod.outlook.com (2603:10a6:208:1::1) by DB9PR02MB5678.eurprd02.prod.outlook.com with HTTPS; Tue, 10 Nov 2026 09:00:05 +0000
+Authentication-Results: spf=pass (sender IP is 198.51.100.7) smtp.mailfrom=tienda.test; dkim=pass (signature was verified) header.d=tienda.test;dmarc=pass action=none header.from=tienda.test;compauth=pass reason=100
+Received-SPF: Pass (protection.outlook.com: domain of tienda.test designates 198.51.100.7 as permitted sender) receiver=protection.outlook.com; client-ip=198.51.100.7; helo=out.tienda.test;
+Received: from out.tienda.test (198.51.100.7) by AM0EUR02FT010.mail.protection.outlook.com (10.13.54.1) with Microsoft SMTP Server; Tue, 10 Nov 2026 09:00:04 +0000
+From: Tienda <ofertas@tienda.test>
+To: destino@empresa.test
+Subject: Tu pedido ha salido del almacén
+Date: Tue, 10 Nov 2026 09:00:00 +0000
+Message-ID: <pedido-78@tienda.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hola. Tu pedido 78 ya está en camino.

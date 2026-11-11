@@ -1,6 +1,7 @@
 // Ruta del email reconstruida a partir de las cabeceras Received.
 import { registrableDomain } from './url.js';
-import { isReservedIp } from '../lib/ip.js';
+import { isReservedIp, parseIp, inCidr } from '../lib/ip.js';
+import { INTERNAL_RELAYS } from '../data/authserv.js';
 
 const MAX_HOPS = 30;
 
@@ -12,6 +13,17 @@ function parseTime(date) {
   const time = Date.parse(date.replace(/\([^)]*\)/g, ' ').trim());
   return Number.isNaN(time) ? null : time;
 }
+
+// Exchange escribe la IP del emisor entre paréntesis y sin corchetes: "from host (198.51.100.7) by …".
+function bareIp(value) {
+  const ip = /\bfrom\s+\S+\s+\(\s*([0-9a-f.:]+)\s*\)/i.exec(value)?.[1] ?? '';
+  return ip && parseIp(ip) ? ip : '';
+}
+
+// Un "by" que no es un nombre de host (la línea interna de Gmail "by 2002:a05:…", una IP) no
+// identifica al receptor: solo dice que hubo un salto interno por encima de la entrada.
+const HOSTNAME = /^(?=.*[a-z])[a-z0-9-]+(\.[a-z0-9-]+)+\.?$/i;
+const isHostname = (by) => HOSTNAME.test(by ?? '');
 
 /** Interpreta un único valor de cabecera Received. */
 export function parseHop(raw) {
@@ -27,7 +39,7 @@ export function parseHop(raw) {
     // Nombre inverso que escribió el servidor receptor: "from helo (rdns [IP])".
     rdns: /\bfrom\s+\S+\s+\(\s*([^\s()[\]]+)\s*\[/i.exec(value)?.[1]?.toLowerCase() ?? '',
     // La IP que vio el servidor receptor va entre paréntesis: "from x (host [IP])".
-    ip: (/\([^)]*\[([0-9a-f.:]+)\][^)]*\)/i.exec(value) ?? /\[(\d{1,3}(?:\.\d{1,3}){3}|[0-9a-f:]+:[0-9a-f:]*)\]/i.exec(value))?.[1] ?? '',
+    ip: (/\([^)]*\[([0-9a-f.:]+)\][^)]*\)/i.exec(value) ?? /\[(\d{1,3}(?:\.\d{1,3}){3}|[0-9a-f:]+:[0-9a-f:]*)\]/i.exec(value))?.[1] ?? bareIp(value),
     date,
     time: parseTime(date),
     raw: value,
@@ -45,11 +57,14 @@ const receivedOf = (email) => (email.headerList ?? [])
  */
 export function receivingHop(email) {
   const received = receivedOf(email);
-  const receiver = received[0]?.by?.toLowerCase() || null;
+  // Las líneas internas sin nombre de host de arriba las escribió el propio receptor: se saltan.
+  let start = 0;
+  while (start < received.length && !isHostname(received[start].by)) start++;
+  const receiver = received[start]?.by?.toLowerCase() || null;
   const receiverOrg = org(receiver);
   let entry = null;
   const ownHop = (hop) => Boolean(receiver && hop?.by && org(hop.by) === receiverOrg);
-  for (let i = 0; i < received.length; i++) {
+  for (let i = start; i < received.length; i++) {
     const hop = received[i];
     if (!ownHop(hop)) break;
     entry = hop;
@@ -60,10 +75,21 @@ export function receivingHop(email) {
     // Entregas locales (amavis en 127.0.0.1, LMTP por la red interna): una IP privada no llega
     // desde Internet, así que si debajo hay otro salto del receptor, la entrada está más abajo.
     if (hop.ip && isReservedIp(hop.ip) && ownHop(received[i + 1])) continue;
+    // Saltos internos de un proveedor (Exchange Online) entre sus propias redes: la IP la anotó el
+    // receptor y cae en un rango interno suyo que nadie de fuera puede usar como origen.
+    if (internalRelay(receiverOrg, hop) && ownHop(received[i + 1])) continue;
     break;
   }
   const boundary = entry ? received.find((hop) => hop.index > entry.index) ?? null : null;
-  return { receiver, receiverOrg, entry, boundary };
+  // Un Received con el nombre del receptor por debajo de su entrada lo escribió quien envió el correo.
+  const spoofedChain = Boolean(entry) && received.some((hop) => hop.index > entry.index && ownHop(hop));
+  return { receiver, receiverOrg, entry, boundary, spoofedChain };
+}
+
+function internalRelay(receiverOrg, hop) {
+  if (!hop.ip || org(hop.helo) !== receiverOrg) return false;
+  const ip = parseIp(hop.ip);
+  return INTERNAL_RELAYS.some((r) => r.org === receiverOrg && r.cidrs.some(([net, prefix]) => inCidr(ip, parseIp(net), prefix)));
 }
 
 /**

@@ -30,6 +30,7 @@ test('muestra 04 sin ningún pass alineado da auth.dmarc-unaligned', () => {
 test('Authentication-Results falsificada da auth.forged-results', () => {
   const email = parseEml([
     'Received: from vps.attacker.test ([203.0.113.9]) by mx.example.com; Wed, 21 Oct 2026 07:03:05 +0000',
+    'Received: from [10.0.0.2] by vps.attacker.test; Wed, 21 Oct 2026 07:03:01 +0000',
     'Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=b.test; dmarc=pass header.from=b.test',
     'From: a@b.test',
     '',

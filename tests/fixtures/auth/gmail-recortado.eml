@@ -1,0 +1,21 @@
+Return-Path: <noreply@github.com>
+Received: from out-21.smtp.github.com (out-21.smtp.github.com. [192.30.252.204])
+        by mx.google.com with ESMTPS id x1 for <destino@gmail.test>; Tue, 10 Nov 2026 10:00:02 -0800 (PST)
+Received-SPF: pass (google.com: domain of noreply@github.com designates 192.30.252.204 as permitted sender) client-ip=192.30.252.204;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@github.com header.s=pf2023;
+       spf=pass (google.com: domain of noreply@github.com designates 192.30.252.204 as permitted sender) smtp.mailfrom=noreply@github.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=github.com
+From: GitHub <noreply@github.com>
+To: destino@gmail.test
+Subject: [GitHub] Please reset your password
+Date: Tue, 10 Nov 2026 10:00:00 -0800
+Message-ID: <reset-123@github.com>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<p>We heard that you lost your GitHub password. Sorry about that!</p>
+<p>You can use the following button to reset your password:</p>
+<a href="https://github.com/password_reset/abcdef0123456789">Reset your password</a>
+<p>If you don't use this link within 3 hours, it will expire.</p>
+<p>Thanks, The GitHub Team</p>

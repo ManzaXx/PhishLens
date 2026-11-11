@@ -1,5 +1,16 @@
 # Changelog
 
+## Sin publicar
+
+### Corregido
+- **Correos legítimos marcados como «Resultados de autenticación falsificados».** Postfix con OpenDKIM/OpenDMARC y Gmail escriben su `Authentication-Results` justo debajo de su propio `Received`; hasta ahora eso se tomaba como una cabecera inventada (grave, fiabilidad alta) y un correo legítimo con `dmarc=pass` podía llegar a «Probable phishing». Ahora esa zona queda «sin confirmar», y solo es falsificada si el receptor ya escribió la suya por encima, si la contradice o si debajo hay `Received` inventados con su nombre.
+- **El receptor de Gmail era `2002:a05:…`**: la línea interna `Received: by 2002:…` se tomaba como el servidor receptor. Ahora se saltan las líneas sin nombre de host.
+- **Microsoft 365 con saltos internos**: los saltos de Exchange Online entre sus propias redes (IP en 2603:10a6::/32 o 2603:10b6::/32, sin corchetes) alargan la zona de confianza. La IP entre paréntesis sin corchetes (formato de Exchange) también se lee.
+
+### Añadido
+- Se lee `ARC-Authentication-Results` del receptor cuando está por encima de su entrada (Gmail, Microsoft 365): es la fuente de confianza cuando la otra cabecera quedó en la zona ambigua.
+- `tests/fixtures/auth/` con disposiciones reales de cabeceras (Gmail completo y recortado, Postfix + OpenDKIM, Microsoft 365) y `tests/unit/trust-layouts.test.js`, con los ataques que deben seguir cazándose.
+
 ## 3.1.0 · 2026-11-11 · Español e inglés
 
 Especificación en [docs/specs/2026-11-11-phishlens-3.1-i18n-design.md](docs/specs/2026-11-11-phishlens-3.1-i18n-design.md).

@@ -10,3 +10,11 @@ export const TRUSTED_AUTHSERV = [
   '*.yahoo.com',
   '*.icloud.com',
 ];
+
+// Rangos internos de proveedores grandes: un salto cuyo emisor dice ser del proveedor (HELO) y cuya
+// IP, anotada por el propio receptor, cae aquí es un salto entre sus servidores. Exchange Online usa
+// 2603:10a6::/32 (Europa) y 2603:10b6::/32 (América) para el tráfico interno entre sus buzones; las
+// máquinas virtuales de Azure salen por otros rangos, así que un atacante no puede originar desde aquí.
+export const INTERNAL_RELAYS = [
+  { org: 'outlook.com', cidrs: [['2603:10a6::', 32], ['2603:10b6::', 32]] },
+];

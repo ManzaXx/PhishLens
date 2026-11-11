@@ -1,0 +1,19 @@
+Return-Path: <bounces+123@em1234.tienda.test>
+Delivered-To: destino@empresa.test
+Received: from o1.email.tienda.test (o1.email.tienda.test [167.89.10.10])
+	by mx.empresa.test (Postfix) with ESMTPS id 4XyZ1234
+	for <destino@empresa.test>; Tue, 10 Nov 2026 09:00:02 +0000 (UTC)
+Authentication-Results: mx.empresa.test;
+	dkim=pass (2048-bit key; unprotected) header.d=tienda.test header.i=@tienda.test header.b=AbCd;
+	dkim=pass (2048-bit key) header.d=sendgrid.info header.i=@sendgrid.info header.b=EfGh
+Authentication-Results: mx.empresa.test; dmarc=pass (p=none dis=none) header.from=tienda.test
+Authentication-Results: mx.empresa.test; spf=pass smtp.mailfrom=em1234.tienda.test
+From: Tienda <ofertas@tienda.test>
+To: destino@empresa.test
+Subject: Tu pedido ha salido del almacén
+Date: Tue, 10 Nov 2026 09:00:00 +0000
+Message-ID: <pedido-77@tienda.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hola. Tu pedido 77 ya está en camino. Puedes seguirlo en https://www.tienda.test/pedidos/77
