@@ -4,204 +4,210 @@
 
 # PhishLens
 
-**¿Es phishing? Descúbrelo y entiende por qué, sin que tu email salga del navegador.**
+**Is it phishing? Find out, and understand why, without your email ever leaving the browser.**
+
+**English** · [Español](README.es.md)
 
 [![Tests](https://github.com/ManzaXx/PhishLens/actions/workflows/tests.yml/badge.svg)](https://github.com/ManzaXx/PhishLens/actions/workflows/tests.yml)
 ![Tests](https://img.shields.io/badge/tests-732%20%2B%2069%20e2e-15803d)
-![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
+![Dependencies](https://img.shields.io/badge/dependencies-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
-[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue)](LICENSE)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 </div>
 
-![PhishLens en modo sencillo: «No te fíes: es phishing», qué hacer ahora y por qué](docs/img/sencillo-claro.png)
+![PhishLens in simple mode: the verdict, what to do now and why](docs/img/sencillo-claro.png)
 
-PhishLens analiza un email (archivo `.eml` o texto pegado) o una URL y devuelve una **puntuación de riesgo de 0 a 100**. Explica cada señal en lenguaje claro, la relaciona con su técnica de **MITRE ATT&CK** y extrae los **indicadores de compromiso (IOCs)** listos para compartir con un equipo de seguridad.
+PhishLens analyzes an email (an `.eml` file or pasted text) or a URL and returns a **risk score from 0 to 100**. It explains every signal in plain language, maps it to its **MITRE ATT&CK** technique and extracts the **indicators of compromise (IOCs)**, ready to share with a security team.
 
-**[Pruébalo en el navegador → manzaxx.github.io/PhishLens](https://manzaxx.github.io/PhishLens/)**
+**[Try it in your browser → manzaxx.github.io/PhishLens](https://manzaxx.github.io/PhishLens/)**
 
-Todo se ejecuta en tu navegador. No hay servidor, cookies ni analítica, y una Content-Security-Policy estricta impide cualquier conexión a terceros.
+Everything runs in your browser. There is no server, no cookies and no analytics, and a strict Content-Security-Policy blocks any connection to third parties.
 
-## ✨ Funcionalidades
+> The interface is in Spanish for now; an English version is on the way. The screenshots below show the Spanish UI.
 
-- **Dos niveles de detalle**: el **modo sencillo** da el veredicto en una frase («No te fíes: es phishing»), tres pasos de qué hacer y las señales en lenguaje llano; el **modo analista** tiene navegación lateral por Resumen, Señales, Vista segura, Autenticación, Cabeceras y ruta, Adjuntos, URLs, IOCs, Campañas, ATT&CK , Panel e Historial, con la vista en la URL (`#analista/senales`).
-- **10 detectores y 86 reglas**: autenticación, remitente, cabeceras, ruta, estructura MIME, enlaces, dominios parecidos, adjuntos, HTML y lenguaje. Cada regla tiene su texto llano y su técnica ATT&CK.
-- **Informe explicado**: nota con semáforo, motivo principal, confianza del análisis, riesgo por categoría, combinaciones peligrosas y recomendaciones de qué hacer.
-- **Vista segura**: el email como texto plano, sin enlaces activos y con las frases de ingeniería social resaltadas.
-- **Ruta del email**: reconstruye los saltos `Received` con sus IPs.
-- **IOCs defanged** (`hxxp://evil[.]xyz`) con botón de copiar para pegarlos en un ticket.
-- **Varios correos a la vez**: suelta hasta 50 `.eml` (100 MB en total) y elige cuál ver. Un **grafo de IOCs** en SVG une correos, remitentes, dominios, IPs, URLs y adjuntos (con teclado y una tabla equivalente), y las **campañas** agrupan los correos que comparten infraestructura, un adjunto o la misma plantilla.
-- **MITRE ATT&CK**: cada señal enlazada a su técnica (T1566.002, T1036.007, T1684.001…), con su táctica y el motivo, según ATT&CK 20.1.
-- **URLs sin visitarlas**: desenvuelve redirecciones (Safe Links, Google, Facebook, LinkedIn, parámetros como `url` o `next`, base64 y codificación doble, hasta 10 saltos) y detecta IPs disfrazadas (`http://3232235777`), credenciales en el enlace, puertos raros y dominios con aspecto aleatorio. La vista **«URLs»** enseña la cadena de saltos sin que nada se pueda pulsar.
-- **Exportar** (JSON, **STIX 2.1**, copiar IOCs, informe forense) desde un menú accesible con teclado. El bundle STIX lleva observables, indicadores, técnicas ATT&CK y campañas con ids deterministas, y pasa el validador oficial de OASIS ([docs/stix.md](docs/stix.md)).
-- **Sistema de diseño propio** ([docs/design-system.md](docs/design-system.md)): tokens con contraste comprobado en claro y oscuro, objetivos táctiles de 44 px y sin scroll horizontal a 360 px, comprobados en un Chromium real.
-- **Historial opcional en el navegador** (apagado por defecto): guarda el informe de cada análisis, nunca el correo. Busca un IOC en todo lo guardado, filtra por nivel, fecha o técnica, compara dos análisis y exporta o importa el historial en `.json`. «Borrar todo» borra la base entera.
-- **Panel SOC** sobre el historial: cifras clave, niveles en el tiempo, técnicas ATT&CK más vistas, IOCs que se repiten (un clic los busca), remitentes y dominios más frecuentes y campañas recientes. Gráficas SVG propias, con su tabla de datos y colores comprobados para daltonismo.
-- **Informe forense** en PDF (desde el diálogo de impresión) y en JSON: identificación con SHA-256, SHA-1 y MD5, veredicto, hallazgos por gravedad, autenticación, cronología, IOCs, adjuntos, URLs y las notas del analista. El JSON lleva `reportSha256` para comprobar que nadie lo ha tocado ([docs/forensic.md](docs/forensic.md)).
-- **Reglas propias en JSON**: añade tus señales (dominios de tu empresa, adjuntos que nunca recibes, combinaciones con las reglas de PhishLens) con un formato cerrado sin expresiones regulares. Se validan enteras, se prueban contra el historial antes de activarlas y nunca bajan la nota ([docs/rules.md](docs/rules.md)).
-- **13 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
+## ✨ Features
 
-| Modo sencillo (oscuro) | Móvil | Email legítimo |
+- **Two levels of detail**: **simple mode** gives the verdict in one sentence, three steps on what to do and the signals in plain language; **analyst mode** has a side navigation with Summary, Signals, Safe view, Authentication, Headers and route, Attachments, URLs, IOCs, Campaigns, ATT&CK, Dashboard and History, with the view kept in the URL (`#analista/senales`).
+- **10 detectors and 86 rules**: authentication, sender, headers, route, MIME structure, links, lookalike domains, attachments, HTML and language. Every rule has a plain-language text and an ATT&CK technique.
+- **Explained report**: traffic-light score, main reason, analysis confidence, risk per category, dangerous combinations and recommendations.
+- **Safe view**: the email as plain text, with no live links and the social-engineering phrases highlighted.
+- **Email route**: rebuilds the `Received` hops with their IPs.
+- **Defanged IOCs** (`hxxp://evil[.]xyz`) with a copy button to paste them into a ticket.
+- **Many emails at once**: drop up to 50 `.eml` files (100 MB in total) and pick which one to view. An SVG **IOC graph** links emails, senders, domains, IPs, URLs and attachments (keyboard-friendly, with an equivalent table), and **campaigns** group the emails that share infrastructure, an attachment or the same template.
+- **MITRE ATT&CK**: every signal linked to its technique (T1566.002, T1036.007, T1684.001…), with its tactic and the reason, following ATT&CK 20.1.
+- **URLs without visiting them**: unwraps redirects (Safe Links, Google, Facebook, LinkedIn, parameters such as `url` or `next`, base64 and double encoding, up to 10 hops) and spots disguised IPs (`http://3232235777`), credentials in the link, unusual ports and random-looking domains. The **URLs** view shows the hop chain with nothing clickable.
+- **Export** (JSON, **STIX 2.1**, copy IOCs, forensic report) from a keyboard-accessible menu. The STIX bundle carries observables, indicators, ATT&CK techniques and campaigns with deterministic ids, and passes the official OASIS validator ([docs/stix.md](docs/stix.md)).
+- **Its own design system** ([docs/design-system.md](docs/design-system.md)): tokens with contrast checked in light and dark themes, 44 px touch targets and no horizontal scroll at 360 px, verified in a real Chromium.
+- **Optional history in the browser** (off by default): it stores the report of each analysis, never the email. Search an IOC across everything stored, filter by level, date or technique, compare two analyses and export or import the history as `.json`. «Borrar todo» (delete all) wipes the whole database.
+- **SOC dashboard** on top of the history: key figures, levels over time, most seen ATT&CK techniques, recurring IOCs (one click searches them), top senders and domains, and recent campaigns. Hand-made SVG charts, each with its data table and colour-blind-safe colours.
+- **Forensic report** as PDF (through the print dialog) and JSON: identification with SHA-256, SHA-1 and MD5, verdict, findings by severity, authentication, timeline, IOCs, attachments, URLs and the analyst's notes. The JSON carries `reportSha256` so you can check nobody touched it ([docs/forensic.md](docs/forensic.md)).
+- **Custom rules in JSON**: add your own signals (your company's domains, attachments you never receive, combinations with PhishLens rules) in a closed format with no regular expressions. Files are validated as a whole, previewed against the history before you turn them on, and can never lower the score ([docs/rules.md](docs/rules.md)).
+- **13 sample emails and a 4-email campaign batch** that load with one click.
+
+| Simple mode (dark) | Mobile | Legitimate email |
 |---|---|---|
-| ![Modo sencillo en tema oscuro](docs/img/sencillo-oscuro.png) | ![Modo sencillo en el móvil](docs/img/movil-sencillo.png) | ![Modo sencillo con un email legítimo](docs/img/sencillo-legitimo.png) |
+| ![Simple mode in the dark theme](docs/img/sencillo-oscuro.png) | ![Simple mode on mobile](docs/img/movil-sencillo.png) | ![Simple mode with a legitimate email](docs/img/sencillo-legitimo.png) |
 
-| Modo analista: resumen | Señales | Autenticación |
+| Analyst mode: summary | Signals | Authentication |
 |---|---|---|
-| ![Modo analista con el anillo de riesgo y las categorías](docs/img/analista-resumen.png) | ![Señales agrupadas con gravedad, fiabilidad y ATT&CK](docs/img/analista-senales.png) | ![Autenticación SPF, DKIM y DMARC con su estado](docs/img/analista-autenticacion.png) |
+| ![Analyst mode with the risk ring and the categories](docs/img/analista-resumen.png) | ![Signals grouped by severity, reliability and ATT&CK](docs/img/analista-senales.png) | ![SPF, DKIM and DMARC with their status](docs/img/analista-autenticacion.png) |
 
-| Vista segura | Cabeceras y ruta | Adjuntos |
+| Safe view | Headers and route | Attachments |
 |---|---|---|
-| ![Vista segura con frases resaltadas](docs/img/analista-vista-segura.png) | ![Ruta Received con avisos por salto](docs/img/analista-cabeceras.png) | ![Adjuntos por dentro: PDF activo y ZIP con contraseña](docs/img/analista-adjuntos.png) |
+| ![Safe view with highlighted phrases](docs/img/analista-vista-segura.png) | ![Received route with warnings per hop](docs/img/analista-cabeceras.png) | ![Attachments inside: active PDF and password-protected ZIP](docs/img/analista-adjuntos.png) |
 
-| Grafo de IOCs del lote | Campañas | Lote en el móvil |
+| Batch IOC graph | Campaigns | Batch on mobile |
 |---|---|---|
-| ![Grafo radial de IOCs de un lote de cuatro correos](docs/img/analista-grafo.png) | ![Campaña de cuatro correos con lo que tienen en común](docs/img/analista-campanas.png) | ![Selector del lote y aviso de campaña en el móvil](docs/img/movil-lote.png) |
+| ![Radial IOC graph of a four-email batch](docs/img/analista-grafo.png) | ![Four-email campaign with what they share](docs/img/analista-campanas.png) | ![Batch picker and campaign notice on mobile](docs/img/movil-lote.png) |
 
 | URLs | IOCs | ATT&CK |
 |---|---|---|
-| ![Cadena de saltos de un enlace con redirección anidada](docs/img/analista-urls.png) | ![IOCs defanged con dominios Unicode](docs/img/analista-iocs.png) | ![Técnicas ATT&CK](docs/img/analista-attack.png) |
+| ![Hop chain of a link with a nested redirect](docs/img/analista-urls.png) | ![Defanged IOCs with Unicode domains](docs/img/analista-iocs.png) | ![ATT&CK techniques](docs/img/analista-attack.png) |
 
-| Historial | Historial en el móvil | Panel en el móvil |
+| History | History on mobile | Dashboard on mobile |
 |---|---|---|
-| ![Historial con búsqueda, filtros y dos análisis marcados para comparar](docs/img/analista-historial.png) | ![Historial en el móvil, tema oscuro](docs/img/movil-historial.png) | ![Panel en el móvil, tema oscuro](docs/img/movil-panel.png) |
+| ![History with search, filters and two analyses selected to compare](docs/img/analista-historial.png) | ![History on mobile, dark theme](docs/img/movil-historial.png) | ![Dashboard on mobile, dark theme](docs/img/movil-panel.png) |
 
-![Panel SOC: siete análisis guardados, niveles en el tiempo, técnicas ATT&CK, IOCs repetidos y una campaña](docs/img/analista-panel.png)
+![SOC dashboard: seven saved analyses, levels over time, ATT&CK techniques, recurring IOCs and a campaign](docs/img/analista-panel.png)
 
-| Informe forense impreso | Diálogo del informe en el móvil |
+| Printed forensic report | Report dialog on mobile |
 |---|---|
-| ![Informe forense: identificación con hashes, veredicto y hallazgos por gravedad](docs/img/informe-forense.png) | ![Diálogo «Informe forense» con notas del analista, tema oscuro](docs/img/forense-dialogo.png) |
+| ![Forensic report: identification with hashes, verdict and findings by severity](docs/img/informe-forense.png) | ![Forensic report dialog with the analyst's notes, dark theme](docs/img/forense-dialogo.png) |
 
-| Reglas propias: vista previa | Reglas propias en el móvil |
+| Custom rules: preview | Custom rules on mobile |
 |---|---|
-| ![Tres reglas propias cargadas con su vista previa sobre el historial](docs/img/reglas-vista-previa.png) | ![Reglas propias en el móvil, tema oscuro](docs/img/movil-reglas.png) |
+| ![Three custom rules loaded with their preview against the history](docs/img/reglas-vista-previa.png) | ![Custom rules on mobile, dark theme](docs/img/movil-reglas.png) |
 
-## 🔍 Qué detecta
+## 🔍 What it detects
 
-| Detector | Señales | ATT&CK |
+| Detector | Signals | ATT&CK |
 |---|---|---|
-| **Autenticación** | SPF, DKIM y DMARC con su **estado** (verificado por PhishLens, declarado por el receptor, declarado sin confirmar, no verificable sin DNS); `Authentication-Results` **falsificadas**; DMARC sin alineación; cuerpo modificado tras la firma DKIM (hash `bh=` comprobado en local); firma DKIM y SPF verificables pegando la clave o el registro | T1684.002 |
-| **Remitente** | `Reply-To` y `Return-Path` de otro dominio, marca suplantada desde un dominio ajeno o un correo gratuito, letras cirílicas o griegas camufladas (`Pаypal`), caracteres invisibles, nombre visible con otra dirección (`"soporte@paypal.com" <x@evil.test>`), `Sender` de otro dominio sin firmar | T1684.001, T1027 |
-| **Cabeceras técnicas** | `Message-ID` de otro dominio, falta `Date` o `Message-ID`, fecha futura, `X-Mailer` de kits de phishing (PHPMailer…), varios `From` o cabeceras únicas repetidas | T1684.002 (varios `From`) |
-| **Ruta del correo** | IP privada en el salto de entrada, horas que retroceden, entrega de más de 24 h, más de 25 saltos, servidor que dice ser una marca (HELO) sin serlo | T1684.002 |
-| **Enlaces** | Texto que muestra otro dominio, IPs (también disfrazadas en decimal, hex u octal), acortadores, `@` que oculta el host, usuario y contraseña en el enlace, punycode, TLD baratos, login sin HTTPS, marca en la ruta, descarga directa de ejecutables, enlaces de seguimiento, redirecciones anidadas o abiertas, puertos raros y dominios aleatorios | T1566.002, T1204.001 |
-| **Dominios parecidos** | Levenshtein y homoglifos (`0→o`, `1→l`, `rn→m`) frente a 37 marcas (22 españolas verificadas), confusables de Unicode UTS #39, dominios con alfabetos mezclados o enteros en cirílico (`аррӏе.com`), homógrafos con letras latinas raras o de otros alfabetos (`ɑpple.com`), subdominios engañosos (`paypal.com.cuenta-segura.test`), marca + palabra de acceso (combosquatting) | T1583.001 |
-| **Adjuntos** | Ejecutables, doble extensión (`factura.pdf.exe`), nombre invertido con RLO, y por dentro sin abrirlos: tipo real que no cuadra con la extensión, ZIP con programas o con contraseña, macros VBA, PDF que actúa al abrirse, HTML smuggling, imágenes de disco y accesos directos. SHA-256, SHA-1 y MD5 | T1566.001, T1204.002, T1036.007, T1036.002, T1036.008, T1027.006, T1027.013, T1553.005, T1059.005 |
-| **Contenido HTML** | Formularios dentro del email, JavaScript o iframes, enlaces `data:`, texto oculto para burlar filtros, emails que son solo una imagen | T1598, T1059.007, T1027 |
-| **Lenguaje** | Urgencia, amenazas, premios y peticiones de credenciales, en español e inglés | T1204, T1598 |
+| **Authentication** | SPF, DKIM and DMARC with their **status** (verified by PhishLens, declared by the receiver, declared but unconfirmed, not verifiable without DNS); **forged** `Authentication-Results`; DMARC without alignment; body modified after the DKIM signature (`bh=` hash checked locally); DKIM signature and SPF verifiable by pasting the key or the record | T1684.002 |
+| **Sender** | `Reply-To` and `Return-Path` from another domain, brand impersonated from an unrelated domain or a free mailbox, disguised Cyrillic or Greek letters (`Pаypal`), invisible characters, display name with another address (`"soporte@paypal.com" <x@evil.test>`), unsigned `Sender` from another domain | T1684.001, T1027 |
+| **Technical headers** | `Message-ID` from another domain, missing `Date` or `Message-ID`, future date, phishing-kit `X-Mailer` (PHPMailer…), several `From` or repeated single headers | T1684.002 (several `From`) |
+| **Email route** | Private IP on the entry hop, timestamps going backwards, delivery over 24 h, more than 25 hops, a server claiming to be a brand (HELO) when it isn't | T1684.002 |
+| **Links** | Text showing another domain, IPs (also disguised as decimal, hex or octal), shorteners, `@` hiding the host, user and password in the link, punycode, cheap TLDs, login without HTTPS, brand in the path, direct download of executables, tracking links, nested or open redirects, unusual ports and random domains | T1566.002, T1204.001 |
+| **Lookalike domains** | Levenshtein and homoglyphs (`0→o`, `1→l`, `rn→m`) against 37 brands (22 verified Spanish ones), Unicode UTS #39 confusables, mixed-script or fully Cyrillic domains (`аррӏе.com`), homographs with rare Latin or other-script letters (`ɑpple.com`), misleading subdomains (`paypal.com.cuenta-segura.test`), brand + login word (combosquatting) | T1583.001 |
+| **Attachments** | Executables, double extension (`factura.pdf.exe`), names reversed with RLO, and inside without opening them: real type not matching the extension, ZIP with programs or a password, VBA macros, PDF that acts on open, HTML smuggling, disk images and shortcuts. SHA-256, SHA-1 and MD5 | T1566.001, T1204.002, T1036.007, T1036.002, T1036.008, T1027.006, T1027.013, T1553.005, T1059.005 |
+| **HTML content** | Forms inside the email, JavaScript or iframes, `data:` links, hidden text to beat filters, emails that are just an image | T1598, T1059.007, T1027 |
+| **Language** | Urgency, threats, prizes and credential requests, in Spanish and English | T1204, T1598 |
 
-### Puntuación
+### Scoring
 
-La nota (0–100) combina seis categorías: Autenticación, Remitente, Enlaces, Adjuntos, Lenguaje e Infraestructura.
+The score (0–100) combines six categories: Authentication, Sender, Links, Attachments, Language and Infrastructure.
 
-- Cada señal pesa según su gravedad y su fiabilidad, y cada categoría satura: diez enlaces raros no valen más que uno muy grave.
-- Las **combinaciones peligrosas** suben la nota, por ejemplo suplantación de marca con autenticación fallida.
-- Una firma DKIM verificada rebaja las señales blandas.
+- Each signal weighs according to its severity and its reliability, and each category saturates: ten odd links are not worth more than one very serious one.
+- **Dangerous combinations** raise the score, for example brand impersonation with failed authentication.
+- A verified DKIM signature softens the weaker signals.
 
-Aparte de la nota, el informe da la **confianza del análisis** (alta, media o baja) según lo que se pudo comprobar. Detalle y ejemplo resuelto en [docs/scoring.md](docs/scoring.md).
+Besides the score, the report gives the **analysis confidence** (high, medium or low) based on what could be checked. Details and a worked example in [docs/scoring.md](docs/scoring.md) (in Spanish).
 
-| Nota | Veredicto |
+| Score | Verdict |
 |---|---|
-| 0–24 | 🟢 Probablemente legítimo |
-| 25–59 | 🟠 Sospechoso |
-| 60–79 | 🔴 Probable phishing |
-| 80–100 | 🟣 Phishing casi seguro |
+| 0–24 | 🟢 Probably legitimate |
+| 25–59 | 🟠 Suspicious |
+| 60–79 | 🔴 Likely phishing |
+| 80–100 | 🟣 Almost certainly phishing |
 
-## 🚀 Pruébalo
+## 🚀 Run it locally
 
 ```bash
 git clone https://github.com/ManzaXx/PhishLens.git
 cd PhishLens
-python -m http.server 8080      # o: npx serve .
-# abre http://localhost:8080
+python -m http.server 8080      # or: npx serve .
+# open http://localhost:8080
 ```
 
-Pulsa cualquiera de los ejemplos o arrastra tu propio `.eml` a la página. En Gmail se descarga con <kbd>⋮</kbd> → *Descargar mensaje*. También puedes copiar el original desde *Mostrar original* y pegarlo.
+Click any of the samples or drop your own `.eml` on the page. In Gmail you can download it with <kbd>⋮</kbd> → *Download message*, or copy the original from *Show original* and paste it.
 
-Los ejemplos son ficticios: los dominios de los atacantes usan el TLD reservado `.test` y no existen.
+The samples are fictional: the attackers' domains use the reserved `.test` TLD and do not exist.
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
-Detalle de capas, modelos de datos y límites en [docs/architecture.md](docs/architecture.md); decisiones en [docs/adr/](docs/adr/).
+Layers, data models and limits in [docs/architecture.md](docs/architecture.md); decisions in [docs/adr/](docs/adr/). The docs are in Spanish.
 
 ```mermaid
 flowchart LR
-  A[".eml · texto · URL"] --> B["parser/eml.js<br/>parser/url.js"]
-  B --> C{{"Objeto Email"}}
+  A[".eml · text · URL"] --> B["parser/eml.js<br/>parser/url.js"]
+  B --> C{{"Email object"}}
   C --> D1[auth] & D2[sender] & D3[headers] & D4[links] & D5[lookalike] & D6[attachments] & D7[html] & D8[language]
-  D1 & D2 & D3 & D4 & D5 & D6 & D7 & D8 --> E["core/engine.js<br/>puntuación + ATT&CK"]
-  C --> F["intel/ioc.js<br/>IOCs defanged"]
-  E & F --> G["ui/render.js<br/>(solo textContent)"]
+  D1 & D2 & D3 & D4 & D5 & D6 & D7 & D8 --> E["core/engine.js<br/>score + ATT&CK"]
+  C --> F["intel/ioc.js<br/>defanged IOCs"]
+  E & F --> G["ui/render.js<br/>(textContent only)"]
 ```
 
 ```
 PhishLens/
-├── index.html               # Página única con CSP estricta
-├── assets/                  # CSS (tema claro/oscuro), favicon e imagen para compartir
+├── index.html               # Single page with a strict CSP
+├── assets/                  # CSS (light/dark theme), favicon and share image
 ├── src/
-│   ├── lib/                 # Utilidades puras: SHA-256, límites, texto seguro
-│   ├── data/                # Marcas, listas de referencia, patrones y mapa MITRE ATT&CK
-│   ├── parser/              # eml.js (RFC 5322 + MIME), received.js, html.js (sin DOM), url.js
-│   ├── detectors/           # 10 detectores con la misma interfaz: detect(email) -> Finding[]
-│   ├── intel/               # IOCs defanged, URLs desenvueltas, grafo, campañas, STIX 2.1, panel e informe forense
-│   ├── rules/               # Reglas propias: validador, motor sin regex y vista previa
-│   ├── storage/             # Historial opcional en IndexedDB, con su validador
-│   ├── core/                # Modelo de hallazgo, motor y recomendaciones
-│   └── ui/                  # Render del informe, resaltado y controlador de la página
-├── docs/                    # Arquitectura, ADRs, especificaciones y planes
-├── SECURITY.md              # Modelo de amenazas y mitigaciones
-├── samples/                 # 13 emails .eml de ejemplo, un lote de campaña y reglas de ejemplo
-├── tools/                   # Muestras, capturas, matriz de cobertura y validador STIX
-└── tests/                   # unit/, e2e/, fuzz/ y perf/ con node:test
+│   ├── lib/                 # Pure utilities: SHA-256, limits, safe text
+│   ├── data/                # Brands, reference lists, patterns and the MITRE ATT&CK map
+│   ├── parser/              # eml.js (RFC 5322 + MIME), received.js, html.js (no DOM), url.js
+│   ├── detectors/           # 10 detectors with the same interface: detect(email) -> Finding[]
+│   ├── intel/               # Defanged IOCs, unwrapped URLs, graph, campaigns, STIX 2.1, dashboard and forensic report
+│   ├── rules/               # Custom rules: validator, regex-free engine and preview
+│   ├── storage/             # Optional IndexedDB history, with its validator
+│   ├── core/                # Finding model, engine and recommendations
+│   └── ui/                  # Report rendering, highlighting and page controller
+├── docs/                    # Architecture, ADRs, specs and plans
+├── SECURITY.md              # Threat model and mitigations
+├── samples/                 # 13 sample .eml emails, a campaign batch and sample rules
+├── tools/                   # Samples, screenshots, coverage matrix and STIX validator
+└── tests/                   # unit/, e2e/, fuzz/ and perf/ with node:test
 ```
 
-### Decisiones técnicas
+### Technical decisions
 
-- **JavaScript puro con módulos ES**, sin frameworks ni compilación: el código que se lee es el que se ejecuta.
-- **El motor no toca el DOM**, así que todo el análisis se prueba en Node con `node --test`, sin dependencias.
-- **El email nunca se interpreta como HTML.** Se inserta con `textContent`, los enlaces del email no son clicables y el HTML se recorre con un escáner propio, sin crear nodos.
-- **Resistente a emails maliciosos.** El parser trabaja en tiempo lineal y los regex tienen cuantificadores acotados. Hay tests que comprueban que miles de etiquetas sin cerrar, paréntesis o puntos no bloquean la pestaña (ReDoS).
-- **Detectores aislados.** Si uno falla, el motor lo registra y sigue con el resto.
-- **Seguridad auditada.** Trusted Types, CSP sin `unsafe-inline`, límites contra DoS, protección contra contaminación de prototipos y clickjacking. Ver [SECURITY.md](SECURITY.md).
-- **Privacidad por diseño.** La CSP (`connect-src 'none'`, `script-src 'self'`, sin `unsafe-inline`) impide enviar datos fuera aunque hubiera un fallo, y un test en Chromium real comprueba que analizar un correo no hace ni una petición fuera del origen.
+- **Plain JavaScript with ES modules**, no frameworks and no build step: the code you read is the code that runs.
+- **The engine never touches the DOM**, so the whole analysis is tested in Node with `node --test`, with no dependencies.
+- **The email is never interpreted as HTML.** It is inserted with `textContent`, links in the email are not clickable and the HTML is walked by a custom scanner that creates no nodes.
+- **Hardened against malicious emails.** The parser runs in linear time and the regexes have bounded quantifiers. Tests check that thousands of unclosed tags, brackets or dots do not freeze the tab (ReDoS).
+- **Isolated detectors.** If one fails, the engine logs it and carries on with the rest.
+- **Security audited.** Trusted Types, CSP without `unsafe-inline`, DoS limits, protection against prototype pollution and clickjacking. See [SECURITY.md](SECURITY.md).
+- **Privacy by design.** The CSP (`connect-src 'none'`, `script-src 'self'`, no `unsafe-inline`) prevents sending data out even if there were a bug, and a test in a real Chromium checks that analyzing an email makes not a single request outside the origin.
 
 ## 🧪 Tests
 
 ```bash
-node --test                 # unitarios, golden, fuzzing (2.000 casos), diferenciales y rendimiento
-npm run fuzz                # 20.000 casos de fuzzing
-npm run bench               # reescribe docs/benchmark.md
-npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
+node --test                 # unit, golden, fuzzing (2,000 cases), differential and performance
+npm run fuzz                # 20,000 fuzzing cases
+npm run bench               # rewrites docs/benchmark.md
+npm ci && npx playwright install chromium && npm run test:e2e   # privacy and accessibility in Chromium
 ```
 
-GitHub Actions ejecuta todo en cada push (`.github/workflows/tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 13 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
+GitHub Actions runs everything on every push (`.github/workflows/tests.yml`), plus `npm audit`, and Dependabot watches the test dependencies and the Actions. The tests cover the parser, every detector with positive and negative cases, the engine, the IOCs, the ATT&CK map, the 13 samples and the campaign batch end to end, the graph and the campaigns (also with the batch shuffled) and resistance to malicious input. The [coverage matrix](docs/coverage-matrix.md) says where each rule is tested; the [threat model](docs/threat-model.md) and the [audit](docs/security-audit.md), what each test protects.
 
-## 🌐 Publicar la demo
+## 🌐 Demo
 
-La demo está en **https://manzaxx.github.io/PhishLens/**. El workflow `.github/workflows/pages.yml` la vuelve a publicar en cada push a `main`, después de pasar los tests. En un fork, elige *GitHub Actions* como origen en *Settings → Pages*.
+The demo lives at **https://manzaxx.github.io/PhishLens/**. The `.github/workflows/pages.yml` workflow republishes it on every push to `main`, after the tests pass. In a fork, choose *GitHub Actions* as the source under *Settings → Pages*.
 
-## ⚠️ Limitaciones
+## ⚠️ Limitations
 
-- Son heurísticas: una nota baja **no garantiza** que un email sea seguro, y un email legítimo mal configurado puede salir sospechoso.
-- No consulta servicios externos (listas negras, WHOIS, VirusTotal), porque eso exigiría enviar datos fuera del navegador.
-- Las campañas son una pista, no una prueba: se unen por cadena (A comparte algo con B y B con C) y solo entran los correos que no parecen legítimos.
-- Sin red no sabe la edad de un dominio ni desenvuelve un acortador (`bit.ly`, `t.co`): solo lo que va escrito dentro de la propia URL.
-- Sin red no consulta DNS: la firma DKIM y el SPF solo se verifican si pegas la clave o el registro. Detalles en [docs/limitations.md](docs/limitations.md).
-- Mira dentro de los adjuntos sin abrirlos, pero no descomprime nada: un PDF dentro de un ZIP o el contenido comprimido de un PDF no se revisan. Tampoco lee el formato `.msg` de Outlook.
+- These are heuristics: a low score **does not guarantee** that an email is safe, and a badly configured legitimate email can look suspicious.
+- It does not query external services (blocklists, WHOIS, VirusTotal), because that would mean sending data out of the browser.
+- Campaigns are a hint, not proof: emails are chained (A shares something with B and B with C) and only emails that don't look legitimate are included.
+- Without network access it cannot know a domain's age or unwrap a shortener (`bit.ly`, `t.co`): only what is written inside the URL itself.
+- Without network access it does not query DNS: the DKIM signature and SPF are only verified if you paste the key or the record. Details in [docs/limitations.md](docs/limitations.md).
+- It looks inside attachments without opening them, but decompresses nothing: a PDF inside a ZIP or the compressed content of a PDF are not checked. It does not read Outlook's `.msg` format either.
 
-## 🗺️ Próximos pasos
+## 🗺️ Roadmap
 
-- [x] Verificación de firmas DKIM con WebCrypto (2.2)
-- [ ] Extensión de navegador para analizar el email abierto en Gmail u Outlook
-- [x] Modo por lotes, grafo de IOCs y campañas (2.3)
-- [x] URLs sin visitarlas y exportación STIX 2.1 (2.3)
+- [x] DKIM signature verification with WebCrypto (2.2)
+- [x] Batch mode, IOC graph and campaigns (2.3)
+- [x] URLs without visiting them and STIX 2.1 export (2.3)
+- [x] History, SOC dashboard, forensic report and custom rules (3.0)
+- [ ] English interface
+- [ ] Browser extension to analyze the email open in Gmail or Outlook
 
-## 📄 Licencia y aviso
+## 📄 License and disclaimer
 
 [MIT](LICENSE) © 2026 Pablo Manzanedo.
 
-PhishLens es un proyecto educativo de ciberseguridad defensiva. Si recibes un email sospechoso, contacta con la empresa por un canal oficial y repórtalo. En España puedes llamar a INCIBE al **017**.
+PhishLens is an educational defensive-security project. If you receive a suspicious email, contact the company through an official channel and report it. In Spain you can call INCIBE on **017**.
 
 ---
 
-<div align="center">Hecho por <b>Pablo Manzanedo</b> · <a href="https://github.com/ManzaXx">GitHub</a></div>
+<div align="center">Made by <b>Pablo Manzanedo</b> · <a href="https://github.com/ManzaXx">GitHub</a></div>
