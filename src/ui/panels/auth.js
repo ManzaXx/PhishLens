@@ -1,5 +1,6 @@
 // Panel «Autenticación»: SPF, DKIM y DMARC, y la comprobación en local.
 import { el } from '../dom.js';
+import { t } from '../../i18n/index.js';
 
 
 const AUTH_ROWS = [['spf', 'SPF'], ['dkim', 'DKIM'], ['dmarc', 'DMARC']];
@@ -7,11 +8,11 @@ const AUTH_ROWS = [['spf', 'SPF'], ['dkim', 'DKIM'], ['dmarc', 'DMARC']];
 /** Texto de la insignia: el color nunca es la única señal del estado. */
 export function authStateLabel(m) {
   switch (m.state) {
-    case 'verified': return 'Verificado por PhishLens';
-    case 'declared-trusted': return `Declarado por ${m.source || 'el receptor'}`;
-    case 'declared-untrusted': return 'Declarado sin confirmar';
-    case 'unverifiable': return 'No verificable sin DNS';
-    default: return 'Sin datos';
+    case 'verified': return t('auth.state.verified');
+    case 'declared-trusted': return t('auth.state.declared', { source: m.source || t('auth.state.receiver') });
+    case 'declared-untrusted': return t('auth.state.untrusted');
+    case 'unverifiable': return t('auth.state.unverifiable');
+    default: return t('auth.state.none');
   }
 }
 
@@ -24,9 +25,9 @@ export function authPanel(report, { authStatus, dkimKey = '', spfRecord = '' } =
 
   const table = el('table', { className: 'auth-table' });
   table.append(el('thead', {}, el('tr', {},
-    el('th', { text: 'Mecanismo', attrs: { scope: 'col' } }),
-    el('th', { text: 'Resultado', attrs: { scope: 'col' } }),
-    el('th', { text: 'Estado', attrs: { scope: 'col' } }))));
+    el('th', { text: t('auth.col.mechanism'), attrs: { scope: 'col' } }),
+    el('th', { text: t('auth.col.result'), attrs: { scope: 'col' } }),
+    el('th', { text: t('auth.col.state'), attrs: { scope: 'col' } }))));
   const body = el('tbody');
   for (const [key, label] of AUTH_ROWS) {
     const m = auth[key];
@@ -40,34 +41,34 @@ export function authPanel(report, { authStatus, dkimKey = '', spfRecord = '' } =
   }
   table.append(body);
   panel.append(el('section', {},
-    el('h4', { className: 'group__title', text: 'SPF, DKIM y DMARC' }),
-    el('p', { className: 'hint', text: '«Verificado» significa que PhishLens lo ha comprobado en tu navegador. «Declarado» es lo que dice una cabecera, que solo vale si la añadió el servidor que recibió el correo.' }),
+    el('h4', { className: 'group__title', text: t('auth.title') }),
+    el('p', { className: 'hint', text: t('auth.hint') }),
     el('div', { className: 'table-wrap' }, table)));
 
   if (auth.headers.length) {
     const ul = el('ul', { className: 'auth-headers' });
     for (const h of auth.headers) {
       const kind = h.forged ? 'forged' : h.trusted ? 'trusted' : 'untrusted';
-      const text = { forged: 'Falsificada', trusted: 'De confianza', untrusted: 'Sin confirmar' }[kind];
+      const text = t(`auth.header.${kind}`);
       ul.append(el('li', {},
         el('span', { className: `auth-state auth-state--${kind}`, text }),
-        el('span', { className: 'mono', text: h.authservId || '(sin nombre)' }),
+        el('span', { className: 'mono', text: h.authservId || t('auth.header.noName') }),
         el('span', { className: 'auth-detail', text: h.why })));
     }
-    panel.append(el('section', {}, el('h4', { className: 'group__title', text: `Cabeceras Authentication-Results (${auth.headers.length})` }), ul));
+    panel.append(el('section', {}, el('h4', { className: 'group__title', text: t('auth.headers', { n: auth.headers.length }) }), ul));
   }
 
   const isEmail = report.email.from !== null || report.email.authResults !== null;
   if (isEmail) {
     const details = el('details', { className: 'auth-local', attrs: authStatus ? { open: '' } : {} },
-      el('summary', { text: 'Comprobar en local' }),
-      el('p', { className: 'hint', text: 'Sin red: pega tú los registros DNS (por ejemplo, desde dig o un servicio de consulta DNS) y PhishLens los comprueba aquí mismo.' }),
-      el('label', { text: 'Clave pública DKIM (registro TXT de selector._domainkey.dominio)', attrs: { for: 'dkim-key' } }),
-      Object.assign(el('textarea', { attrs: { id: 'dkim-key', rows: '3', spellcheck: 'false', autocomplete: 'off', placeholder: 'v=DKIM1; k=rsa; p=MIIBIjANBg…' } }), { value: dkimKey }),
-      el('button', { className: 'btn btn--small', text: 'Verificar firma', attrs: { type: 'button', 'data-action': 'verify-dkim' } }),
-      el('label', { text: 'Registro SPF del dominio del sobre (Return-Path)', attrs: { for: 'spf-record' } }),
-      Object.assign(el('textarea', { attrs: { id: 'spf-record', rows: '2', spellcheck: 'false', autocomplete: 'off', placeholder: 'v=spf1 ip4:192.0.2.0/24 -all' } }), { value: spfRecord }),
-      el('button', { className: 'btn btn--small', text: 'Evaluar SPF', attrs: { type: 'button', 'data-action': 'eval-spf' } }),
+      el('summary', { text: t('auth.local') }),
+      el('p', { className: 'hint', text: t('auth.local.hint') }),
+      el('label', { text: t('auth.dkim.label'), attrs: { for: 'dkim-key' } }),
+      Object.assign(el('textarea', { attrs: { id: 'dkim-key', rows: '3', spellcheck: 'false', autocomplete: 'off', placeholder: 'v=DKIM1; k=rsa; p=MIIBIjANBg…' } }), { value: dkimKey }), // i18n: ignore (registro DNS de ejemplo)
+      el('button', { className: 'btn btn--small', text: t('auth.dkim.button'), attrs: { type: 'button', 'data-action': 'verify-dkim' } }),
+      el('label', { text: t('auth.spf.label'), attrs: { for: 'spf-record' } }),
+      Object.assign(el('textarea', { attrs: { id: 'spf-record', rows: '2', spellcheck: 'false', autocomplete: 'off', placeholder: 'v=spf1 ip4:192.0.2.0/24 -all' } }), { value: spfRecord }), // i18n: ignore (registro DNS de ejemplo)
+      el('button', { className: 'btn btn--small', text: t('auth.spf.button'), attrs: { type: 'button', 'data-action': 'eval-spf' } }),
       authStatus ? el('p', { className: 'auth-status', text: authStatus, attrs: { id: 'auth-status' } }) : null);
     panel.append(details);
   }

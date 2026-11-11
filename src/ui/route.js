@@ -1,15 +1,16 @@
 // Rutas del informe en la URL: '' es el modo sencillo y #analista/<vista> el modo analista.
 // Funciones puras (sin DOM): la URL y el almacenamiento son entrada no fiable.
+import { t } from '../i18n/index.js';
 
 export const VIEWS = Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos', 'urls', 'iocs', 'campanas', 'attack', 'panel', 'historial']);
-export const VIEW_LABELS = Object.freeze({
-  resumen: 'Resumen', senales: 'Señales', 'vista-segura': 'Vista segura', autenticacion: 'Autenticación',
-  cabeceras: 'Cabeceras y ruta', adjuntos: 'Adjuntos', urls: 'URLs', iocs: 'IOCs', campanas: 'Campañas', attack: 'ATT&CK', panel: 'Panel', historial: 'Historial',
-});
+// Rótulos en el idioma activo: cada lectura pasa por t(), así que cambian al cambiar de idioma sin tocar las rutas.
+export const VIEW_LABELS = Object.freeze(Object.defineProperties({}, Object.fromEntries(
+  VIEWS.map((id) => [id, { get: () => t(`view.${id}`), enumerable: true }]))));
+const group = (key, views) => Object.freeze({ get label() { return t(`nav.${key}`); }, views: Object.freeze(views) });
 export const NAV_GROUPS = Object.freeze([
-  Object.freeze({ label: 'Correo', views: Object.freeze(['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos']) }),
-  Object.freeze({ label: 'Inteligencia', views: Object.freeze(['urls', 'iocs', 'campanas', 'attack']) }),
-  Object.freeze({ label: 'Historial', views: Object.freeze(['panel', 'historial']) }),
+  group('mail', ['resumen', 'senales', 'vista-segura', 'autenticacion', 'cabeceras', 'adjuntos']),
+  group('intel', ['urls', 'iocs', 'campanas', 'attack']),
+  group('history', ['panel', 'historial']),
 ]);
 
 const PREFIX = '#analista';

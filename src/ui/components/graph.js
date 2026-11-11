@@ -69,7 +69,7 @@ export function graphView(model) {
     }
     svg.append(g);
   });
-  const legend = el('ul', { className: 'graph__legend', attrs: { 'aria-label': 'Leyenda' } });
+  const legend = el('ul', { className: 'graph__legend', attrs: { 'aria-label': t('graph.legend') } });
   for (const type of TYPES) {
     const label = model.typeLabels?.[type];
     if (label) legend.append(el('li', {}, legendIcon(type), label));
@@ -78,8 +78,8 @@ export function graphView(model) {
     el('div', { className: 'graph__canvas' }, svg),
     el('figcaption', { className: 'graph__caption' },
       legend,
-      el('p', { className: 'hint', text: 'Con el teclado: Tab entra en el grafo y las flechas pasan de un nodo a otro. Al enfocar un nodo se resaltan sus relaciones.' }),
-      model.hidden > 0 ? el('p', { className: 'graph__note', text: `Se dibujan los ${model.nodes.length} nodos más conectados de ${model.total}.` }) : null));
+      el('p', { className: 'hint', text: t('graph.hint') }),
+      model.hidden > 0 ? el('p', { className: 'graph__note', text: t('graph.hidden', { shown: model.nodes.length, total: model.total }) }) : null));
   return figure;
 }
 
