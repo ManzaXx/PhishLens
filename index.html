@@ -21,21 +21,22 @@
   <script type="module" src="src/ui/app.js"></script>
 </head>
 <body>
-  <a class="skip" href="#analizar">Saltar al analizador</a>
+  <a class="skip" href="#analizar" data-i18n="home.skip">Saltar al analizador</a>
 
   <header class="topbar">
     <div class="wrap topbar__inner">
-      <a class="brand" href="./" aria-label="PhishLens, inicio">
+      <a class="brand" href="./" aria-label="PhishLens, inicio" data-i18n-attr="aria-label:topbar.home">
         <img src="assets/img/favicon.svg" alt="" width="28" height="28">
         <span>Phish<strong>Lens</strong></span>
       </a>
-      <nav class="topbar__nav" aria-label="Principal">
-        <a href="#como-funciona">Cómo funciona</a>
-        <a href="#privacidad">Privacidad</a>
-        <a class="icon-btn" href="https://github.com/ManzaXx/PhishLens" target="_blank" rel="noopener noreferrer" aria-label="Código en GitHub">
+      <nav class="topbar__nav" aria-label="Principal" data-i18n-attr="aria-label:topbar.nav">
+        <a href="#como-funciona" data-i18n="topbar.how">Cómo funciona</a>
+        <a href="#privacidad" data-i18n="topbar.privacy">Privacidad</a>
+        <a class="icon-btn" href="https://github.com/ManzaXx/PhishLens" target="_blank" rel="noopener noreferrer" aria-label="Código en GitHub" data-i18n-attr="aria-label:topbar.github">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.26-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.38.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
         </a>
-        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Cambiar tema claro u oscuro">
+        <button class="icon-btn lang-btn" id="lang-toggle" type="button" lang="en">EN<span class="visually-hidden"> · Switch to English</span></button>
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Cambiar tema claro u oscuro" data-i18n-attr="aria-label:topbar.theme">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
         </button>
       </nav>
@@ -44,50 +45,50 @@
 
   <main>
     <section class="hero wrap">
-      <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Tu email nunca sale de tu navegador</p>
-      <h1>¿Es phishing? <span class="accent">Compruébalo</span> antes de hacer clic.</h1>
-      <p class="lead">Arrastra un email <code>.eml</code>, pega su contenido o una URL. PhishLens revisa la autenticación, el remitente, las cabeceras, los enlaces, los dominios, los adjuntos, el HTML y el lenguaje, y te explica cada señal.</p>
-      <ul class="stats" aria-label="En cifras">
-        <li><strong data-fact="detectors">10</strong> detectores</li>
-        <li><strong data-fact="rules">86</strong> reglas</li>
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span> <span data-i18n="home.eyebrow">Tu email nunca sale de tu navegador</span></p>
+      <h1><span data-i18n="home.h1.a">¿Es phishing?</span> <span class="accent" data-i18n="home.h1.b">Compruébalo</span> <span data-i18n="home.h1.c">antes de hacer clic.</span></h1>
+      <p class="lead" data-i18n-rich="home.lead">Arrastra un email <code>.eml</code>, pega su contenido o una URL. PhishLens revisa la autenticación, el remitente, las cabeceras, los enlaces, los dominios, los adjuntos, el HTML y el lenguaje, y te explica cada señal.</p>
+      <ul class="stats" aria-label="En cifras" data-i18n-attr="aria-label:home.stats">
+        <li><strong data-fact="detectors">10</strong> <span data-i18n="home.stats.detectors">detectores</span></li>
+        <li><strong data-fact="rules">86</strong> <span data-i18n="home.stats.rules">reglas</span></li>
         <li>MITRE ATT&amp;CK <strong data-fact="attack">20.1</strong></li>
-        <li><strong>0</strong> datos enviados</li>
+        <li><strong>0</strong> <span data-i18n="home.stats.sent">datos enviados</span></li>
       </ul>
     </section>
 
     <section class="wrap analyzer" id="analizar" aria-labelledby="analizar-titulo">
-      <h2 id="analizar-titulo" class="visually-hidden">Analizar</h2>
+      <h2 id="analizar-titulo" class="visually-hidden" data-i18n="analyzer.title">Analizar</h2>
       <div class="card">
-        <div class="tabs" role="tablist" aria-label="Tipo de entrada">
-          <button role="tab" id="tab-eml" aria-controls="panel-eml" aria-selected="true">Archivo .eml</button>
-          <button role="tab" id="tab-text" aria-controls="panel-text" aria-selected="false" tabindex="-1">Pegar email</button>
-          <button role="tab" id="tab-url" aria-controls="panel-url" aria-selected="false" tabindex="-1">URL</button>
+        <div class="tabs" role="tablist" aria-label="Tipo de entrada" data-i18n-attr="aria-label:analyzer.tabs">
+          <button role="tab" id="tab-eml" aria-controls="panel-eml" aria-selected="true" data-i18n="analyzer.tab.eml">Archivo .eml</button>
+          <button role="tab" id="tab-text" aria-controls="panel-text" aria-selected="false" tabindex="-1" data-i18n="analyzer.tab.text">Pegar email</button>
+          <button role="tab" id="tab-url" aria-controls="panel-url" aria-selected="false" tabindex="-1" data-i18n="analyzer.tab.url">URL</button>
         </div>
 
         <div class="panel" role="tabpanel" id="panel-eml" aria-labelledby="tab-eml">
           <label class="dropzone" id="dropzone" for="file-input">
             <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>
-            <span class="dropzone__title">Arrastra aquí uno o varios <code>.eml</code></span>
-            <span class="dropzone__hint">o pulsa para elegirlos · máx. 25 MB por correo y 50 correos por lote</span>
+            <span class="dropzone__title" data-i18n-rich="analyzer.drop.title">Arrastra aquí uno o varios <code>.eml</code></span>
+            <span class="dropzone__hint" data-i18n="analyzer.drop.hint">o pulsa para elegirlos · máx. 25 MB por correo y 50 correos por lote</span>
             <input type="file" id="file-input" accept=".eml,message/rfc822,.txt" class="visually-hidden" multiple>
           </label>
-          <p class="hint">¿Cómo consigo el .eml? En Gmail: <kbd>⋮</kbd> → <em>Descargar mensaje</em>. En Outlook: <em>Guardar como</em>.</p>
+          <p class="hint" data-i18n-rich="analyzer.eml.hint">¿Cómo consigo el .eml? En Gmail: <kbd>⋮</kbd> → <em>Descargar mensaje</em>. En Outlook: <em>Guardar como</em>.</p>
         </div>
 
         <div class="panel" role="tabpanel" id="panel-text" aria-labelledby="tab-text" hidden>
-          <label for="raw-input" class="field-label">Email original con cabeceras (o solo el texto)</label>
-          <textarea id="raw-input" rows="10" spellcheck="false" placeholder="From: ...&#10;Subject: ...&#10;&#10;Cuerpo del mensaje"></textarea>
-          <p class="hint">En Gmail: <kbd>⋮</kbd> → <em>Mostrar original</em> → copia todo.</p>
+          <label for="raw-input" class="field-label" data-i18n="analyzer.text.label">Email original con cabeceras (o solo el texto)</label>
+          <textarea id="raw-input" rows="10" spellcheck="false" placeholder="From: ...&#10;Subject: ...&#10;&#10;Cuerpo del mensaje" data-i18n-attr="placeholder:analyzer.text.placeholder"></textarea>
+          <p class="hint" data-i18n-rich="analyzer.text.hint">En Gmail: <kbd>⋮</kbd> → <em>Mostrar original</em> → copia todo.</p>
         </div>
 
         <div class="panel" role="tabpanel" id="panel-url" aria-labelledby="tab-url" hidden>
-          <label for="url-input" class="field-label">Enlace sospechoso</label>
-          <input id="url-input" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://ejemplo-sospechoso.xyz/login">
-          <p class="hint">No se abre ni se visita el enlace: solo se analiza el texto.</p>
+          <label for="url-input" class="field-label" data-i18n="analyzer.url.label">Enlace sospechoso</label>
+          <input id="url-input" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://ejemplo-sospechoso.xyz/login" data-i18n-attr="placeholder:analyzer.url.placeholder">
+          <p class="hint" data-i18n="analyzer.url.hint">No se abre ni se visita el enlace: solo se analiza el texto.</p>
         </div>
 
         <div class="actions">
-          <button class="btn btn--primary" id="analyze-btn" type="button">Analizar</button>
+          <button class="btn btn--primary" id="analyze-btn" type="button" data-i18n="analyzer.button">Analizar</button>
           <p class="error" id="input-error" role="alert" hidden></p>
         </div>
         <div class="batch-status" id="batch-status" hidden>
@@ -99,55 +100,55 @@
         <div class="history-toggle">
           <label class="history-toggle__label">
             <input type="checkbox" id="history-toggle" aria-describedby="history-toggle-hint">
-            Guardar historial en este navegador
+            <span data-i18n="history.toggle">Guardar historial en este navegador</span>
           </label>
-          <p class="hint" id="history-toggle-hint">Se guarda el resultado de cada análisis en este navegador. El correo no se guarda. Nadie más lo ve.</p>
+          <p class="hint" id="history-toggle-hint" data-i18n="history.toggle.hint">Se guarda el resultado de cada análisis en este navegador. El correo no se guarda. Nadie más lo ve.</p>
           <p class="history-toggle__status" id="history-status" role="status"></p>
           <button class="btn" id="history-open" type="button" hidden>Ver historial (0)</button>
         </div>
 
         <details class="rules" id="rules">
-          <summary class="rules__title">Reglas propias</summary>
-          <p class="hint" id="rules-hint">Añade tus propias señales con un fichero <code>.json</code> (formato en <code>docs/rules.md</code>). Se suman a las de PhishLens y nunca bajan la nota. Sin historial duran hasta que cierres la pestaña.</p>
+          <summary class="rules__title" data-i18n="rules.title">Reglas propias</summary>
+          <p class="hint" id="rules-hint" data-i18n-rich="rules.hint">Añade tus propias señales con un fichero <code>.json</code> (formato en <code>docs/rules.md</code>). Se suman a las de PhishLens y nunca bajan la nota. Sin historial duran hasta que cierres la pestaña.</p>
           <input type="file" id="rules-file" accept=".json,application/json" hidden>
-          <button class="btn" id="rules-load" type="button" aria-describedby="rules-hint">Cargar reglas (.json)</button>
+          <button class="btn" id="rules-load" type="button" aria-describedby="rules-hint" data-i18n="rules.load">Cargar reglas (.json)</button>
           <div id="rules-panel"></div>
           <p class="history-toggle__status" id="rules-status" role="status"></p>
         </details>
 
         <div class="samples">
-          <span class="samples__label">Prueba un ejemplo:</span>
+          <span class="samples__label" data-i18n="analyzer.samples">Prueba un ejemplo:</span>
           <div class="samples__list" id="samples"></div>
         </div>
       </div>
     </section>
 
-    <section class="wrap report" id="report" aria-label="Resultado del análisis" hidden></section>
+    <section class="wrap report" id="report" aria-label="Resultado del análisis" data-i18n-attr="aria-label:report.region" hidden></section>
     <p class="visually-hidden" id="report-status" role="status"></p>
     <p class="visually-hidden" id="auth-live" aria-live="polite"></p>
 
     <section class="wrap how" id="como-funciona" aria-labelledby="como-titulo">
-      <h2 id="como-titulo">Cómo funciona</h2>
-      <p class="lead">Diez detectores revisan el correo por separado y reparten lo que encuentran en seis categorías de riesgo.</p>
+      <h2 id="como-titulo" data-i18n="how.title">Cómo funciona</h2>
+      <p class="lead" data-i18n="how.lead">Diez detectores revisan el correo por separado y reparten lo que encuentran en seis categorías de riesgo.</p>
       <div class="how__explain">
-        <p><strong>Cada categoría tiene un tope.</strong> Muchas señales flojas del mismo tipo no pesan tanto como una grave, así que un boletín con muchos enlaces de seguimiento no acaba marcado como phishing.</p>
-        <p><strong>Algunas combinaciones suben la nota.</strong> Suplantar una marca y fallar la autenticación a la vez es mucho más grave que cada cosa por separado.</p>
-        <p><strong>La confianza dice cuánto fiarte del análisis.</strong> Baja si faltan cabeceras, si la autenticación no se pudo comprobar o si el correo es tan grande que una parte quedó sin revisar.</p>
-        <p><a href="https://github.com/ManzaXx/PhishLens/blob/main/docs/scoring.md" target="_blank" rel="noopener noreferrer">Cómo se calcula la nota, paso a paso</a></p>
+        <p data-i18n-rich="how.cap"><strong>Cada categoría tiene un tope.</strong> Muchas señales flojas del mismo tipo no pesan tanto como una grave, así que un boletín con muchos enlaces de seguimiento no acaba marcado como phishing.</p>
+        <p data-i18n-rich="how.combo"><strong>Algunas combinaciones suben la nota.</strong> Suplantar una marca y fallar la autenticación a la vez es mucho más grave que cada cosa por separado.</p>
+        <p data-i18n-rich="how.confidence"><strong>La confianza dice cuánto fiarte del análisis.</strong> Baja si faltan cabeceras, si la autenticación no se pudo comprobar o si el correo es tan grande que una parte quedó sin revisar.</p>
+        <p><a href="https://github.com/ManzaXx/PhishLens/blob/main/docs/scoring.md" target="_blank" rel="noopener noreferrer" data-i18n="how.scoring">Cómo se calcula la nota, paso a paso</a></p>
       </div>
       <div class="how__grid">
-        <article data-detector="auth"><h3>Autenticación</h3><p>Lee SPF, DKIM y DMARC, distingue lo que comprobó tu servidor de lo que el correo dice de sí mismo y puede verificar la firma DKIM en local.</p></article>
-        <article data-detector="sender"><h3>Remitente</h3><p>Compara <code>From</code>, <code>Reply-To</code>, <code>Sender</code> y <code>Return-Path</code>, y detecta marcas suplantadas, letras de otro alfabeto y caracteres invisibles.</p></article>
-        <article data-detector="headers"><h3>Cabeceras técnicas</h3><p>Revisa <code>Message-ID</code>, la fecha, el programa de envío y las cabeceras repetidas que confunden a los clientes de correo.</p></article>
-        <article data-detector="route"><h3>Ruta del correo</h3><p>Reconstruye los saltos <code>Received</code> y avisa de horas imposibles, servidores que dicen ser otros y entradas desde redes internas.</p></article>
-        <article data-detector="mime"><h3>Estructura</h3><p>Busca trucos en cómo está montado el mensaje: separadores repetidos, partes sin cerrar y codificaciones contradictorias.</p></article>
-        <article data-detector="links"><h3>Enlaces</h3><p>Texto que no coincide con el destino, IPs, acortadores, <code>@</code> ocultos, punycode y descargas directas. Desenvuelve Safe Links.</p></article>
-        <article data-detector="lookalike"><h3>Dominios parecidos</h3><p>Distancia de Levenshtein, homoglifos (<code>0→o</code>, <code>rn→m</code>) y alfabetos mezclados frente a marcas como PayPal, Correos o BBVA.</p></article>
-        <article data-detector="attachments"><h3>Adjuntos</h3><p>Ejecutables, dobles extensiones como <code>factura.pdf.exe</code>, nombres invertidos y documentos con macros.</p></article>
-        <article data-detector="html"><h3>Contenido HTML</h3><p>Formularios dentro del correo, JavaScript, enlaces <code>data:</code>, texto oculto y mensajes que son solo una imagen.</p></article>
-        <article data-detector="language"><h3>Lenguaje</h3><p>Prisas, amenazas, premios y peticiones de contraseña, en español y en inglés.</p></article>
+        <article data-detector="auth"><h3 data-i18n="how.auth.title">Autenticación</h3><p data-i18n-rich="how.auth.text">Lee SPF, DKIM y DMARC, distingue lo que comprobó tu servidor de lo que el correo dice de sí mismo y puede verificar la firma DKIM en local.</p></article>
+        <article data-detector="sender"><h3 data-i18n="how.sender.title">Remitente</h3><p data-i18n-rich="how.sender.text">Compara <code>From</code>, <code>Reply-To</code>, <code>Sender</code> y <code>Return-Path</code>, y detecta marcas suplantadas, letras de otro alfabeto y caracteres invisibles.</p></article>
+        <article data-detector="headers"><h3 data-i18n="how.headers.title">Cabeceras técnicas</h3><p data-i18n-rich="how.headers.text">Revisa <code>Message-ID</code>, la fecha, el programa de envío y las cabeceras repetidas que confunden a los clientes de correo.</p></article>
+        <article data-detector="route"><h3 data-i18n="how.route.title">Ruta del correo</h3><p data-i18n-rich="how.route.text">Reconstruye los saltos <code>Received</code> y avisa de horas imposibles, servidores que dicen ser otros y entradas desde redes internas.</p></article>
+        <article data-detector="mime"><h3 data-i18n="how.mime.title">Estructura</h3><p data-i18n-rich="how.mime.text">Busca trucos en cómo está montado el mensaje: separadores repetidos, partes sin cerrar y codificaciones contradictorias.</p></article>
+        <article data-detector="links"><h3 data-i18n="how.links.title">Enlaces</h3><p data-i18n-rich="how.links.text">Texto que no coincide con el destino, IPs, acortadores, <code>@</code> ocultos, punycode y descargas directas. Desenvuelve Safe Links.</p></article>
+        <article data-detector="lookalike"><h3 data-i18n="how.lookalike.title">Dominios parecidos</h3><p data-i18n-rich="how.lookalike.text">Distancia de Levenshtein, homoglifos (<code>0→o</code>, <code>rn→m</code>) y alfabetos mezclados frente a marcas como PayPal, Correos o BBVA.</p></article>
+        <article data-detector="attachments"><h3 data-i18n="how.attachments.title">Adjuntos</h3><p data-i18n-rich="how.attachments.text">Ejecutables, dobles extensiones como <code>factura.pdf.exe</code>, nombres invertidos y documentos con macros.</p></article>
+        <article data-detector="html"><h3 data-i18n="how.html.title">Contenido HTML</h3><p data-i18n-rich="how.html.text">Formularios dentro del correo, JavaScript, enlaces <code>data:</code>, texto oculto y mensajes que son solo una imagen.</p></article>
+        <article data-detector="language"><h3 data-i18n="how.language.title">Lenguaje</h3><p data-i18n-rich="how.language.text">Prisas, amenazas, premios y peticiones de contraseña, en español y en inglés.</p></article>
       </div>
-      <ul class="legend" aria-label="Escala de riesgo" data-levels>
+      <ul class="legend" aria-label="Escala de riesgo" data-i18n-attr="aria-label:how.legend" data-levels>
         <li class="legend__item legend__item--safe">0–24 Probablemente legítimo</li>
         <li class="legend__item legend__item--suspicious">25–59 Sospechoso</li>
         <li class="legend__item legend__item--phishing">60–79 Probable phishing</li>
@@ -155,23 +156,23 @@
       </ul>
     </section>
     <section class="wrap privacy" id="privacidad" aria-labelledby="privacidad-titulo">
-      <h2 id="privacidad-titulo">Privacidad por diseño</h2>
+      <h2 id="privacidad-titulo" data-i18n="privacy.title">Privacidad por diseño</h2>
       <div class="privacy__grid">
-        <article><h3>Sin servidor</h3><p>El análisis se ejecuta en JavaScript dentro de tu navegador. El email no se sube a ningún sitio.</p></article>
-        <article><h3>CSP estricta</h3><p>La página prohíbe cualquier conexión a terceros (<code>connect-src 'none'</code>): ni siquiera puede conectar con su propio servidor, así que aunque hubiera un fallo no podría enviar tus datos.</p></article>
-        <article><h3>Código abierto</h3><p>Sin dependencias ni compilación: el código que se lee en GitHub es exactamente el que se ejecuta.</p></article>
+        <article><h3 data-i18n="privacy.server.title">Sin servidor</h3><p data-i18n="privacy.server.text">El análisis se ejecuta en JavaScript dentro de tu navegador. El email no se sube a ningún sitio.</p></article>
+        <article><h3 data-i18n="privacy.csp.title">CSP estricta</h3><p data-i18n-rich="privacy.csp.text">La página prohíbe cualquier conexión a terceros (<code>connect-src 'none'</code>): ni siquiera puede conectar con su propio servidor, así que aunque hubiera un fallo no podría enviar tus datos.</p></article>
+        <article><h3 data-i18n="privacy.open.title">Código abierto</h3><p data-i18n="privacy.open.text">Sin dependencias ni compilación: el código que se lee en GitHub es exactamente el que se ejecuta.</p></article>
       </div>
     </section>
   </main>
 
   <div class="drop-overlay" id="drop-overlay" hidden>
-    <div class="drop-overlay__box">Suelta el archivo <code>.eml</code> para analizarlo</div>
+    <div class="drop-overlay__box" data-i18n-rich="analyzer.overlay">Suelta el archivo <code>.eml</code> para analizarlo</div>
   </div>
 
   <footer class="footer">
     <div class="wrap">
-      <p>PhishLens · Proyecto de ciberseguridad de Pablo Manzanedo. Sin servidores, sin cookies, sin analítica.</p>
-      <p class="footer__note">Es una herramienta educativa basada en heurísticas: una nota baja no garantiza que un email sea seguro. Ante la duda, contacta con la empresa por un canal oficial.</p>
+      <p data-i18n="footer.about">PhishLens · Proyecto de ciberseguridad de Pablo Manzanedo. Sin servidores, sin cookies, sin analítica.</p>
+      <p class="footer__note" data-i18n="footer.note">Es una herramienta educativa basada en heurísticas: una nota baja no garantiza que un email sea seguro. Ante la duda, contacta con la empresa por un canal oficial.</p>
     </div>
   </footer>
 </body>

@@ -46,6 +46,16 @@ class Element extends Node {
     const names = () => this.className.split(/\s+/).filter(Boolean);
     return { contains: (c) => names().includes(c) };
   }
+  get dataset() {
+    const attr = (k) => `data-${String(k).replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+    return new Proxy({}, { get: (_, k) => this.getAttribute(attr(k)) ?? undefined, set: (_, k, v) => { this.setAttribute(attr(k), v); return true; } });
+  }
+  /** Solo selectores de atributo simples: [data-x]. */
+  querySelectorAll(sel) {
+    const m = /^\[([\w-]+)\]$/.exec(sel);
+    if (!m) throw new Error(`selector no soportado: ${sel}`);
+    return findAll(this, (n) => n !== this && n.hasAttribute(m[1]));
+  }
   get id() { return this.getAttribute('id') ?? ''; }
   set id(v) { this.setAttribute('id', v); }
 

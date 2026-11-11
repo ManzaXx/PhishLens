@@ -16,11 +16,26 @@ export function loadPlaywright() {
  */
 export async function launchOrSkip(playwright, env = process.env) {
   try {
-    return { browser: await playwright.chromium.launch() };
+    return { browser: withSpanishLocale(await playwright.chromium.launch()) };
   } catch (e) {
     if (env.CI) throw e;
     return { skip: `Chromium no arranca (${String(e.message).split('\n')[0]}); instala con npx playwright install chromium` };
   }
+}
+
+/**
+ * Desde la 3.1 la app elige el idioma del navegador: los e2e abren en es-ES salvo que pidan otro
+ * (locale en las opciones), así los textos esperados de siempre siguen valiendo.
+ */
+export function withSpanishLocale(browser) {
+  if (typeof browser?.newContext !== 'function') return browser;
+  const newContext = browser.newContext.bind(browser);
+  browser.newContext = (options = {}) => newContext({ locale: 'es-ES', ...options });
+  if (typeof browser.newPage === 'function') {
+    const newPage = browser.newPage.bind(browser);
+    browser.newPage = (options = {}) => newPage({ locale: 'es-ES', ...options });
+  }
+  return browser;
 }
 
 /** Playwright y Chromium listos, o el motivo para saltar los tests. */

@@ -24,6 +24,8 @@ import { validateRules, formatRuleError, RULES_LIMITS } from '../rules/validate.
 import { previewRules } from '../rules/preview.js';
 import { rulesPanel } from './components/rules-panel.js';
 import { HISTORY_MAX } from '../storage/history.js';
+import { t, getLang, setLang, onLangChange, initialLang, LANG_KEY } from '../i18n/index.js';
+import { translatePage } from './translate-page.js';
 
 const MAX_BYTES = LIMITS.inputBytes;
 const MAX_MB = Math.round(MAX_BYTES / 1024 / 1024);
@@ -375,6 +377,31 @@ $('#theme-toggle').addEventListener('click', () => {
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   storage((s) => s.setItem('phishlens-theme', next));
+});
+
+// ---------- Idioma (spec 3.1): ES / EN sin volver a analizar ----------
+const langToggle = $('#lang-toggle');
+function paintLangToggle() {
+  // Texto visible «EN» y, para el lector de pantalla, «· Switch to English» en el idioma de destino:
+  // el nombre accesible empieza por lo que se ve (WCAG 2.5.3).
+  const hint = document.createElement('span');
+  hint.className = 'visually-hidden';
+  hint.textContent = ` · ${t('topbar.lang.to')}`;
+  langToggle.replaceChildren(t('topbar.lang.short'), hint);
+  langToggle.setAttribute('lang', t('topbar.lang.target'));
+}
+/** Vuelve a pintar todo lo visible en el idioma activo, con lo que ya hay en memoria. */
+function rerender() {
+  translatePage(document);
+  paintLangToggle();
+  if (state.lastReport && !reportBox.hidden) paint();
+}
+onLangChange(rerender);
+setLang(initialLang(storage((s) => s.getItem(LANG_KEY)), navigator.language));
+rerender();
+langToggle.addEventListener('click', () => {
+  setLang(getLang() === 'es' ? 'en' : 'es');
+  storage((s) => s.setItem(LANG_KEY, getLang()));
 });
 
 // ---------- Pestañas (patrón ARIA tabs) ----------

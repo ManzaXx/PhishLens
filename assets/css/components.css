@@ -393,3 +393,6 @@
 .dashboard__campaign-list p { margin: 0; }
 .dashboard__campaign-name { font-weight: 700; }
 .dashboard .btn { min-height: 44px; }
+
+/* Botón de idioma (spec 3.1): mismo objetivo de 44 px que el del tema, con las letras del idioma de destino. */
+.lang-btn { font: inherit; font-weight: 700; font-size: var(--text-sm); letter-spacing: 0.04em; }

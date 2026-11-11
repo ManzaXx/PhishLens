@@ -95,7 +95,7 @@ const server = await serve();
 const browser = await chromium.launch();
 const only = process.argv.slice(2);
 for (const [name, sample, hash, width, colorScheme] of SHOTS.filter(([n]) => !only.length || only.includes(n))) {
-  const page = await browser.newPage({ viewport: { width, height: width < 600 ? 844 : 900 }, deviceScaleFactor: 2, colorScheme, reducedMotion: 'reduce' });
+  const page = await browser.newPage({ viewport: { width, height: width < 600 ? 844 : 900 }, deviceScaleFactor: 2, colorScheme, reducedMotion: 'reduce', locale: 'es-ES' });
   await page.goto(`${server.url}/index.html${hash}`);
   if (sample === 'historial') await savedHistory(page);
   else if (sample === 'panel') await savedPanel(page);
