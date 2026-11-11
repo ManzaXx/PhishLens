@@ -1,7 +1,9 @@
 name: PhishLens · tests
 
 on:
+  # En las ramas basta con el run del PR: así cada cambio se prueba una vez y llega un solo aviso.
   push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -33,5 +35,7 @@ jobs:
           node-version: 22
       - run: npm ci --ignore-scripts
       - run: npm audit --audit-level=high
-      - run: npx --no-install playwright install --with-deps chromium
+      # Sin --with-deps: la imagen de GitHub ya trae las librerías de Chromium, y el apt-get de las fuentes
+      # fallaba al no resolver los espejos de Ubuntu (Temporary failure resolving security.ubuntu.com).
+      - run: npx --no-install playwright install chromium
       - run: npm run test:e2e
