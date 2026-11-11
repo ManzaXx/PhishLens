@@ -9,7 +9,7 @@
 [English](README.md) · **Español**
 
 [![Tests](https://github.com/ManzaXx/PhishLens/actions/workflows/tests.yml/badge.svg)](https://github.com/ManzaXx/PhishLens/actions/workflows/tests.yml)
-![Tests](https://img.shields.io/badge/tests-732%20%2B%2069%20e2e-15803d)
+![Tests](https://img.shields.io/badge/tests-786%20%2B%2081%20e2e-15803d)
 ![Dependencias](https://img.shields.io/badge/dependencias-0-0f766e)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c0392b)
