@@ -3,6 +3,7 @@
 import { MAX_NOTES } from '../intel/forensic.js';
 import { sha256 } from '../lib/sha256.js';
 import { slimReport, validateEntry, validateBatch, safeParse } from './schema.js';
+import { validateRules } from '../rules/validate.js';
 
 export const HISTORY_MAX = 500;
 export const IMPORT_MAX_BYTES = 20 * 1024 * 1024;
@@ -191,8 +192,29 @@ export function createHistory(backend, { now = () => new Date(), uuid = () => cr
     return res.ok ? res.entry : null;
   }
 
+  // Reglas propias activas (spec 3.0, §5.2): se guarda el texto del fichero y se vuelve a validar al leerlo.
+  async function getRules() {
+    const raw = await backend.get('rules', 'active');
+    if (!raw || typeof raw !== 'object' || typeof raw.source !== 'string') return null;
+    const res = validateRules(raw.source);
+    if (!res.ok) return null;
+    return { source: raw.source, rules: res.rules, savedAt: typeof raw.savedAt === 'string' ? raw.savedAt : null };
+  }
+
+  async function setRules(source) {
+    const res = validateRules(source);
+    if (!res.ok) throw new Error('las reglas no son válidas');
+    await backend.put('rules', { id: 'active', source, savedAt: now().toISOString() });
+    return true;
+  }
+
+  async function clearRules() {
+    await backend.delete('rules', 'active');
+    return true;
+  }
+
   return {
-    batches, findBySha256,
+    batches, findBySha256, getRules, setRules, clearRules,
     save, saveBatch, setNotes, list, get, searchIoc, compare, exportJson, importJson,
     remove: (id) => backend.delete('analyses', String(id)),
     clear: () => backend.destroy(),

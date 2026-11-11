@@ -192,3 +192,23 @@ test('Review Focus 1: volver a guardar el mismo texto conserva las notas', async
   const json = await history.exportJson();
   assert.match(json, /"notes": "nota"/);
 });
+
+test('PR13: reglas propias guardadas, leídas otra vez con el validador y borradas', async () => {
+  const { readFileSync } = await import('node:fs');
+  const source = readFileSync(new URL('../../samples/rules/ejemplo.json', import.meta.url), 'utf8');
+  const { history, backend } = setup();
+  assert.equal(await history.getRules(), null);
+  assert.equal(await history.setRules(source), true);
+  const got = await history.getRules();
+  assert.equal(got.source, source);
+  assert.equal(got.rules.length, 3);
+  assert.match(got.savedAt, /^2026-11-01T/);
+  await assert.rejects(() => history.setRules('{"phishlens":"rules/1","rules":[{}]}'));
+  await backend.put('rules', { id: 'active', source: '{"phishlens":"rules/1","rules":[{"id":"x"}]}', savedAt: 'x' });
+  assert.equal(await history.getRules(), null);
+  await backend.put('rules', { id: 'active', source: 42 });
+  assert.equal(await history.getRules(), null);
+  await history.setRules(source);
+  assert.equal(await history.clearRules(), true);
+  assert.equal(await history.getRules(), null);
+});

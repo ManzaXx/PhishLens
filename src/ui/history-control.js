@@ -108,6 +108,18 @@ export function createHistoryControl({ storage, factory, version, open = () => i
     record: (input, report, name = null) => guard((h) => h.save({ kind: input.kind, value: input.value, name, report })),
     /** Notas del analista del análisis con ese SHA-256. Apagado no abre nada. */
     saveNotes: async (sha, notes) => (on ? (await guard((h) => h.setNotes(sha, notes))) === true : false),
+    /** Reglas propias guardadas ({source, rules, savedAt}) o null. Apagado no abre nada. */
+    rules: async () => {
+      if (!on || !(await connect())) return null;
+      try {
+        return await history.getRules();
+      } catch {
+        return null;
+      }
+    },
+    /** Guarda el texto del fichero de reglas ya validado. Apagado: false, sin abrir la base. */
+    saveRules: async (source) => (on ? (await guard((h) => h.setRules(source))) === true : false),
+    clearRules: async () => (on ? (await guard((h) => h.clearRules())) === true : false),
     /** batch: {entries: [{key, name, report}], campaigns}; texts: clave → texto del correo. */
     recordBatch: (batch, texts) => { const names = hashNames(batch); return guard((h) => h.saveBatch({
       entries: batch.entries.map((e) => ({ kind: 'eml', value: texts.get(e.key) ?? '', name: e.name, report: e.report })),

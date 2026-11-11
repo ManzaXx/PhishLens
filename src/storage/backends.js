@@ -1,8 +1,9 @@
 // Backends del historial (spec 3.0, §2.1): la lógica de history.js no conoce IndexedDB.
 // Backend = { put, get, getAll, getByIndex, delete, clear, count, destroy }, todo asíncrono.
 export const DB_NAME = 'phishlens';
-export const DB_VERSION = 1;
-export const STORES = Object.freeze(['analyses', 'batches']);
+// v2 (PR13): store «rules» con las reglas propias activas. La v1 se migra sin tocar lo que había.
+export const DB_VERSION = 2;
+export const STORES = Object.freeze(['analyses', 'batches', 'rules']);
 
 /** En memoria, para los tests: guarda copias, como haría IndexedDB. */
 export function memoryBackend() {
@@ -45,6 +46,7 @@ export async function idbBackend(factory) {
       s.createIndex('level', 'report.level');
     }
     if (!db.objectStoreNames.contains('batches')) db.createObjectStore('batches', { keyPath: 'id' });
+    if (!db.objectStoreNames.contains('rules')) db.createObjectStore('rules', { keyPath: 'id' });
   };
   let db = await request(open);
   // Otra pestaña pide borrar la base: se cierra esta conexión para no bloquearla.

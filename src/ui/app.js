@@ -20,6 +20,10 @@ import { VERSION } from './render.js';
 
 import { LIMITS } from '../lib/limits.js';
 import { reveal } from '../lib/text.js';
+import { validateRules, formatRuleError, RULES_LIMITS } from '../rules/validate.js';
+import { previewRules } from '../rules/preview.js';
+import { rulesPanel } from './components/rules-panel.js';
+import { HISTORY_MAX } from '../storage/history.js';
 
 const MAX_BYTES = LIMITS.inputBytes;
 const MAX_MB = Math.round(MAX_BYTES / 1024 / 1024);
@@ -39,7 +43,7 @@ if (window.top !== window.self) {
 const $ = (sel) => document.querySelector(sel);
 
 const state = {
-  tab: 'eml', fileText: null, lastReport: null, lastInput: null, analyst: {}, route: { mode: 'simple', view: 'resumen' },
+  tab: 'eml', fileText: null, rules: null, lastReport: null, lastInput: null, analyst: {}, route: { mode: 'simple', view: 'resumen' },
   // Lote en memoria mientras la pestaña esté abierta: {entries, skipped, warning, graph, campaigns, current}.
   batch: null, batchTexts: new Map(), batchAbort: null, campaign: null,
   // Vista «Historial»: lo que se ha leído del historial para pintarla y el aviso del informe abierto desde él.
@@ -65,6 +69,9 @@ function storage(fn) {
   }
 }
 
+/** El motor con las reglas propias activas (spec 3.0, §5.2). */
+const analyzeWith = (input) => analyzeInput({ ...input, rules: state.rules?.rules ?? [] });
+
 // ---------- Historial (apagado por defecto; nada de esto puede romper un análisis) ----------
 const historyToggle = $('#history-toggle');
 const historyStatus = $('#history-status');
@@ -84,6 +91,8 @@ historyToggle.addEventListener('change', async () => {
   if (historyToggle.checked) {
     const res = await historyControl.enable();
     if (res.ok) historyStatus.textContent = 'Historial activado.';
+    // Las reglas propias activas pasan a guardarse con el historial.
+    if (res.ok && state.rules) await historyControl.saveRules(state.rules.source);
   } else {
     historyControl.disable();
     historyStatus.textContent = 'Historial desactivado. Lo ya guardado sigue ahí hasta que lo borres.';
@@ -93,9 +102,15 @@ historyToggle.addEventListener('change', async () => {
 });
 const historyOpen = $('#history-open');
 historyControl.on('change', () => updateHistoryButton());
-historyControl.ready().then(() => {
+historyControl.ready().then(async () => {
   historyToggle.checked = historyControl.enabled();
   updateHistoryButton();
+  const saved = await historyControl.rules();
+  if (saved && !state.rules) {
+    state.rules = { source: saved.source, rules: saved.rules };
+    rulesStatus.textContent = `${rulesCount(saved.rules.length)} del historial.`;
+  }
+  await showActiveRules();
 });
 
 /** «Ver historial (N)» en la portada, solo si hay algo guardado. */
@@ -105,6 +120,85 @@ async function updateHistoryButton() {
   historyOpen.hidden = !n;
   historyOpen.textContent = `Ver historial (${n})`;
 }
+
+// ---------- Reglas propias (spec 3.0, §5.2): se validan enteras, se prueban y luego se activan ----------
+const rulesFile = $('#rules-file');
+const rulesPanelBox = $('#rules-panel');
+const rulesStatus = $('#rules-status');
+const rulesLoad = $('#rules-load');
+let pendingRules = null;
+const rulesCount = (n) => `${n} ${n === 1 ? 'regla propia activa' : 'reglas propias activas'}`;
+
+/** Análisis guardados para la vista previa (vacío con el historial apagado). */
+async function savedEntries() {
+  if (!historyControl.enabled() || !(await historyControl.ensure())) return [];
+  const h = historyControl.history();
+  return h ? (await h.list({ limit: HISTORY_MAX }).catch(() => ({ items: [] }))).items : [];
+}
+
+function paintRules(model, focus = false) {
+  rulesPanelBox.replaceChildren(rulesPanel(model));
+  if (focus) rulesPanelBox.querySelector('[tabindex="-1"]')?.focus();
+}
+
+async function showActiveRules(focus = false) {
+  const rules = state.rules?.rules ?? [];
+  if (!rules.length) return paintRules({ state: 'empty' }, focus);
+  return paintRules({ state: 'active', rules, preview: previewRules(rules, await savedEntries()) }, focus);
+}
+
+/** Con reglas nuevas, el análisis abierto se rehace si su texto sigue en memoria (decisión 4 del plan). */
+function rerunWithRules() {
+  if (!state.lastReport || !state.lastInput || state.saved || state.batch) return;
+  state.lastReport = analyzeWith({ ...state.lastInput, ...state.analyst });
+  paint();
+  historyControl.record(state.lastInput, state.lastReport, state.lastInput.kind === 'eml' ? state.fileName ?? null : null);
+}
+
+rulesLoad.addEventListener('click', () => rulesFile.click());
+rulesFile.addEventListener('change', async () => {
+  const file = rulesFile.files?.[0];
+  rulesFile.value = '';
+  if (!file) return;
+  pendingRules = null;
+  rulesStatus.textContent = '';
+  let res;
+  if ((file.size ?? 0) > RULES_LIMITS.fileBytes) res = { ok: false, errors: [{ rule: null, path: '', reason: 'el fichero pasa de 200 KB' }] };
+  else {
+    try {
+      res = validateRules(await file.text());
+    } catch {
+      res = { ok: false, errors: [{ rule: null, path: '', reason: 'no se pudo leer el fichero' }] };
+    }
+  }
+  if (!res.ok) return paintRules({ state: 'errors', errors: res.errors.map(formatRuleError) }, true);
+  // file.text() otra vez no: el texto validado es el que se guarda.
+  pendingRules = { source: await file.text(), rules: res.rules };
+  return paintRules({ state: 'preview', rules: res.rules, preview: previewRules(res.rules, await savedEntries()) }, true);
+});
+rulesPanelBox.addEventListener('click', async (e) => {
+  const action = e.target.closest?.('[data-action]')?.dataset.action;
+  if (action === 'rules-activate' && pendingRules) {
+    state.rules = pendingRules;
+    pendingRules = null;
+    const saved = await historyControl.saveRules(state.rules.source);
+    rulesStatus.textContent = `${rulesCount(state.rules.rules.length)}.${saved ? ' Se guardan con el historial.' : ''}`;
+    await showActiveRules(true);
+    rerunWithRules();
+  } else if (action === 'rules-discard') {
+    pendingRules = null;
+    rulesStatus.textContent = 'Reglas descartadas.';
+    await showActiveRules();
+    rulesLoad.focus();
+  } else if (action === 'rules-remove') {
+    state.rules = null;
+    await historyControl.clearRules();
+    rulesStatus.textContent = 'Reglas propias quitadas.';
+    await showActiveRules();
+    rulesLoad.focus();
+    rerunWithRules();
+  }
+});
 
 const DAY = 24 * 60 * 60 * 1000;
 /** Lee del historial lo que pinta la vista y la vuelve a pintar. */
@@ -220,11 +314,16 @@ async function historyAction(action, target) {
     reportBox.querySelector('.history__dialog')?.close();
     // Borra la base entera; si el historial sigue encendido, el siguiente análisis la vuelve a crear.
     await historyControl.clear().catch(() => {});
+    // Las reglas propias vivían en la misma base: se van con ella.
+    const hadRules = Boolean(state.rules);
+    state.rules = null;
+    if (hadRules) rulesStatus.textContent = 'Reglas propias quitadas.';
+    showActiveRules();
     state.historyData = null;
     state.historyQuery = { filters: {}, offset: 0 };
     await refreshHistory();
     updateHistoryButton();
-    announce('Historial borrado.');
+    announce(hadRules ? 'Historial borrado. Reglas propias quitadas.' : 'Historial borrado.');
     return reportBox.querySelector('.view__title')?.focus();
   }
   if (action === 'history-export') {
@@ -461,7 +560,7 @@ async function runBatch(files) {
   const out = await analyzeBatch(files, {
     signal: controller.signal,
     analyze: (input) => {
-      const report = analyzeInput(input);
+      const report = analyzeWith(input);
       texts.set(report, input.value);
       return report;
     },
@@ -545,7 +644,7 @@ function run() {
     state.saved = null;
     state.notes = '';
     state.analyzedAt = new Date();
-    state.lastReport = analyzeInput(input);
+    state.lastReport = analyzeWith(input);
     paint();
     announce(`Resultado: ${state.lastReport.verdict.headline}. ${state.lastReport.score} de 100.`);
     historyControl.record(input, state.lastReport, input.kind === 'eml' ? state.fileName ?? null : null);
@@ -837,7 +936,7 @@ function reanalyze(status) {
     authLive.textContent = 'Este informe viene del historial: el correo no está guardado y no se puede volver a analizar.';
     return;
   }
-  state.lastReport = analyzeInput({ ...state.lastInput, ...state.analyst });
+  state.lastReport = analyzeWith({ ...state.lastInput, ...state.analyst });
   historyControl.record(state.lastInput, state.lastReport, state.batch?.entries.find((e) => e.key === state.batch.current)?.name ?? state.fileName ?? null);
   const dkimKey = $('#dkim-key')?.value ?? '';
   const spfRecord = $('#spf-record')?.value ?? '';

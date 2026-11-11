@@ -308,6 +308,18 @@
 .history-toggle__status:empty { display: none; }
 .history-toggle__status { margin: var(--space-2) 0 0; font-size: var(--text-sm); }
 
+/* Reglas propias (3.0, PR13) */
+.rules { margin-top: var(--space-4); }
+.rules__title { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+.rules .btn { min-height: 44px; }
+.rules__panel { margin-top: var(--space-3); display: grid; gap: var(--space-3); }
+.rules__summary { margin: 0; }
+.rules__errors { padding: var(--space-3) var(--space-4); border-left: var(--space-1) solid var(--sev-high); background: var(--surface-2); border-radius: var(--radius-md); }
+.rules__errors ul { margin: var(--space-2) 0 0; padding-left: var(--space-5); overflow-wrap: anywhere; }
+.rules__id { display: block; font-size: var(--text-sm); color: var(--muted); overflow-wrap: anywhere; }
+.rules__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.finding__custom { margin-left: auto; }
+
 /* Vista «Historial» (3.0, PR10) */
 .saved-note { margin: 0 0 var(--space-4); padding: var(--space-3) var(--space-4); border-left: var(--space-1) solid var(--accent); background: var(--surface-2); border-radius: var(--radius-md); font-size: var(--text-sm); }
 .history__tools, .history__pager, .history__dialog-actions, .history__row-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }

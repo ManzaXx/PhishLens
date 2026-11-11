@@ -106,6 +106,15 @@
           <button class="btn" id="history-open" type="button" hidden>Ver historial (0)</button>
         </div>
 
+        <details class="rules" id="rules">
+          <summary class="rules__title">Reglas propias</summary>
+          <p class="hint" id="rules-hint">Añade tus propias señales con un fichero <code>.json</code> (formato en <code>docs/rules.md</code>). Se suman a las de PhishLens y nunca bajan la nota. Sin historial duran hasta que cierres la pestaña.</p>
+          <input type="file" id="rules-file" accept=".json,application/json" hidden>
+          <button class="btn" id="rules-load" type="button" aria-describedby="rules-hint">Cargar reglas (.json)</button>
+          <div id="rules-panel"></div>
+          <p class="history-toggle__status" id="rules-status" role="status"></p>
+        </details>
+
         <div class="samples">
           <span class="samples__label">Prueba un ejemplo:</span>
           <div class="samples__list" id="samples"></div>

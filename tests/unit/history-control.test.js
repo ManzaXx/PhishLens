@@ -181,3 +181,18 @@ test('informe forense: saveNotes apagado no abre la base; encendido guarda', asy
   assert.equal(await ctl.saveNotes(saved.sha256, 'nota'), true);
   assert.equal((await backend.getAll('analyses'))[0].notes, 'nota');
 });
+
+test('PR13: reglas propias con el historial apagado no abren la base; encendido se guardan y se leen', async () => {
+  const { readFileSync } = await import('node:fs');
+  const source = readFileSync(new URL('../../samples/rules/ejemplo.json', import.meta.url), 'utf8');
+  const { ctl, opened } = control();
+  assert.equal(await ctl.saveRules(source), false);
+  assert.equal(await ctl.rules(), null);
+  assert.equal(await ctl.clearRules(), false);
+  assert.equal(opened(), 0);
+  await ctl.enable();
+  assert.equal(await ctl.saveRules(source), true);
+  assert.equal((await ctl.rules()).rules.length, 3);
+  assert.equal(await ctl.clearRules(), true);
+  assert.equal(await ctl.rules(), null);
+});
