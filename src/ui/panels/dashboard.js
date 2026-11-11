@@ -6,7 +6,7 @@ import { LEVELS } from '../../core/scoring.js';
 import { emptyState } from '../components/empty-state.js';
 import { stackedBars, hBars } from '../components/bar-chart.js';
 import { t, fmtDate } from '../../i18n/index.js';
-import { campaignName } from '../campaign-reasons.js';
+import { campaignName, campaignReasons } from '../campaign-reasons.js';
 
 const series = () => [...LEVELS].reverse().map((l) => ({ key: l.level, label: t(`level.${l.level}`) }));
 const TYPES = new Set(['domains', 'ips', 'hashes', 'sha1', 'md5']);
@@ -53,7 +53,7 @@ function campaignsCard({ campaigns }) {
     ? el('ul', { className: 'dashboard__campaign-list' }, ...campaigns.map((c) => el('li', {},
       el('p', { className: 'dashboard__campaign-name', text: campaignName(c) }),
       el('p', { className: 'hint', text: `${when(c.savedAt)} · ${t('campaigns.emails.count', { count: c.emails })}` }),
-      c.reasons.length ? el('p', { text: c.reasons.join(' · ') }) : null,
+      c.reasons.length ? el('p', { text: campaignReasons(c).join(' · ') }) : null,
       c.latestSha ? button(t('dashboard.campaigns.open'), 'dashboard-open', { 'data-sha': c.latestSha }) : null)))
     : none(t('dashboard.campaigns.none'));
   return el('section', { className: 'card dashboard__card dashboard__campaigns', attrs: { 'aria-label': t('dashboard.campaigns') } },

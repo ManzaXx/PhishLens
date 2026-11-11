@@ -42,7 +42,7 @@ function summarize(level, findings) {
       || SUMMARY_PRIORITY.indexOf(a.detector) - SUMMARY_PRIORITY.indexOf(b.detector))
     .slice(0, 2);
   const top = picked.map((f) => `«${f.title}»`).join(' y ');
-  const ref = (code) => ({ code, params: { count: strong.length, top: picked.map((f) => f.id) } });
+  const ref = (code) => ({ code, params: { count: strong.length, top: picked.map((f) => f.id), at: picked.map((f) => findings.indexOf(f)) } });
   if (level === 'critical') return [`Combina varias señales graves, entre ellas ${top}. No pulses enlaces ni abras adjuntos y bórralo.`, ref('report.summary.critical')];
   return level === 'phishing'
     ? [`${strong.length === 1 ? `Una señal grave o media: ${top}` : `${strong.length} señales graves o medias, entre ellas ${top}`}. No pulses enlaces ni abras adjuntos.`, ref('report.summary.phishing')]

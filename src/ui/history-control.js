@@ -3,7 +3,7 @@
 import { createHistory } from '../storage/history.js';
 import { idbBackend } from '../storage/backends.js';
 import { HISTORY_KEY, historyEnabled } from './route.js';
-import { reasonText, hashNames } from './campaign-reasons.js';
+import { reasonText, hashNames, storedReason } from './campaign-reasons.js';
 
 /**
  * @param {{storage, factory?, version: string, open?: () => Promise<Backend>}} options
@@ -125,8 +125,10 @@ export function createHistoryControl({ storage, factory, version, open = () => i
       entries: batch.entries.map((e) => ({ kind: 'eml', value: texts.get(e.key) ?? '', name: e.name, report: e.report })),
       campaigns: (batch.campaigns ?? []).map((c) => ({
         ...c,
-        // Las pistas se guardan ya en texto: el panel las enseña tal cual y validateBatch exige cadenas.
+        // Las pistas van en texto (lo que exige validateBatch y lo que se enseña de un lote antiguo) y, al lado,
+        // con tipo y valor para que el panel las pinte en el idioma activo.
         reasons: (c.reasons ?? []).map((r) => (typeof r === 'string' ? r : reasonText(r, names))),
+        reasonRefs: (c.reasons ?? []).filter((r) => r && typeof r === 'object').map((r) => storedReason(r, names)),
         emails: (c.emails ?? []).map((k) => batch.entries.find((e) => e.key === k)?.name).filter(Boolean),
       })),
     }));

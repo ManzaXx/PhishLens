@@ -111,3 +111,20 @@ test('revisión final: la cifra de campañas cuenta todos los lotes guardados, n
   assert.equal(stats.totals.campaigns, 25);
   assert.equal(stats.campaigns.length, 5);
 });
+
+test('en inglés: las campañas guardadas con referencias salen en inglés; las antiguas, tal cual', async () => {
+  const { setLang } = await import('../../src/i18n/index.js');
+  const stored = [{ id: 'b2', savedAt: '2026-11-09T11:00:00.000Z', emails: [], campaigns: [
+    { id: 'c', name: 'Campaña 2', nameRef: { code: 'campaign.name', params: { n: 2 } }, reasons: ['Mismo dominio de envío: x[.]test'],
+      reasonRefs: [{ type: 'sender-domain', value: 'x.test' }], techniques: [], emails: [entries[3].sha256] },
+    { id: 'd', name: 'Campaña 3', reasons: ['Pista vieja'], techniques: [], emails: [entries[4].sha256] }] }];
+  setLang('en');
+  try {
+    const panel = dashboardPanel(entries[0].report, { historyEnabled: true, dashboard: { stats: historyStats(entries, { now: NOW, batches: stored }) } });
+    const txt = text(panel);
+    assert.match(txt, /Campaign 2/);
+    assert.match(txt, /Same sending domain: x\[\.\]test/);
+    assert.match(txt, /Campaña 3/);
+    assert.match(txt, /Pista vieja/);
+  } finally { setLang('es'); }
+});

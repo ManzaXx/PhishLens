@@ -75,7 +75,7 @@ export function createHistory(backend, { now = () => new Date(), uuid = () => cr
       hashes.set(e.name, out.entry.sha256);
       evicted += out.evicted;
     }
-    const clean = safeParse(JSON.stringify(campaigns.map((c) => ({ id: c.id, name: c.name, reasons: c.reasons ?? [], techniques: c.techniques ?? [], emails: (c.emails ?? []).map((k) => hashes.get(k)).filter(Boolean) }))));
+    const clean = safeParse(JSON.stringify(campaigns.map((c) => ({ id: c.id, name: c.name, nameRef: c.nameRef ?? null, reasons: c.reasons ?? [], reasonRefs: c.reasonRefs ?? [], techniques: c.techniques ?? [], emails: (c.emails ?? []).map((k) => hashes.get(k)).filter(Boolean) }))));
     const id = uuid();
     await backend.put('batches', { id, savedAt: now().toISOString(), emails: [...hashes.values()], campaigns: clean });
     return { id, saved: hashes.size, evicted };

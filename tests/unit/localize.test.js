@@ -96,8 +96,8 @@ test('en inglés, cada muestra trae veredicto, pasos, confianza, resumen y auten
 test('el consejo en inglés mantiene INCIBE y el 017', () => {
   setLang('en');
   const en = localizeReport(sample('03'));
-  assert.ok(en.verdict.steps.some((x) => /In Spain you can call INCIBE on 017/.test(x)) || !sample('03').verdict.stepCodes.includes('report.advice.report'));
-  assert.match(tr('report.advice.report', {}, 'es'), /In Spain you can call INCIBE on 017/);
+  assert.ok(en.verdict.steps.some((x) => /In Spain you can call INCIBE at 017/.test(x)) || !sample('03').verdict.stepCodes.includes('report.advice.report'));
+  assert.match(tr('report.advice.report', {}, 'es'), /In Spain you can call INCIBE at 017/);
 });
 
 test('un informe de la 3.0 sin referencias se queda en español sin errores', () => {
@@ -128,4 +128,45 @@ test('en inglés: la evidencia de SPF, DKIM y DMARC declarados no lleva «según
   setLang('es');
   const es = sample('01');
   assert.equal(localizeReport(es), es);
+});
+
+test('en inglés: el resumen y el «porque» citan cada hallazgo aunque dos compartan id', () => {
+  const value = 'From: Soporte <a@x.test>\r\nTo: b@y.test\r\nSubject: hola\r\nMessage-ID: <1@x.test>\r\nDate: Mon, 1 Jan 2024 10:00:00 +0000\r\nContent-Type: text/plain\r\n\r\nhttps://paypa1.com/a https://amaz0n.com/b';
+  const r = analyzeInput({ kind: 'eml', value });
+  assert.match(r.summary, /PayPal[\s\S]*Amazon/);
+  setLang('en');
+  const en = localizeReport(r);
+  assert.match(en.summary, /PayPal/);
+  assert.match(en.summary, /Amazon/);
+  const at = r.verdict.becauseRef?.at;
+  if (Number.isInteger(at)) assert.equal(en.verdict.because, en.findings[at].plain || en.findings[at].title);
+});
+
+test('en inglés: un hallazgo guardado en la 3.0 (sin params) se queda entero en español', () => {
+  const r = structuredClone(sample('04'));
+  for (const f of r.findings) delete f.params;
+  setLang('en');
+  const en = localizeReport(r);
+  for (const [i, f] of en.findings.entries()) {
+    assert.equal(f.title, r.findings[i].title);
+    assert.equal(f.detail, r.findings[i].detail);
+    assert.equal(f.plain, r.findings[i].plain);
+  }
+});
+
+test('en inglés: la evidencia que escribe el motor en la ruta sale traducida', () => {
+  setLang('en');
+  const base = { detector: 'route', severity: 'low', title: 't', detail: 'd', plain: 't' };
+  const out = localizeReport({ level: 'safe', label: 'x', categories: [], correlations: [], findings: [
+    { ...base, id: 'route.slow-delivery', params: { hours: 30 }, evidence: '30 h entre el primer y el último salto' },
+    { ...base, id: 'route.too-many-hops', params: { hops: 12 }, evidence: '12 cabeceras Received' },
+  ] });
+  assert.deepEqual(out.findings.map((f) => f.evidence), ['30 h between the first and the last hop', '12 Received headers']);
+});
+
+test('en inglés: «ZIP with 1 entry» en singular', () => {
+  setLang('en');
+  const p = { more: '', locked: '', vba: '', names: ': a.exe' };
+  assert.equal(tr('report.forensic.seen.zip', { ...p, count: 1 }, 'es'), 'ZIP with 1 entry: a.exe.');
+  assert.equal(tr('report.forensic.seen.zip', { ...p, count: 3 }, 'es'), 'ZIP with 3 entries: a.exe.');
 });

@@ -16,3 +16,17 @@ export const campaignName = (c) => (c?.nameRef?.code ? t(c.nameRef.code, c.nameR
 
 /** sha256 -> nombre del adjunto, sacado de los nodos del grafo del lote. */
 export const hashNames = (batch) => new Map((batch?.graph?.nodes ?? []).filter((n) => n.type === 'hash').map((n) => [n.value, n.label]));
+
+const REASON_TYPES = new Set(['sender-domain', 'entry-ip', 'link-domain', 'sha256', 'template']);
+
+/** Pista para guardar en el historial: tipo, valor y, si es un adjunto, su nombre. */
+export const storedReason = (r, names) => ({ type: String(r.type), value: String(r.value), ...(r.type === 'sha256' ? { name: names.get(r.value) ?? null } : {}) });
+
+/** Pistas de una campaña guardada en el idioma activo; un lote anterior a la 3.1 enseña su texto tal cual. */
+export function campaignReasons(c) {
+  const refs = Array.isArray(c?.reasonRefs) ? c.reasonRefs : [];
+  const usable = refs.length && refs.length === (c.reasons ?? []).length
+    && refs.every((r) => r && REASON_TYPES.has(r.type) && typeof r.value === 'string');
+  if (!usable) return c?.reasons ?? [];
+  return refs.map((r) => reasonText(r, new Map(typeof r.name === 'string' ? [[r.value, r.name]] : [])));
+}

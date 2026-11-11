@@ -7,7 +7,9 @@ const GENERIC_BRAND = { key: 'rule.brand.generic' };
 
 const ruleKey = (f, part) => `rule.${f.id}.${part}`;
 const plainParams = (f) => ({ ...(f.params ?? {}), brand: f.brand || GENERIC_BRAND });
-const translatable = (f) => f && !f.custom && f.detector !== 'custom' && typeof f.id === 'string';
+const isRule = (f) => f && !f.custom && f.detector !== 'custom' && typeof f.id === 'string';
+// Un hallazgo sin params viene de un historial de la 3.0: se queda entero en español, nunca a medias.
+const translatable = (f) => isRule(f) && f.params != null;
 
 /** Textos de un hallazgo: [campo, clave, params]. Una regla sin texto llano usa su título también ahí. */
 function findingParts(f) {
@@ -22,8 +24,8 @@ function localizeFinding(f) {
   const out = { ...f };
   for (const [field, key, params] of findingParts(f)) out[field] = tr(key, params, f[field]);
   if (f.plain === f.title) out.plain = out.title;
-  // Solo la evidencia que escribe el motor con palabras (spf=fail (según X)); el resto es dato tal cual.
-  if (f.params?.authserv && f.evidence) out.evidence = tr(ruleKey(f, 'evidence'), f.params, f.evidence);
+  // La evidencia que escribe el motor con palabras tiene clave rule.<id>.evidence; el resto es dato y sale tal cual.
+  if (f.evidence) out.evidence = tr(ruleKey(f, 'evidence'), f.params, f.evidence);
   return out;
 }
 
@@ -34,8 +36,12 @@ const viaRef = (ref, fallback) => (ref?.code ? tr(ref.code, ref.params ?? {}, fa
 const refProblem = (ref) => (ref?.code ? trProblem(ref.code, ref.params ?? {}) : null);
 
 // El resumen cita hallazgos por id: se ponen sus títulos ya traducidos («A» and «B»).
+// Dos hallazgos pueden compartir id (dos marcas imitadas): se busca por posición y, si no cuadra, por id.
+const cited = (findings, id, at) => (Number.isInteger(at) && findings[at]?.id === id ? findings[at] : findings.find((f) => f.id === id));
+
 function summaryParams(ref, findings) {
-  const titles = (ref.params?.top ?? []).map((id) => findings.find((f) => f.id === id)?.title ?? id).map((x) => `“${x}”`);
+  const at = ref.params?.at ?? [];
+  const titles = (ref.params?.top ?? []).map((id, i) => cited(findings, id, at[i])?.title ?? id).map((x) => `“${x}”`);
   return { ...ref.params, top: titles.length === 2 ? `${titles[0]} and ${titles[1]}` : (titles[0] ?? '') };
 }
 
@@ -43,7 +49,7 @@ function summaryParams(ref, findings) {
 function because(verdict, findings) {
   const ref = verdict.becauseRef;
   if (ref?.code !== 'rule') return viaRef(ref, verdict.because);
-  const f = findings.find((x) => x.id === ref.id);
+  const f = cited(findings, ref.id, ref.at);
   return f ? f.plain || f.title : verdict.because;
 }
 
@@ -94,7 +100,7 @@ export function missingEnglish(report) {
   if (report?.level) check(`level.${report.level}`, {});
   for (const c of report?.categories ?? []) check(`category.${c.id}`, {});
   for (const c of report?.correlations ?? []) check(`correlation.${c.id}`, {});
-  for (const f of report?.findings ?? []) if (translatable(f)) for (const [, key, params] of findingParts(f)) check(key, params);
+  for (const f of report?.findings ?? []) if (isRule(f)) for (const [, key, params] of findingParts(f)) check(key, params);
   const checkRef = (where, ref) => { const p = refProblem(ref); if (p) missing.push(`${where} ${ref.code}: ${p}`); };
   if (report?.summaryRef) { const p = trProblem(report.summaryRef.code, summaryParams(report.summaryRef, report.findings ?? [])); if (p) missing.push(`summary ${report.summaryRef.code}: ${p}`); }
   checkRef('mainReason', report?.mainReasonRef);

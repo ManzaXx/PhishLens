@@ -29,7 +29,7 @@ function because(report, top) {
   if (brand && domain) {
     return [`Dice ser de ${brand.brand}, pero lo envía ${domain}, un dominio que no es suyo.`, { code: 'report.verdict.brand', params: { brand: brand.brand, domain } }];
   }
-  if (top.length) return [top[0].plain || top[0].title, { code: 'rule', id: top[0].id }];
+  if (top.length) return [top[0].plain || top[0].title, { code: 'rule', id: top[0].id, at: report.findings.indexOf(top[0]) }];
   return [NOTHING, { code: 'report.verdict.nothing', params: {} }];
 }
 
