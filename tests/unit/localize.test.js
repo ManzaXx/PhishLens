@@ -70,3 +70,51 @@ test('localizeReport: las reglas propias salen tal cual', () => {
   const out = localizeReport({ level: 'safe', label: 'x', categories: [], correlations: [], findings: [f] });
   assert.deepEqual(out.findings[0], f);
 });
+
+const HEADLINES_EN = ['Looks legitimate', 'Be careful', "Don't trust it: it's phishing"];
+
+test('en inglés, cada muestra trae veredicto, pasos, confianza, resumen y autenticación traducidos', () => {
+  for (const { s, r } of analyzed) {
+    setLang('en');
+    const en = localizeReport(r);
+    assert.deepEqual(missingEnglish(r), [], s.file);
+    assert.ok(HEADLINES_EN.includes(en.verdict.headline), `${s.file}: ${en.verdict.headline}`);
+    assert.equal(en.verdict.steps.length, 3, s.file);
+    en.verdict.steps.forEach((step, i) => assert.notEqual(step, r.verdict.steps[i], `${s.file}: ${step}`));
+    assert.notEqual(en.verdict.because, r.verdict.because, s.file);
+    en.confidence.reasons.forEach((x, i) => assert.notEqual(x, r.confidence.reasons[i], `${s.file}: ${x}`));
+    assert.notEqual(en.summary, r.summary, s.file);
+    assert.notEqual(en.mainReason, r.mainReason, s.file);
+    for (const k of ['spf', 'dkim', 'dmarc']) if (r.auth[k].detail) assert.notEqual(en.auth[k].detail, r.auth[k].detail, `${s.file} ${k}`);
+    for (const [i, h] of r.auth.headers.entries()) assert.notEqual(en.auth.headers[i].why, h.why, s.file);
+    en.verdict.top.forEach((f, i) => assert.equal(f.title, en.findings.find((x) => x.id === r.verdict.top[i].id).title));
+    setLang('es');
+    assert.deepEqual(localizeReport(r), r, s.file);
+  }
+});
+
+test('el consejo en inglés mantiene INCIBE y el 017', () => {
+  setLang('en');
+  const en = localizeReport(sample('03'));
+  assert.ok(en.verdict.steps.some((x) => /In Spain you can call INCIBE on 017/.test(x)) || !sample('03').verdict.stepCodes.includes('report.advice.report'));
+  assert.match(tr('report.advice.report', {}, 'es'), /In Spain you can call INCIBE on 017/);
+});
+
+test('un informe de la 3.0 sin referencias se queda en español sin errores', () => {
+  const r = structuredClone(sample('03'));
+  delete r.summaryRef; delete r.mainReasonRef;
+  delete r.verdict.headlineCode; delete r.verdict.becauseRef; delete r.verdict.stepCodes;
+  delete r.confidence.codes;
+  for (const k of ['spf', 'dkim', 'dmarc']) delete r.auth[k].detailRef;
+  for (const h of r.auth.headers) delete h.whyRef;
+  for (const f of r.findings) delete f.params;
+  setLang('en');
+  const en = localizeReport(r);
+  assert.equal(en.verdict.headline, r.verdict.headline);
+  assert.deepEqual(en.verdict.steps, r.verdict.steps);
+  assert.equal(en.summary, r.summary);
+  assert.equal(en.mainReason, r.mainReason);
+  assert.deepEqual(en.confidence.reasons, r.confidence.reasons);
+  assert.equal(en.auth.spf.detail, r.auth.spf.detail);
+  assert.equal(en.label, 'Phishing almost certain');
+});

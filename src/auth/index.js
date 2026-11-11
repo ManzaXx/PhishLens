@@ -30,12 +30,13 @@ function declared(header, method) {
     state: header.trusted ? 'declared-trusted' : 'declared-untrusted',
     result: r.result,
     detail: header.why,
+    detailRef: header.whyRef,
     source: header.parsed.authservId || null,
     props: r.props,
   };
 }
 
-const absent = (detail) => ({ state: 'absent', result: null, detail, source: null });
+const absent = (detail, code) => ({ state: 'absent', result: null, detail, detailRef: { code, params: {} }, source: null });
 
 function evaluateSpf(email, header) {
   const fromHeader = declared(header, 'spf');
@@ -43,20 +44,22 @@ function evaluateSpf(email, header) {
   if (record) {
     const ip = originIp(email);
     if (!ip) {
-      return { ...(fromHeader ?? absent('')), detail: 'Registro SPF pegado, pero no se encuentra la IP de origen en los Received.', offline: null };
+      return { ...(fromHeader ?? absent('', 'report.auth.spf.no-ip')), detail: 'Registro SPF pegado, pero no se encuentra la IP de origen en los Received.', detailRef: { code: 'report.auth.spf.no-ip', params: {} }, offline: null };
     }
     const offline = { ip, ...evaluateSpfRecord(record, ip) };
     if (DEFINITIVE_SPF.has(offline.result)) {
       const detail = `PhishLens evaluó el registro pegado contra ${ip}${offline.mechanism ? ` (${offline.mechanism})` : ''}.`;
       // La identidad SPF verificada es la del sobre (Return-Path), nunca la que diga una cabecera.
       const props = { 'smtp.mailfrom': email.returnPath ?? '' };
-      return { state: 'verified', result: offline.result, detail, source: 'PhishLens', offline, props };
+      const detailRef = { code: 'report.auth.spf.verified', params: { ip, mechanism: offline.mechanism ? ` (${offline.mechanism})` : '' } };
+      return { state: 'verified', result: offline.result, detail, detailRef, source: 'PhishLens', offline, props };
     }
     const need = `Para decidir hace falta consultar DNS: ${offline.needs.join(', ')}.`;
-    if (fromHeader) return { ...fromHeader, detail: `${fromHeader.detail}. ${need}`, offline };
-    return { state: 'unverifiable', result: null, detail: need, source: null, offline };
+    const needs = offline.needs.join(', ');
+    if (fromHeader) return { ...fromHeader, detail: `${fromHeader.detail}. ${need}`, detailRef: { code: 'report.auth.spf.declared-need', params: { why: fromHeader.detailRef, needs } }, offline };
+    return { state: 'unverifiable', result: null, detail: need, detailRef: { code: 'report.auth.spf.need', params: { needs } }, source: null, offline };
   }
-  return fromHeader ?? absent('Ninguna cabecera informa de SPF.');
+  return fromHeader ?? absent('Ninguna cabecera informa de SPF.', 'report.auth.spf.absent');
 }
 
 function evaluateDkim(email, header, bodies) {
@@ -65,6 +68,8 @@ function evaluateDkim(email, header, bodies) {
     return {
       state: 'verified', result: local.ok ? 'pass' : 'fail',
       detail: `PhishLens comprobó la firma de ${local.domain} (selector ${local.selector}): ${local.reason}.`,
+      // El motivo de bajo nivel (local.reason) es un texto técnico corto que no se traduce (docs/limitations.md).
+      detailRef: { code: 'report.auth.dkim.verified', params: { domain: local.domain, selector: local.selector, reason: local.reason } },
       source: 'PhishLens', domain: local.domain,
     };
   }
@@ -72,9 +77,10 @@ function evaluateDkim(email, header, bodies) {
   if (fromHeader) return fromHeader;
   if (bodies.length > 0) {
     const why = local ? `No se pudo comprobar: ${local.reason}.` : 'Hay firma DKIM, pero comprobarla requiere la clave pública del dominio.';
-    return { state: 'unverifiable', result: null, detail: why, source: null };
+    const detailRef = local ? { code: 'report.auth.dkim.unverifiable-local', params: { reason: local.reason } } : { code: 'report.auth.dkim.unverifiable', params: {} };
+    return { state: 'unverifiable', result: null, detail: why, detailRef, source: null };
   }
-  return absent('El correo no lleva firma DKIM.');
+  return absent('El correo no lleva firma DKIM.', 'report.auth.dkim.absent');
 }
 
 function evaluateDmarc(email, header, spf, dkim) {
@@ -95,9 +101,9 @@ function evaluateDmarc(email, header, spf, dkim) {
   const fromHeader = declared(header, 'dmarc');
   let result;
   if (verifiedPass) {
-    result = { state: 'verified', result: 'pass', detail: `PhishLens comprobó un ${alignment.via.toUpperCase()} alineado con ${fromDomain} (política del dominio desconocida sin DNS).`, source: 'PhishLens' };
+    result = { state: 'verified', result: 'pass', detail: `PhishLens comprobó un ${alignment.via.toUpperCase()} alineado con ${fromDomain} (política del dominio desconocida sin DNS).`, detailRef: { code: 'report.auth.dmarc.verified', params: { via: alignment.via.toUpperCase(), domain: fromDomain } }, source: 'PhishLens' };
   } else {
-    result = fromHeader ?? absent('Ninguna cabecera informa de DMARC.');
+    result = fromHeader ?? absent('Ninguna cabecera informa de DMARC.', 'report.auth.dmarc.absent');
   }
   return { ...result, alignment: { ...alignment, judgeable, fromDomain } };
 }
@@ -118,8 +124,8 @@ export function evaluateAuth(email) {
     spf: strip(spf),
     dkim: strip(dkim),
     dmarc: strip(dmarc),
-    headers: classified.headers.map(({ index, parsed, trusted, forged, why }) => ({
-      index, authservId: parsed.authservId, trusted, forged, why, results: parsed.results.map(({ method, result: r }) => ({ method, result: r })),
+    headers: classified.headers.map(({ index, parsed, trusted, forged, why, whyRef }) => ({
+      index, authservId: parsed.authservId, trusted, forged, why, whyRef, results: parsed.results.map(({ method, result: r }) => ({ method, result: r })),
     })),
     // Datos internos para el detector (no van al informe).
     internal: { header, classified, bodies, spfOffline: spf.offline ?? null },

@@ -27,7 +27,9 @@ const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj?.[k] ?? n
 export function legacyView(report) {
   const { email } = report;
   return {
-    ...pick(report, ['score', 'level', 'label', 'summary', 'mainReason', 'categories', 'confidence', 'correlations', 'trust', 'errors', 'techniques']),
+    ...pick(report, ['score', 'level', 'label', 'summary', 'mainReason', 'categories', 'correlations', 'trust', 'errors', 'techniques']),
+    // Los códigos de traducción (confidence.codes, 3.1) no forman parte del golden: solo los textos.
+    confidence: pick(report.confidence, ['level', 'value', 'reasons']),
     verdict: pick(report.verdict, ['tone', 'headline']),
     findings: report.findings.map((f) => pick(f, ['id', 'detector', 'severity', 'points', 'title', 'detail', 'evidence', 'mitre', 'category', 'reliability', 'provenance', 'polarity', 'brand', 'techniques'])),
     email: {
