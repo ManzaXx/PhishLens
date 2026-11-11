@@ -105,3 +105,15 @@ test('en inglés: panel vacío y autenticación', () => {
   assert.match(auth.textContent, /SPF, DKIM and DMARC/);
   assert.match(auth.textContent, /Check locally/);
 });
+
+test('en inglés: los avisos de cada salto de la ruta salen traducidos', async () => {
+  const { headersPanel } = await import('../../src/ui/panels/headers.js');
+  const { hopWarningCodes } = await import('../../src/detectors/route.js');
+  const route = [{ helo: 'a', by: 'b', time: 2e12 }, { helo: 'c', by: 'd', entry: true, ip: '10.0.0.1', time: 1e12 }];
+  assert.deepEqual(hopWarningCodes(route), [[], ['route.warn.entry', 'route.warn.private-ip', 'route.warn.backwards']]);
+  setLang('en');
+  const text = headersPanel({ email: { route } }).textContent;
+  assert.match(text, /Entry to the receiving server/);
+  assert.match(text, /Private IP at the boundary/);
+  assert.match(text, /Time earlier than the previous hop/);
+});

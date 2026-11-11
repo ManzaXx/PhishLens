@@ -562,4 +562,13 @@ export default Object.freeze({
   "correlation.credentials-link": "Pide credenciales y da un enlace sospechoso para ello",
   "correlation.attachment-pressure": "Adjunto peligroso con presión para abrirlo",
   "correlation.lookalike-same-brand": "Enlace que imita a la misma marca que el remitente",
+  "auth.why.trusted": "añadida por {id}, el servidor que recibió el correo",
+  "auth.why.forged": "dice venir de {id} pero estaba ya escrita cuando el correo llegó a {receiver}",
+  "auth.why.forged-from": "dice venir de {id} pero estaba ya escrita cuando el correo llegó a {receiver} desde {from}",
+  "auth.why.untrusted": "añadida por {id}, que no es el receptor",
+  "auth.why.untrusted-anon": "añadida por un servidor sin nombre, que no es el receptor",
+  "auth.why.no-route": "sin ruta Received",
+  "route.warn.entry": "Entrada al servidor receptor",
+  "route.warn.private-ip": "IP privada en la frontera",
+  "route.warn.backwards": "Hora anterior al salto previo",
 });

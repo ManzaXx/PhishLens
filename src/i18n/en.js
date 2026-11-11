@@ -562,4 +562,13 @@ export default Object.freeze({
   "correlation.credentials-link": "Asks for credentials and gives a suspicious link for it",
   "correlation.attachment-pressure": "Dangerous attachment with pressure to open it",
   "correlation.lookalike-same-brand": "Link that imitates the same brand as the sender",
+  "auth.why.trusted": "was added by {id}, the server that received the email",
+  "auth.why.forged": "claims to come from {id} but was already written when the email reached {receiver}",
+  "auth.why.forged-from": "claims to come from {id} but was already written when the email reached {receiver} from {from}",
+  "auth.why.untrusted": "was added by {id}, which is not the receiver",
+  "auth.why.untrusted-anon": "was added by an unnamed server, which is not the receiver",
+  "auth.why.no-route": "has no Received route",
+  "route.warn.entry": "Entry to the receiving server",
+  "route.warn.private-ip": "Private IP at the boundary",
+  "route.warn.backwards": "Time earlier than the previous hop",
 });

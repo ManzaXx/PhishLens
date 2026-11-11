@@ -134,6 +134,7 @@ function lookalikeFinding(domain, hit, ctx) {
     return finding({
       id: 'lookalike.deceptive-subdomain', detector: name, severity: 'high', ...ctx,
       title: `Subdominio que finge ser ${hit.brand.name}`,
+      params: { brand: hit.brand.name, token: hit.token, domain: hit.domain },
       detail: `La dirección empieza por ${hit.token}, pero el dominio real es ${hit.domain}. Lo que cuenta es lo que hay justo antes del final, no al principio.`,
       evidence: domain,
     });
@@ -142,6 +143,7 @@ function lookalikeFinding(domain, hit, ctx) {
     return finding({
       id: 'lookalike.typosquat', detector: name, severity: 'high', ...ctx,
       title: `Dominio que imita a ${hit.brand.name}`,
+      params: { brand: hit.brand.name, domain: hit.domain, official },
       detail: `${hit.domain} se parece mucho a ${official}, pero no es el mismo dominio.`,
       evidence: `${domain} ≈ ${official}`,
     });
@@ -149,6 +151,7 @@ function lookalikeFinding(domain, hit, ctx) {
   return finding({
     id: 'lookalike.brand-in-domain', detector: name, severity: hit.access ? 'high' : 'medium', ...ctx,
     title: `Usa el nombre de ${hit.brand.name} en un dominio ajeno`,
+    params: { brand: hit.brand.name, domain: hit.domain, token: hit.token, official, ...(hit.access ? { access: hit.access, variant: 'access' } : {}) },
     detail: hit.access
       ? `${hit.domain} junta "${hit.token}" con "${hit.access}" para parecer una página oficial de acceso, pero no pertenece a ${hit.brand.name} (${official}).`
       : `${hit.domain} contiene "${hit.token}" pero no pertenece a ${hit.brand.name} (${official}).`,
@@ -163,6 +166,7 @@ function scriptFinding(domain, hit, ctx) {
     return finding({
       id: 'lookalike.mixed-script-domain', detector: name, severity: 'high', ...ctx,
       title: 'Dominio con letras de varios alfabetos',
+      params: { label: hit.label },
       detail: `La parte «${hit.label}» mezcla letras latinas con otras cirílicas, griegas o armenias que se ven iguales. Ningún dominio legítimo necesita mezclarlas.`,
       evidence: shown,
     });
@@ -171,6 +175,7 @@ function scriptFinding(domain, hit, ctx) {
     return finding({
       id: 'lookalike.homoglyph', detector: name, severity: 'high', ...ctx,
       title: `Dominio con letras que imitan a ${hit.brand.name}`,
+      params: { brand: hit.brand.name, label: hit.label, official: hit.brand.domains[0] },
       detail: `«${hit.label}» usa caracteres que no son letras latinas normales, pero en pantalla se lee como ${hit.brand.domains[0]}.`,
       evidence: shown,
     });
@@ -178,6 +183,7 @@ function scriptFinding(domain, hit, ctx) {
   return finding({
     id: 'lookalike.whole-script', detector: name, severity: 'high', ...ctx,
     title: `Dominio en otro alfabeto que imita a ${hit.brand.name}`,
+    params: { brand: hit.brand.name, label: hit.label, official: hit.brand.domains[0] },
     detail: `«${hit.label}» está escrito entero con letras de otro alfabeto, pero se lee como ${hit.brand.domains[0]}.`,
     evidence: shown,
   });

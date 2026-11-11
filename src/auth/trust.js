@@ -37,7 +37,7 @@ export function classifyAuthResults(email) {
 
       const claimsPass = parsed.results.some((r) => r.result === 'pass');
       const sameOrg = Boolean(receiverOrg) && org(id) === receiverOrg;
-      if (!receiver) return { index: h.index, raw: h.raw, parsed, trusted: false, forged: false, why: 'sin ruta Received' };
+      if (!receiver) return { index: h.index, raw: h.raw, parsed, trusted: false, forged: false, why: 'sin ruta Received', whyRef: { code: 'auth.why.no-route', params: {} } };
       const aboveBoundary = boundaryIndex !== null && h.index < boundaryIndex;
       // Exchange Online escribe Authentication-Results sin authserv-id: vale si el receptor es Microsoft.
       const anonymousFromProvider = !id && inTrustedList(receiver);
@@ -51,7 +51,12 @@ export function classifyAuthResults(email) {
         : forged
           ? `dice venir de ${id} pero estaba ya escrita cuando el correo llegó a ${receiver}${boundary ? ` desde ${boundary.by}` : ''}`
           : `añadida por ${id || 'un servidor sin nombre'}, que no es el receptor`;
-      return { index: h.index, raw: h.raw, parsed, trusted, forged, why };
+      const whyRef = trusted
+        ? { code: 'auth.why.trusted', params: { id } }
+        : forged
+          ? { code: boundary ? 'auth.why.forged-from' : 'auth.why.forged', params: { id, receiver, from: boundary?.by ?? '' } }
+          : { code: id ? 'auth.why.untrusted' : 'auth.why.untrusted-anon', params: { id: id || '' } };
+      return { index: h.index, raw: h.raw, parsed, trusted, forged, why, whyRef };
     });
   return { receiver, boundaryIndex, headers };
 }

@@ -67,15 +67,29 @@ function englishTemplate(key, params) {
   return en.get(key) ?? en.get(`${key}.one`) ?? null;
 }
 
-// Un parámetro {key} es una palabra que elige el detector: se traduce antes de sustituirla.
-const resolveParam = (v) => (v && typeof v === 'object' && typeof v.key === 'string' ? t(v.key) : v);
+// Referencia a otro texto: {key} (una palabra que elige el detector) o {code, params} (una frase).
+const isRef = (v) => v && typeof v === 'object' && !Array.isArray(v) && typeof (v.key ?? v.code) === 'string';
+const refKey = (v) => v.key ?? v.code;
 
-/** Por qué tr() no puede usar la traducción inglesa de `key` (null si puede). */
+// Valor de un parámetro ya en inglés: las referencias se traducen y las listas se unen con «; ».
+function resolveParam(v) {
+  if (Array.isArray(v)) return v.map(resolveParam).join('; ');
+  if (isRef(v)) return englishTemplate(refKey(v), v.params).replace(/\{(\w+)\}/g, (all, name) => String(resolveParam(v.params[name])));
+  return v;
+}
+
+/** Por qué tr() no puede usar la traducción inglesa de `key` (null si puede). Mira también las referencias. */
 export function trProblem(key, params) {
   const tpl = englishTemplate(key, params);
-  if (tpl == null) return 'sin traducción';
+  if (tpl == null) return `sin traducción`;
   for (const [, name] of tpl.matchAll(/\{(\w+)\}/g)) {
     if (!params || !Object.prototype.hasOwnProperty.call(params, name) || params[name] == null) return `falta {${name}}`;
+  }
+  for (const v of Object.values(params ?? {})) {
+    for (const ref of (Array.isArray(v) ? v : [v]).filter(isRef)) {
+      const inner = trProblem(refKey(ref), ref.params ?? {});
+      if (inner) return `${refKey(ref)}: ${inner}`;
+    }
   }
   return null;
 }
@@ -86,8 +100,7 @@ export function trProblem(key, params) {
  */
 export function tr(key, params, fallback) {
   if (lang === 'es' || trProblem(key, params)) return fallback;
-  const tpl = englishTemplate(key, params);
-  return tpl.replace(/\{(\w+)\}/g, (all, name) => String(resolveParam(params[name])));
+  return resolveParam({ key, params });
 }
 
 /** Fecha en el idioma activo; '' si no es válida. */

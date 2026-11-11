@@ -11,7 +11,8 @@ const translatable = (f) => f && !f.custom && f.detector !== 'custom' && typeof 
 
 /** Textos de un hallazgo: [campo, clave, params]. Una regla sin texto llano usa su título también ahí. */
 function findingParts(f) {
-  const parts = [['title', ruleKey(f, 'title'), f.params], ['detail', ruleKey(f, 'detail'), f.params]];
+  const variant = typeof f.params?.variant === 'string' ? `.${f.params.variant}` : '';
+  const parts = [['title', ruleKey(f, 'title'), f.params], ['detail', `${ruleKey(f, 'detail')}${variant}`, f.params]];
   if (f.plain !== f.title) parts.push(['plain', ruleKey(f, 'plain'), plainParams(f)]);
   return parts;
 }

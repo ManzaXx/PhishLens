@@ -32,24 +32,26 @@ const INVISIBLE = /[\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF]/;
 
 function unicodeChecks(email) {
   const out = [];
-  const fields = [['nombre del remitente', email.from?.name ?? ''], ['asunto', email.subject ?? '']];
-  for (const [label, value] of fields) {
+  const fields = [['nombre del remitente', email.from?.name ?? '', 'sender-name'], ['asunto', email.subject ?? '', 'subject']];
+  for (const [label, value, field] of fields) {
     const word = value.slice(0, 1000).split(/\s+/).find(isMixedScript);
     if (word) {
       out.push(finding({
         id: 'sender.mixed-script', detector: name, severity: 'high',
         title: 'Letras de otro alfabeto camufladas',
+        params: { field: { key: `rule.field.${field}` } },
         detail: `El ${label} mezcla letras latinas con cirílicas o griegas que se ven idénticas. Es un truco para imitar una marca sin escribirla igual.`,
         evidence: `${word} → ${[...word].map((c) => (c.codePointAt(0) > 127 ? `[U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}]` : c)).join('')}`,
       }));
       break;
     }
   }
-  for (const [label, value] of fields) {
+  for (const [label, value, field] of fields) {
     if (INVISIBLE.test(value)) {
       out.push(finding({
         id: 'sender.invisible-chars', detector: name, severity: 'medium',
         title: 'Caracteres invisibles',
+        params: { field: { key: `rule.field.${field}` } },
         detail: `El ${label} contiene caracteres invisibles. Se usan para que los filtros no reconozcan palabras como "PayPal" o "contraseña".`,
         evidence: value.replace(INVISIBLE, '⟦·⟧').slice(0, 120),
       }));
@@ -71,6 +73,7 @@ function displayNameAddress(from, fromReg) {
     return [finding({
       id: 'sender.display-name-address', detector: name, severity: 'high',
       title: 'El nombre visible muestra otra dirección',
+      params: { shown: m[0], address: from.address },
       detail: `El nombre del remitente es "${m[0]}", pero el correo viene en realidad de ${from.address}. Muchos móviles solo enseñan el nombre.`,
       evidence: `"${from.name}" <${from.address}>`,
     })];
@@ -89,6 +92,7 @@ function senderMismatch(email, fromReg) {
   return [finding({
     id: 'sender.sender-mismatch', detector: name, severity: 'low',
     title: 'Enviado en nombre de otro dominio (Sender)',
+    params: { sender: sender.domain, from: email.from.domain },
     detail: `La cabecera Sender dice que lo envió ${sender.domain} en nombre de ${email.from.domain}, y ${sender.domain} no lo ha firmado con DKIM. Es habitual en plataformas de envío, pero también en suplantaciones.`,
     evidence: `From: ${email.from.address} · Sender: ${sender.address}`,
   })];
@@ -106,6 +110,7 @@ export function detect(email) {
       detector: name,
       severity: 'medium',
       title: 'Las respuestas van a otro dominio',
+      params: { from: from.domain, replyTo: email.replyTo.domain },
       detail: `Escribe desde ${from.domain}, pero si respondes tu email irá a ${email.replyTo.domain}.`,
       evidence: `From: ${from.address} · Reply-To: ${email.replyTo.address}`,
     }));
@@ -118,6 +123,7 @@ export function detect(email) {
       detector: name,
       severity: 'low',
       title: 'Return-Path de otro dominio',
+      params: {},
       detail: 'La dirección técnica de rebote no coincide con el remitente. Es habitual en newsletters, pero también en suplantaciones.',
       evidence: `From: ${from.address} · Return-Path: ${email.returnPath}`,
     }));
@@ -133,6 +139,7 @@ export function detect(email) {
       detector: name,
       severity: 'high',
       title: `Se hace pasar por ${brand.name}`,
+      params: { brand: brand.name, domain: from.domain, official: brand.domains[0], ...(free ? { variant: 'free' } : {}) },
       detail: free
         ? `Dice ser ${brand.name} pero escribe desde un correo gratuito (${from.domain}).`
         : `Dice ser ${brand.name} pero ${from.domain} no es un dominio oficial de ${brand.name} (${brand.domains[0]}).`,

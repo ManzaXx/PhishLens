@@ -20,6 +20,7 @@ function duplicates(email) {
     out.push(finding({
       id: 'headers.duplicate-from', detector: name, severity: 'high',
       title: 'El correo tiene varios remitentes (From)',
+      params: {},
       detail: 'Cada programa de correo puede enseñar un From distinto: tú ves uno y el filtro antispam comprobó otro. Es una técnica para burlar la autenticación.',
       evidence: email.headers.get('from').slice(0, 5).join(' · ').slice(0, 300),
       reliability: 'high',
@@ -31,6 +32,7 @@ function duplicates(email) {
     out.push(finding({
       id: 'headers.duplicate', detector: name, severity: 'medium',
       title: 'Cabeceras que deberían ser únicas aparecen repetidas',
+      params: {},
       detail: 'Un correo bien formado solo lleva una de cada. Repetirlas sirve para que el cliente de correo y los filtros lean cosas distintas.',
       evidence: repeated.map((h) => `${DISPLAY[h]} ×${count.get(h)}`).join(', '),
       reliability: 'medium',
@@ -49,6 +51,7 @@ export function detect(email, { now = Date.now() } = {}) {
     out.push(finding({
       id: 'headers.missing-messageid', detector: name, severity: 'low',
       title: 'Sin Message-ID',
+      params: {},
       detail: 'Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.',
     }));
   } else if (fromDomain) {
@@ -57,6 +60,7 @@ export function detect(email, { now = Date.now() } = {}) {
       out.push(finding({
         id: 'headers.messageid-domain', detector: name, severity: 'low',
         title: 'Message-ID de otro dominio',
+        params: { idDomain, fromDomain },
         detail: `El identificador lo generó ${idDomain}, no ${fromDomain}. Es normal si se usa un proveedor de envío, pero también delata servidores ajenos.`,
         evidence: `Message-ID: ${messageId}`,
       }));
@@ -68,6 +72,7 @@ export function detect(email, { now = Date.now() } = {}) {
     out.push(finding({
       id: 'headers.missing-date', detector: name, severity: 'low',
       title: 'Sin fecha de envío',
+      params: {},
       detail: 'La cabecera Date es obligatoria. Su ausencia es típica de envíos automatizados mal construidos.',
     }));
   } else {
@@ -76,6 +81,7 @@ export function detect(email, { now = Date.now() } = {}) {
       out.push(finding({
         id: 'headers.future-date', detector: name, severity: 'low',
         title: 'Fecha en el futuro',
+        params: {},
         detail: 'Una fecha futura se usa para que el email quede arriba en la bandeja de entrada.',
         evidence: `Date: ${date}`,
       }));
@@ -87,6 +93,7 @@ export function detect(email, { now = Date.now() } = {}) {
     out.push(finding({
       id: 'headers.mailer', detector: name, severity: 'medium',
       title: 'Enviado con una herramienta de envío masivo',
+      params: {},
       detail: 'Este programa de envío aparece con mucha frecuencia en kits de phishing. Las empresas grandes usan sus propias plataformas.',
       evidence: mailer.slice(0, 120),
     }));
