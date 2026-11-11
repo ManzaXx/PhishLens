@@ -1,7 +1,7 @@
 import { el } from '../dom.js';
+import { t } from '../../i18n/index.js';
 
 const DANGEROUS = new Set(['phishing', 'critical']);
-const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 /**
  * Selector del correo que se ve dentro de un lote: un <select> nativo (teclado y lector de pantalla
@@ -15,14 +15,14 @@ export function batchBar({ items, current, campaigns = 0, skipped = 0 }) {
     select.append(el('option', { text: `${item.name} · ${item.label} · ${item.score}/100`, attrs }));
   }
   const parts = [
-    count(items.length, 'correo', 'correos'),
-    count(campaigns, 'campaña', 'campañas'),
-    count(items.filter((i) => DANGEROUS.has(i.level)).length, 'peligroso', 'peligrosos'),
+    t('batch.emails', { count: items.length }),
+    t('batch.campaigns', { count: campaigns }),
+    t('batch.dangerous', { count: items.filter((i) => DANGEROUS.has(i.level)).length }),
   ];
-  if (skipped) parts.push(`${skipped} sin analizar`);
+  if (skipped) parts.push(t('batch.skipped', { count: skipped }));
   return el('div', { className: 'batch-bar' },
     el('div', { className: 'batch-bar__field' },
-      el('label', { className: 'batch-bar__label', text: 'Correo del lote', attrs: { for: 'batch-email' } }),
+      el('label', { className: 'batch-bar__label', text: t('batch.select'), attrs: { for: 'batch-email' } }),
       select),
     el('p', { className: 'batch-bar__summary', text: parts.join(' · ') }));
 }

@@ -1,4 +1,5 @@
 import { el, svgEl } from '../dom.js';
+import { t } from '../../i18n/index.js';
 
 const MAX_LABEL = 24;
 const PAD = 150; // margen lateral del lienzo para que los rótulos del anillo exterior no se corten
@@ -38,7 +39,7 @@ export function graphView(model) {
   const size = model.size ?? 640;
   const svg = svgEl('svg', {
     className: 'graph__svg',
-    attrs: { viewBox: `${-PAD} -24 ${size + 2 * PAD} ${size + 48}`, role: 'group', 'aria-label': `Grafo de IOCs: ${model.nodes.length} nodos y ${model.edges.length} relaciones` },
+    attrs: { viewBox: `${-PAD} -24 ${size + 2 * PAD} ${size + 48}`, role: 'group', 'aria-label': t('graph.label', { nodes: model.nodes.length, edges: model.edges.length }) },
   });
   const pos = new Map(model.nodes.map((n) => [n.id, n]));
   const lines = svgEl('g', { className: 'graph__edges', attrs: { 'aria-hidden': 'true' } });
@@ -51,11 +52,11 @@ export function graphView(model) {
   svg.append(lines);
   const labelled = model.nodes.length <= LABELS_UP_TO;
   model.nodes.forEach((n, i) => {
-    const name = `${n.typeLabel} ${n.text}, ${n.relations} ${n.relations === 1 ? 'relación' : 'relaciones'}`;
+    const name = `${n.typeLabel} ${n.text}, ${t('graph.relations', { count: n.relations })}`;
     const current = n.id === model.current;
     const g = svgEl('g', {
       className: `graph__node graph__node--${n.type}${current ? ' is-current' : ''}`,
-      attrs: { role: 'img', 'aria-label': current ? `${name} (correo abierto)` : name, tabindex: i === 0 ? '0' : '-1', 'data-node': n.id },
+      attrs: { role: 'img', 'aria-label': current ? t('graph.current', { name }) : name, tabindex: i === 0 ? '0' : '-1', 'data-node': n.id },
     });
     g.append(svgEl('title', { text: name }), ...shape(n.type, n.x, n.y));
     if (labelled || n.type === 'email') {

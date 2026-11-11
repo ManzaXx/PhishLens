@@ -3,7 +3,7 @@
 import { el, nextId } from '../dom.js';
 import { dataTable } from '../components/data-table.js';
 import { severityTag } from '../components/severity-tag.js';
-import { CONFIDENCE } from '../components/labels.js';
+import { confidenceLabel } from '../components/labels.js';
 
 const NOT_STORED = 'No disponible: el correo no se guarda';
 const AUTH_STATE = new Map([['verified', 'Verificado'], ['declared-trusted', 'Declarado por el receptor'], ['declared-untrusted', 'Declarado sin confirmar'], ['unverifiable', 'No verificable'], ['absent', 'Sin datos'], ['none', 'Sin datos']]);
@@ -40,7 +40,7 @@ export function renderForensic(doc) {
   const sections = [
     section('Identificación', identification(doc.identification)),
     section('Veredicto',
-      el('p', { className: 'forensic__verdict', text: `${v.label ?? v.level} · ${v.score ?? '—'}/100 · confianza ${CONFIDENCE.get(v.confidence) ?? v.confidence ?? '—'}` }),
+      el('p', { className: 'forensic__verdict', text: `${v.label ?? v.level} · ${v.score ?? '—'}/100 · confianza ${confidenceLabel(v.confidence) ?? v.confidence ?? '—'}` }),
       v.headline ? el('p', { text: v.headline }) : null),
     section('Hallazgos', doc.findings.length
       ? table('Hallazgos por gravedad', ['Gravedad', 'Hallazgo', 'Evidencia', 'Técnica'], doc.findings.map((f) => [
