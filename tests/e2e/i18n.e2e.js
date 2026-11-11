@@ -3,6 +3,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { serve } from './server.js';
 import { openBrowser } from './browser.js';
+import { SAMPLES } from '../../samples/index.js';
 
 const { browser, skip } = await openBrowser();
 let server;
@@ -68,6 +69,71 @@ test('Review Focus 2: con localStorage bloqueado arranca en el idioma del navega
   assert.equal(await page.getAttribute('html', 'lang'), 'en');
   await page.locator('#lang-toggle').click();
   assert.equal(await page.getAttribute('html', 'lang'), 'es');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+const title03 = () => SAMPLES.find((s) => s.id === '03-phishing-banco').title;
+
+test('en un análisis: pasa a inglés sin volver a analizar, la ruta sigue en #analista y avisa una vez', { skip }, async () => {
+  const { context, page, errors } = await open({ locale: 'es-ES' });
+  await page.locator('#history-toggle').check();
+  await page.locator('#history-status', { hasText: 'Historial activado.' }).waitFor();
+  await page.getByRole('button', { name: title03(), exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('#history-open').textContent === 'Ver historial (1)');
+  await page.locator('#report [data-action="mode-analyst"]').first().click();
+  await page.locator('#report nav').waitFor();
+  await page.locator('#lang-toggle').click();
+  await page.locator('#report [aria-haspopup="menu"]', { hasText: 'Export' }).waitFor();
+  assert.equal(new URL(page.url()).hash, '#analista');
+  assert.equal(await page.locator('#report nav').getAttribute('aria-label'), 'Report sections');
+  assert.match(await page.locator('#report nav').innerText(), /Signals[\s\S]*Dashboard/);
+  assert.equal(await page.locator('#report .view__title').textContent(), 'Summary');
+  // Los avisos de fuera del informe también cambian, y no hay un análisis nuevo en el historial.
+  assert.equal(await page.locator('#history-status').textContent(), 'History turned on.');
+  assert.equal(await page.locator('#history-open').textContent(), 'View history (1)');
+  assert.equal(await page.evaluate(() => document.activeElement?.id), 'lang-toggle');
+  // Review Focus 5: el aviso dice exactamente el idioma nuevo.
+  await page.waitForFunction(() => document.querySelector('#report-status').textContent === 'Language: English');
+  await page.locator('#report nav a[href="#analista/senales"]').click();
+  await page.locator('#report .view--senales').waitFor();
+  assert.equal(new URL(page.url()).hash, '#analista/senales');
+  assert.equal(await page.locator('#report .view__title').textContent(), 'Signals');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('Review Focus 4: las notas forenses sobreviven al cambio de idioma', { skip }, async () => {
+  const { context, page, errors } = await open({ locale: 'es-ES' });
+  await page.getByRole('button', { name: title03(), exact: true }).click();
+  await page.locator('#report .verdict-card').waitFor();
+  await page.locator('#report [aria-haspopup="menu"]').click();
+  await page.getByRole('menuitem', { name: 'Informe forense' }).click();
+  await page.locator('[data-role="forensic-notes"]').fill('Caso 2026-201');
+  await page.getByRole('button', { name: 'Cerrar' }).click();
+  await page.locator('#lang-toggle').click();
+  await page.locator('#report [aria-haspopup="menu"]', { hasText: 'Export' }).click();
+  await page.getByRole('menuitem', { name: 'Forensic report' }).click();
+  assert.equal(await page.locator('[data-role="forensic-notes"]').inputValue(), 'Caso 2026-201');
+  await page.getByRole('button', { name: 'Close' }).click();
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('un fichero elegido y un error del formulario siguen en pantalla al cambiar de idioma', { skip }, async () => {
+  const { context, page, errors } = await open({ locale: 'es-ES' });
+  await page.locator('#tab-url').click();
+  await page.locator('#analyze-btn').click();
+  await page.locator('#input-error', { hasText: 'Escribe una URL.' }).waitFor();
+  await page.locator('#lang-toggle').click();
+  assert.equal(await page.locator('#input-error').textContent(), 'Type a URL.');
+  await page.locator('#tab-eml').click();
+  await page.locator('#file-input').setInputFiles({ name: 'prueba.eml', mimeType: 'message/rfc822', buffer: Buffer.from('From: a@b.c\nSubject: hola\n\nhola') });
+  await page.locator('#report .verdict-card').waitFor();
+  assert.equal(await page.locator('.dropzone__title').textContent(), 'prueba.eml');
+  await page.locator('#lang-toggle').click();
+  assert.equal(await page.locator('.dropzone__title').textContent(), 'prueba.eml');
+  assert.match(await page.locator('.dropzone__hint').textContent(), /listo para analizar/);
   assert.deepEqual(errors, []);
   await context.close();
 });

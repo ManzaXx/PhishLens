@@ -48,8 +48,8 @@ export async function openBrowser() {
  * Abre una página que registra toda petición fuera de `origin` y toda violación de CSP.
  * Las peticiones externas se abortan: el test las ve, pero nunca salen de la máquina.
  */
-export async function watchedPage(browser, origin, { colorScheme = 'light' } = {}) {
-  const context = await browser.newContext({ colorScheme });
+export async function watchedPage(browser, origin, { colorScheme = 'light', locale } = {}) {
+  const context = await browser.newContext(locale ? { colorScheme, locale } : { colorScheme });
   const external = [];
   await context.route('**/*', (route) => {
     const url = route.request().url();

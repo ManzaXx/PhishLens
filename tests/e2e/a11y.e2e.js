@@ -44,14 +44,17 @@ test('control negativo: axe ve los fallos de una página mal hecha', { skip }, a
 
 const title = (id) => SAMPLES.find((s) => s.id === id).title;
 
-for (const colorScheme of ['light', 'dark']) {
-  test(`axe: portada e informes sin violaciones serias (${colorScheme})`, { skip }, async () => {
-    const context = await browser.newContext({ colorScheme });
+// En inglés (spec 3.1) se repite con menos correos: los rótulos cambian, las vistas son las mismas.
+const PASSES = [['es-ES', REPORTS], ['en-GB', ['03-phishing-banco', '06-phishing-factura-adjunto', '13-redireccion-anidada']]];
+for (const [locale, reports] of PASSES) for (const colorScheme of ['light', 'dark']) {
+  test(`axe: portada e informes sin violaciones serias (${locale}, ${colorScheme})`, { skip }, async () => {
+    const context = await browser.newContext({ colorScheme, locale });
     const page = await context.newPage();
     page.setDefaultTimeout(5000);
     await page.goto(`${server.url}/index.html`);
     const found = (await axe(page)).map((v) => `portada: ${v}`);
-    for (const id of REPORTS) {
+    if (locale === 'en-GB') assert.equal(await page.getAttribute('html', 'lang'), 'en');
+    for (const id of reports) {
       await page.getByRole('button', { name: title(id), exact: true }).click();
       await page.locator('#report .verdict-card').waitFor();
       found.push(...(await axe(page)).map((v) => `${id} / sencillo: ${v}`));

@@ -2,6 +2,7 @@
 // un carácter RLO o invisible del email se muestra como ⟦U+202E⟧ en lugar de reordenar o esconder
 // lo que se ve en el informe (ataque "Trojan Source").
 import { reveal } from '../lib/text.js';
+import { getLang } from '../i18n/index.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -76,8 +77,8 @@ export function externalLink(href, text, className) {
   return el('a', { className, text, attrs: { href, target: '_blank', rel: 'noopener noreferrer' } });
 }
 
-/** Número con coma decimal. */
-export const decimal = (n) => String(n).replace('.', ',');
+/** Número con su separador decimal: coma en español, punto en inglés. */
+export const decimal = (n) => (getLang() === 'es' ? String(n).replace('.', ',') : String(n));
 
 let uid = 0;
 /** Id único por página para enlazar aria-labelledby. */

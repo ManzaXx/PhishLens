@@ -80,6 +80,21 @@ for (const colorScheme of ['light', 'dark']) {
   });
 }
 
+test('en inglés, las muestras tampoco hacen peticiones externas', { skip }, async () => {
+  const w = await watchedPage(browser, server.url, { locale: 'en-GB' });
+  await w.page.goto(`${server.url}/index.html`);
+  assert.equal(await w.page.getAttribute('html', 'lang'), 'en');
+  for (const sample of SAMPLES) {
+    await w.page.getByRole('button', { name: sample.title, exact: true }).click();
+    await visitAllReportTabs(w.page);
+  }
+  // Y el cambio de idioma en sí tampoco pide nada: los dos diccionarios ya van en la página.
+  await w.page.locator('#lang-toggle').click();
+  await w.page.locator('#lang-toggle').click();
+  await assertClean(w, 'muestras en inglés');
+  await w.context.close();
+});
+
 test('la página no puede abrir conexiones, ni siquiera con su propio origen', { skip }, async () => {
   const w = await watchedPage(browser, server.url);
   await w.page.goto(`${server.url}/index.html`);
