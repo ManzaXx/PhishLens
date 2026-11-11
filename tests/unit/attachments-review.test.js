@@ -1,6 +1,7 @@
 // Revisión final del PR7: regresiones de nota, rodeos y falsos positivos encontrados al revisar la rama.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget } from '../helpers/timing.js';
 import { analyzeInput } from '../../src/core/engine.js';
 import { readZip } from '../../src/parser/files/zip.js';
 import { readOle } from '../../src/parser/files/ole.js';
@@ -64,13 +65,9 @@ test('#3 un directorio central que no cuadra no se da por vacío ni por completo
 
 test('#4 un PDF de 10 MB lleno de nombres cortos se revisa en menos de 2 s', () => {
   const bytes = enc(`%PDF-1.4\n${'/A'.repeat(5_000_000)}`);
-  const start = performance.now();
-  assert.deepEqual(scanPdf(bytes).tokens, []);
-  assert.ok(performance.now() - start < 2000, `${Math.round(performance.now() - start)} ms`);
+  assert.deepEqual(assertWithinBudget(() => scanPdf(bytes), 2000, 'PDF de nombres cortos').tokens, []);
   const mixed = enc(`%PDF-1.4\n${'/AA /Fl /Type '.repeat(700_000)}`);
-  const t2 = performance.now();
-  assert.deepEqual(scanPdf(mixed).tokens, ['AA']);
-  assert.ok(performance.now() - t2 < 2000, `${Math.round(performance.now() - t2)} ms`);
+  assert.deepEqual(assertWithinBudget(() => scanPdf(mixed), 2000, 'PDF mixto').tokens, ['AA']);
 });
 
 test('#5 Office cifrado, .xlsb, Pages o XPS no son un tipo falso', () => {

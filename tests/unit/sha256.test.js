@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget } from '../helpers/timing.js';
 import { createHash } from 'node:crypto';
 import { sha256 } from '../../src/lib/sha256.js';
 
@@ -18,9 +19,8 @@ test('sha256 del mensaje de 448 bits', () => {
 });
 
 test('sha256 de un millón de "a" en menos de 200 ms', () => {
-  const start = performance.now();
-  assert.equal(sha256(new Uint8Array(1_000_000).fill(0x61)), 'cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0');
-  assert.ok(performance.now() - start < 200);
+  const million = new Uint8Array(1_000_000).fill(0x61);
+  assert.equal(assertWithinBudget(() => sha256(million), 200, 'sha256 de 1 MB'), 'cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0');
 });
 
 test('sha256 en la frontera de bloque coincide con node:crypto', () => {

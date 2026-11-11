@@ -38,10 +38,27 @@ export function withSpanishLocale(browser) {
   return browser;
 }
 
-/** Playwright y Chromium listos, o el motivo para saltar los tests. */
+const warned = new Set();
+
+/**
+ * Un e2e saltado sale como «skipped» en el resumen y es fácil no verlo: se avisa en stderr, una vez por motivo
+ * y proceso, para que nadie confunda «0 fallos» con «probado en el navegador».
+ */
+export function warnSkipped(reason, out = process.stderr) {
+  if (!reason || warned.has(reason)) return false;
+  warned.add(reason);
+  out.write(`\n⚠️  E2E NO EJECUTADOS: ${reason}\n`
+    + '   Los tests de navegador (privacidad, CSP, accesibilidad) se han SALTADO, no aprobado.\n'
+    + '   En CI esto es un fallo; en local instala Chromium con: npx playwright install chromium\n\n');
+  return true;
+}
+
+/** Playwright y Chromium listos, o el motivo para saltar los tests (avisando en stderr). */
 export async function openBrowser() {
   const loaded = loadPlaywright();
-  return loaded.skip ? { skip: loaded.skip } : launchOrSkip(loaded.playwright);
+  const r = loaded.skip ? { skip: loaded.skip } : await launchOrSkip(loaded.playwright);
+  if (r.skip) warnSkipped(r.skip);
+  return r;
 }
 
 /**

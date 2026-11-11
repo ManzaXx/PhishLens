@@ -9,6 +9,7 @@ import { analyzeInput } from '../../src/core/engine.js';
 import { validateRules, FIELD_NAMES, OPERATORS, LIST_FIELDS } from '../../src/rules/validate.js';
 import { FIELDS, evaluate, customFindings } from '../../src/rules/evaluate.js';
 import { rng, pick } from '../helpers/rng.js';
+import { assertWithinBudget, assertScales } from '../helpers/timing.js';
 import { installDom, find } from '../helpers/dom.js';
 
 const email = (id) => parseEml(SAMPLE_TEXTS[id]);
@@ -226,15 +227,13 @@ test('rendimiento: 100 reglas × 20 contains sobre un cuerpo de 1 MB en menos de
   })) })).rules;
   assert.equal(FIELDS.get('body.text')(e, []).length, 256 * 1024, 'body.text se recorta a 256 K caracteres');
   const any = rules.map((x) => ({ ...x, when: { any: x.when.all } }));
-  // El presupuesto mide el algoritmo, no al runner: una vuelta de calentamiento (JIT) y la mejor de tres,
+  // El presupuesto mide el algoritmo, no al runner: una vuelta de calentamiento (JIT) y hasta tres intentos,
   // porque node --test ejecuta los ficheros en paralelo y un runner compartido puede ir lento en una vuelta.
   customFindings(any, e, []);
-  const ms = Math.min(...[0, 1, 2].map(() => {
-    const t0 = performance.now();
-    customFindings(any, e, []);
-    return performance.now() - t0;
-  }));
-  assert.ok(ms < 300, `${ms.toFixed(0)} ms`);
+  assertWithinBudget(() => customFindings(any, e, []), 300, '100 reglas × 20 contains');
+  // Y crece lineal con el cuerpo (por debajo del recorte de 256 K): un bucle cuadrático fallaría aquí en cualquier equipo.
+  const bodyOf = (n) => parseEml(`Subject: x\r\nFrom: a@b.es\r\n\r\n${'lorem ipsum dolor sit amet '.repeat(n)}`);
+  assertScales(bodyOf, (mail) => customFindings(any.slice(0, 10), mail, []), { n: 1200, label: 'customFindings' });
 });
 
 let dom;

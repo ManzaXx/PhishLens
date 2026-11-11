@@ -1,6 +1,7 @@
 // PDF: nombres que activan acciones (sin descomprimir flujos). HTML: señales de smuggling.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget, assertScales } from '../helpers/timing.js';
 import { scanPdf } from '../../src/parser/files/pdf.js';
 import { htmlSmuggling } from '../../src/parser/files/html.js';
 
@@ -27,12 +28,14 @@ test('scanPdf: Launch solo, EmbeddedFiles, URI, AA y flujos comprimidos', () => 
 
 test('scanPdf: un PDF sin nada activo y 10 MB de «/» en menos de 2 s', () => {
   assert.deepEqual(scanPdf(pdf('<< /Type /Page /Contents 4 0 R >>')).tokens, []);
-  const start = performance.now();
-  assert.deepEqual(scanPdf(new Uint8Array(10 * 1024 * 1024).fill(0x2f)).tokens, []);
+  const slashes = new Uint8Array(10 * 1024 * 1024).fill(0x2f);
   const long = new Uint8Array(10 * 1024 * 1024).fill(0x41);
   long[0] = 0x2f;
-  assert.deepEqual(scanPdf(long).tokens, []);
-  assert.ok(performance.now() - start < 2000);
+  assertWithinBudget(() => {
+    assert.deepEqual(scanPdf(slashes).tokens, []);
+    assert.deepEqual(scanPdf(long).tokens, []);
+  }, 2000, 'PDF de 10 MB de «/»');
+  assertScales((n) => enc(`%PDF-1.4\n${'/AA /Fl /Type '.repeat(n)}`), scanPdf, { n: 80_000, label: 'scanPdf' });
 });
 
 test('htmlSmuggling: Blob + createObjectURL dentro de un script', () => {

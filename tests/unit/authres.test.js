@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget } from '../helpers/timing.js';
 import { parseAuthResults } from '../../src/auth/authres.js';
 
 test('cabecera de Gmail con comentarios y propiedades', () => {
@@ -34,9 +35,7 @@ test('como mucho 20 resultados', () => {
 });
 
 test('100 KB de paréntesis sin cerrar terminan rápido', () => {
-  const start = performance.now();
-  parseAuthResults(`mx.test; spf=pass ${'('.repeat(100_000)}`);
-  assert.ok(performance.now() - start < 50);
+  assertWithinBudget(() => parseAuthResults(`mx.test; spf=pass ${'('.repeat(100_000)}`), 50, 'paréntesis sin cerrar');
 });
 
 test('propiedades hostiles no contaminan prototipos', () => {

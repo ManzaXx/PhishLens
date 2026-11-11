@@ -12,7 +12,12 @@
 ### Añadido
 - `src/data/psl.js` (Public Suffix List del 2026-11-11, 6.951 reglas ICANN y 3.468 privadas, bajo MPL 2.0), generado con `tools/gen-psl.mjs` desde una copia local; la web no descarga nada. `tests/unit/psl.test.js` pasa la batería oficial `test_psl.txt`.
 - Se lee `ARC-Authentication-Results` del receptor cuando está por encima de su entrada (Gmail, Microsoft 365): es la fuente de confianza cuando la otra cabecera quedó en la zona ambigua.
+- `tests/helpers/timing.js`: los tests de tiempo ya no dependen de una sola medida. Un presupuesto se repite hasta tres veces con la misma entrada (lo lento de verdad lo es siempre; un GC o un runner cargado no) y `assertScales` compara n con 8·n, de modo que un bucle cuadrático falla aunque el equipo sea rápido. Probado metiendo a propósito un `join` cuadrático en `htmlToText`: el presupuesto absoluto de 1,5 s no lo vio y la proporción sí (×94,6 frente a un límite de ×24). El fuzzing informa p50/p99/máximo.
+- Si los e2e se saltan fuera de CI (sin Chromium o sin axe-core), se avisa en stderr con «E2E NO EJECUTADOS» en vez de quedar como un «skipped» que se pasa por alto.
 - `tests/fixtures/auth/` con disposiciones reales de cabeceras (Gmail completo y recortado, Postfix + OpenDKIM, Microsoft 365) y `tests/unit/trust-layouts.test.js`, con los ataques que deben seguir cazándose.
+
+### Cambiado
+- La demo de GitHub Pages solo se publica si pasan los unitarios **y** los e2e (antes solo los unitarios), y los permisos de escritura en Pages quedan solo en el job que publica.
 
 ## 3.1.0 · 2026-11-11 · Español e inglés
 

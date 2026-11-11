@@ -1,6 +1,7 @@
 // URLs sin visitarlas (spec 2.3, §5.3): cadena de saltos, IP ofuscadas, credenciales, entropía y puertos.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget, assertScales } from '../helpers/timing.js';
 import { analyzeUrl, shannon, MAX_HOPS } from '../../src/intel/url.js';
 
 const NONE = { nestedRedirect: false, obfuscatedIp: false, credentials: false, highEntropy: false, openRedirect: false, nonStandardPort: false };
@@ -51,14 +52,11 @@ test('Review Focus 2: 15 niveles, base64 enorme y % roto nunca rompen y paran a 
   assert.equal(d.cycle, false);
   assert.equal(analyzeUrl('https://www.google.com/url?q=https://evil.test/x').truncated, false);
 
-  let t = Date.now();
-  const huge = analyzeUrl(`https://a.test/?url=${'QUFB'.repeat(262144)}&next=%E0%A4%A`);
+  const huge = assertWithinBudget(() => analyzeUrl(`https://a.test/?url=${'QUFB'.repeat(262144)}&next=%E0%A4%A`), 200, 'URL de 1 MB');
   assert.equal(huge.hops.length, 1);
   assert.doesNotThrow(() => analyzeUrl('https://a.test/?url=%E0%A4%A&u=%%%&redirect=https%3A%2F%2F'));
-  assert.ok(Date.now() - t < 200, `tarda ${Date.now() - t} ms`);
-  t = Date.now();
-  for (let i = 0; i < 100; i++) analyzeUrl(deep);
-  assert.ok((Date.now() - t) / 100 < 50);
+  assertWithinBudget(() => { for (let i = 0; i < 100; i++) analyzeUrl(deep); }, 100 * 50, '100 URL anidadas');
+  assertScales((n) => `https://a.test/?url=${'QUFB'.repeat(n)}`, analyzeUrl, { n: 32768, label: 'analyzeUrl' });
 });
 
 test('Review Focus 5: IP ofuscadas en el texto original', () => {

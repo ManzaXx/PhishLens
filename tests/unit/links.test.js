@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget } from '../helpers/timing.js';
 import { detect } from '../../src/detectors/links.js';
 
 const withLinks = (...links) => ({ links: links.map((l) => (typeof l === 'string' ? { text: l, href: l } : l)) });
@@ -55,9 +56,7 @@ test('marca en la ruta de un dominio ajeno', () => {
 });
 
 test('texto de enlace enorme no bloquea el detector', () => {
-  const t = performance.now();
-  detect(withLinks({ text: 'a-'.repeat(200000), href: 'https://x.test/' }));
-  assert.ok(performance.now() - t < 500, `tardó ${Math.round(performance.now() - t)} ms`);
+  assertWithinBudget(() => detect(withLinks({ text: 'a-'.repeat(200000), href: 'https://x.test/' })), 500, 'texto de enlace enorme');
 });
 
 test('enlace de seguimiento de una plataforma de email es leve, no engaño', () => {

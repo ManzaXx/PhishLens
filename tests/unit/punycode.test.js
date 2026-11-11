@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget } from '../helpers/timing.js';
 import { domainToUnicode } from 'node:url';
 import { decodeLabel, toUnicode } from '../../src/parser/punycode.js';
 
@@ -29,10 +30,10 @@ test('punycode mal formado devuelve null sin lanzar y en tiempo lineal', () => {
   for (const bad of ['', 'zz', '9999999999999999', `${'a'.repeat(62)}-${'9'.repeat(40)}`, '-', 'ab-ñ']) {
     assert.equal(decodeLabel(bad), null, bad);
   }
-  const t = performance.now();
-  assert.equal(decodeLabel('a'.repeat(1 << 20)), null);
-  assert.equal(toUnicode(`xn--${'b'.repeat(1 << 20)}.com`), `xn--${'b'.repeat(1 << 20)}.com`);
-  assert.ok(performance.now() - t < 50);
+  assertWithinBudget(() => {
+    assert.equal(decodeLabel('a'.repeat(1 << 20)), null);
+    assert.equal(toUnicode(`xn--${'b'.repeat(1 << 20)}.com`), `xn--${'b'.repeat(1 << 20)}.com`);
+  }, 50, 'punycode de 1 MB');
 });
 
 test('una etiqueta inválida se deja tal cual', () => {

@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget, assertScales } from '../helpers/timing.js';
 import { parseEml, parseAddress, emailFromUrl } from '../../src/parser/eml.js';
 import { htmlToText } from '../../src/parser/html.js';
 
@@ -130,9 +131,12 @@ test('HTML malicioso no bloquea el parser (tiempo lineal)', () => {
     '<a href="x">y'.repeat(50000) + '</a>',
   ];
   for (const html of inputs) {
-    const t = performance.now();
-    parseEml(`From: a@b.com\nContent-Type: text/html\n\n${html}`);
-    htmlToText(html);
-    assert.ok(performance.now() - t < 1500, `tardó ${Math.round(performance.now() - t)} ms`);
+    assertWithinBudget(() => {
+      parseEml(`From: a@b.com\nContent-Type: text/html\n\n${html}`);
+      htmlToText(html);
+    }, 1500, `HTML hostil ${html.slice(0, 12)}…`);
   }
+  // El presupuesto absoluto no ve un bucle cuadrático si el runner es rápido; la proporción sí (tests/helpers/timing.js).
+  assertScales((n) => '<a href="x">y'.repeat(n), htmlToText, { n: 10_000, label: 'htmlToText' });
+  assertScales((n) => `From: a@b.com\nContent-Type: text/html\n\n${'<a href="x">'.repeat(n)}`, parseEml, { n: 10_000, label: 'parseEml con HTML' });
 });

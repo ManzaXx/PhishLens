@@ -6,6 +6,7 @@ import { SAMPLES } from '../../samples/index.js';
 import { parseEml } from '../../src/parser/eml.js';
 import { analyzeInput } from '../../src/core/engine.js';
 import { rng, pick } from '../helpers/rng.js';
+import { withinBudget, percentiles } from '../helpers/timing.js';
 import { mutate, MUTATION_NAMES } from './mutate.js';
 
 const ITER = Number(process.env.FUZZ_ITER ?? 2000);
@@ -19,23 +20,29 @@ test('cada mutación cambia algo en alguna muestra', () => {
   assert.ok(texts.some((t) => mutate(t, r).text !== t));
 });
 
-test(`fuzzing: ${ITER} correos mutados no rompen el parser ni el motor`, () => {
+test(`fuzzing: ${ITER} correos mutados no rompen el parser ni el motor`, (t) => {
   const r = rng(SEED);
+  const times = [];
   for (let i = 0; i < ITER; i++) {
     const base = pick(r, texts.length);
     const { text, applied } = mutate(texts[base], r);
     const where = `caso ${i} (semilla ${SEED}, muestra ${SAMPLES[base].id}, mutaciones ${applied.join('+')})`;
-    const start = performance.now();
     let report;
+    let timing;
     try {
-      parseEml(text);
-      report = analyzeInput({ kind: 'eml', value: text });
+      timing = withinBudget(() => {
+        parseEml(text);
+        return analyzeInput({ kind: 'eml', value: text });
+      }, MAX_MS);
     } catch (err) {
       assert.fail(`${where}: lanzó ${err?.stack ?? err}`);
     }
-    const ms = performance.now() - start;
-    assert.ok(ms < MAX_MS, `${where}: tardó ${Math.round(ms)} ms`);
+    report = timing.value;
+    times.push(timing.runs[0]);
+    assert.ok(timing.ok, `${where}: más de ${MAX_MS} ms en todos los intentos (${timing.runs.map((ms) => Math.round(ms)).join(', ')} ms)`);
     assert.ok(report.score >= 0 && report.score <= 100, `${where}: nota ${report.score}`);
     assert.deepEqual(report.errors, [], `${where}: detector caído ${JSON.stringify(report.errors)}`);
   }
+  const p = percentiles(times);
+  t.diagnostic(`parseEml + analyzeInput: p50 ${p.p50.toFixed(2)} ms · p99 ${p.p99.toFixed(2)} ms · máx ${p.max.toFixed(2)} ms (primer intento)`);
 });

@@ -4,12 +4,13 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { serve } from './server.js';
-import { openBrowser } from './browser.js';
+import { openBrowser, warnSkipped } from './browser.js';
 import { SAMPLES } from '../../samples/index.js';
 
 const AXE = process.env.AXE_PATH ?? fileURLToPath(new URL('../../node_modules/axe-core/axe.min.js', import.meta.url));
 const noAxe = existsSync(AXE) ? false : `axe-core no está en ${AXE} (npm ci o AXE_PATH)`;
 if (noAxe && process.env.CI) throw new Error(noAxe);
+if (noAxe) warnSkipped(noAxe);
 const { browser, skip: noBrowser } = noAxe ? {} : await openBrowser();
 const skip = noAxe || noBrowser || false;
 const REPORTS = ['01-legitimo-newsletter', '03-phishing-banco', '06-phishing-factura-adjunto', '11-adjunto-tipo-falso', '12-pdf-activo-zip', '13-redireccion-anidada'];

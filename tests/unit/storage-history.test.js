@@ -1,6 +1,7 @@
 // Historial (spec 3.0, §2): deduplicado, tope, filtros, búsqueda, comparar, lotes, exportar e importar.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudgetAsync } from '../helpers/timing.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { BATCHES } from '../../samples/index.js';
 import { analyzeInput } from '../../src/core/engine.js';
@@ -105,9 +106,11 @@ test('exportar e importar da las mismas entradas', async () => {
 test('guardar tarda menos de 20 ms', async () => {
   const { history } = setup();
   const base = input('03-phishing-banco');
-  const t0 = performance.now();
-  for (let i = 0; i < 50; i++) await history.save({ ...base, value: `${base.value}\n${i}` });
-  assert.ok((performance.now() - t0) / 50 < 20);
+  let round = 0;
+  await assertWithinBudgetAsync(async () => {
+    round++;
+    for (let i = 0; i < 50; i++) await history.save({ ...base, value: `${base.value}\n${round}-${i}` });
+  }, 50 * 20, '50 guardados');
 });
 
 test('Review Focus 2: una entrada manipulada no sale y get da null', async () => {

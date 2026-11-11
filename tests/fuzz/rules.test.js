@@ -1,9 +1,10 @@
 // Fuzzing del validador de reglas (spec 3.0, §7): con 2.000 ficheros mutados (semilla fija) nunca lanza,
-// nunca tarda más de 50 ms con uno y nunca deja pasar una regla fuera de las listas cerradas.
+// nunca tarda más de 50 ms con uno (repitiendo la entrada si una vuelta sale lenta) y nunca deja pasar una regla fuera de las listas cerradas.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { validateRules, OPERATORS, FIELD_NAMES } from '../../src/rules/validate.js';
 import { rng, pick } from '../helpers/rng.js';
+import { withinBudget, percentiles } from '../helpers/timing.js';
 
 const ITER = Number(process.env.FUZZ_ITER ?? 2000) >= 2000 ? 2000 : Math.max(200, Number(process.env.FUZZ_ITER));
 const SEED = Number(process.env.FUZZ_SEED ?? 20261110);
@@ -65,17 +66,20 @@ function checkAccepted(rules) {
   for (const r of rules) walk(r.when);
 }
 
-test(`fuzz del validador de reglas: ${ITER} ficheros mutados`, () => {
+test(`fuzz del validador de reglas: ${ITER} ficheros mutados`, (t) => {
   const r = rng(SEED);
   let accepted = 0;
+  const times = [];
   for (let i = 0; i < ITER; i++) {
     const base = SEEDS[pick(r, SEEDS.length)];
     const text = pick(r, 2) ? JSON.stringify(mutateValue(base, r)) : mutateText(JSON.stringify(base), r);
-    const t0 = performance.now();
     let out;
-    assert.doesNotThrow(() => { out = validateRules(text); }, `iteración ${i}`);
-    const ms = performance.now() - t0;
-    assert.ok(ms < MAX_MS, `iteración ${i}: ${ms.toFixed(1)} ms`);
+    // Si una vuelta pasa de MAX_MS se repite la misma entrada: lo lento de verdad lo es siempre (tests/helpers/timing.js).
+    let timing;
+    assert.doesNotThrow(() => { timing = withinBudget(() => validateRules(text), MAX_MS); }, `iteración ${i}`);
+    out = timing.value;
+    times.push(timing.runs[0]);
+    assert.ok(timing.ok, `iteración ${i}: más de ${MAX_MS} ms en todos los intentos (${timing.runs.map((ms) => ms.toFixed(1)).join(', ')} ms)`);
     if (out.ok) {
       accepted++;
       checkAccepted(out.rules);
@@ -83,4 +87,6 @@ test(`fuzz del validador de reglas: ${ITER} ficheros mutados`, () => {
   }
   assert.equal({}.polluted, undefined);
   assert.ok(accepted < ITER);
+  const p = percentiles(times);
+  t.diagnostic(`validateRules: p50 ${p.p50.toFixed(2)} ms · p99 ${p.p99.toFixed(2)} ms · máx ${p.max.toFixed(2)} ms (primer intento)`);
 });
