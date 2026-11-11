@@ -28,6 +28,7 @@ const FORBIDDEN = {
   intel: ['ui'],
   core: ['ui'],
   storage: ['ui', 'detectors'],
+  i18n: ['lib', 'core', 'parser', 'detectors', 'auth', 'intel', 'data', 'ui', 'storage', 'rules'],
 };
 
 test('regla de dependencias entre capas', () => {
@@ -55,11 +56,11 @@ test('ningún import sale de proyectoCiber/', () => {
   assert.deepEqual(outside, []);
 });
 
-test('src/ui/components/ solo importa de ui/dom.js, de otros componentes y de data/', () => {
+test('src/ui/components/ solo importa de ui/dom.js, de otros componentes, de data/ y de i18n/', () => {
   const dir = join(SRC, 'ui', 'components');
   const allowed = (file, spec) => {
     const target = relative(SRC, join(file, '..', spec)).replaceAll('\\', '/');
-    return target === 'ui/dom.js' || target.startsWith('ui/components/') || target.startsWith('data/');
+    return target === 'ui/dom.js' || target.startsWith('ui/components/') || target.startsWith('data/') || target.startsWith('i18n/');
   };
   const list = (() => { try { return files(dir); } catch { return []; } })();
   assert.ok(list.length > 0, 'no hay componentes');
