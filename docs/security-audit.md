@@ -95,7 +95,7 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | El worker de análisis hereda la CSP del documento: fetch (propio y ajeno), XHR, WebSocket, import remoto, eval e importScripts bloqueados desde dentro, y ninguna petición sale del navegador | ✅ | `tests/e2e/worker.e2e.js` en Chromium (job `e2e`), Firefox y WebKit (job `worker-csp`) |
 | Trusted Types en el worker: `new Worker(cadena)` lanza; solo la política `phishlens-worker`, una vez, y solo con `blob:` del propio origen | ✅ | `tests/e2e/worker.e2e.js`, `tests/unit/analysis-worker.test.js` |
 | Las páginas de prueba del worker llevan exactamente la CSP de `index.html` | ✅ | `tests/e2e/worker.e2e.js` |
-| `worker-src blob:` sin URLs ni `'self'`; `trusted-types` sin `'allow-duplicates'` | ✅ | `tests/unit/security.test.js` |
+| `worker-src blob: 'self'` sin URLs remotas ni `data:`; `trusted-types` sin `'allow-duplicates'` | ✅ | `tests/unit/security.test.js` |
 | La fuente del worker no tiene eval, fetch, XHR, WebSocket ni importScripts; solo `import()` del motor | ✅ | `tests/unit/analysis-worker.test.js` |
 | El informe del worker es idéntico al del hilo principal; cancelar termina el worker y no deja la página a medias | ✅ | `tests/e2e/worker.e2e.js` |
 | Vuelta al hilo principal si no hay Worker, falla la política o el worker no carga el motor; un error del motor no se confunde con un fallo del worker | ✅ | `tests/unit/analysis-worker.test.js` |

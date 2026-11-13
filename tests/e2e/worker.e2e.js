@@ -53,6 +53,7 @@ async function probeContext(browser, origin) {
   const routed = [];
   const requested = [];
   const finished = [];
+  const all = [];
   const own = (url) => url.startsWith(`${origin}/`) || url.startsWith('blob:') || url.startsWith('data:');
   await context.route('**/*', (route) => {
     const url = route.request().url();
@@ -60,7 +61,8 @@ async function probeContext(browser, origin) {
     routed.push(url);
     return route.abort('blockedbyclient');
   });
-  context.on('request', (r) => { if (!own(r.url())) requested.push(r.url()); });
+  context.on('request', (r) => { all.push(r.url()); if (!own(r.url())) requested.push(r.url()); });
+  context.on('requestfailed', (r) => { all.push(`FALLÓ ${r.url()} (${r.failure()?.errorText})`); });
   context.on('requestfinished', (r) => { if (!own(r.url())) finished.push(r.url()); });
   const page = await context.newPage();
   page.setDefaultTimeout(20000);
@@ -68,7 +70,7 @@ async function probeContext(browser, origin) {
   const consoleLog = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') consoleLog.push(`${m.type()}: ${m.text()}`); });
-  return { context, page, routed, requested, finished, errors, consoleLog };
+  return { context, page, routed, requested, finished, errors, consoleLog, all };
 }
 
 /**
@@ -80,7 +82,8 @@ async function awaitResult(c, key, partialKey) {
     await c.page.waitForFunction((k) => window[k], key, { timeout: 30000 });
   } catch (e) {
     const partial = await c.page.evaluate((k) => window[k] ?? null, partialKey).catch(() => 'sin acceso');
-    assert.fail(`${e.message.split('\n')[0]}\n  parcial: ${JSON.stringify(partial)}\n  errores: ${JSON.stringify(c.errors)}\n  consola: ${JSON.stringify(c.consoleLog)}`);
+    const dom = await c.page.evaluate(() => ({ ready: document.readyState, scripts: [...document.scripts].map((s) => s.src), trustedTypes: typeof trustedTypes, worker: typeof Worker })).catch((err) => String(err));
+    assert.fail(`${e.message.split('\n')[0]}\n  parcial: ${JSON.stringify(partial)}\n  dom: ${JSON.stringify(dom)}\n  peticiones: ${JSON.stringify(c.all)}\n  errores: ${JSON.stringify(c.errors)}\n  consola: ${JSON.stringify(c.consoleLog)}`);
   }
   return c.page.evaluate((k) => window[k], key);
 }
@@ -99,7 +102,8 @@ for (const [engine, { browser, skip }] of LAUNCHED) {
       assert.match(String(w[k]), /^bloqueado/, `${k}: ${w[k]}`);
     }
     assert.ok(w.violations.some((v) => v.startsWith('connect-src')), `sin violación connect-src dentro del worker: ${w.violations}`);
-    assert.ok(w.violations.some((v) => /^script-src/.test(v)), `sin violación script-src dentro del worker: ${w.violations}`);
+    // El import remoto lo corta script-src (Chromium, WebKit) o worker-src (Firefox); el eval, script-src.
+    assert.ok(w.violations.some((v) => /^(script-src|worker-src)/.test(v)), `sin violación script-src/worker-src dentro del worker: ${w.violations}`);
     assert.equal(typeof w.engineScore, 'number');
     assert.match(String(probe.documentImportRemote), /^bloqueado/);
     // Nada llegó a salir: el route handler no vio ninguna petición ajena y ninguna terminó.
@@ -156,7 +160,7 @@ for (const [engine, { browser, skip }] of LAUNCHED) {
     try {
       await c.page.locator('#raw-input').waitFor({ state: 'visible', timeout: 5000 });
     } catch {
-      assert.fail(`la pestaña Texto no se abre; errores: ${JSON.stringify(c.errors)}; consola: ${JSON.stringify(c.consoleLog)}`);
+      assert.fail(`la pestaña Texto no se abre; peticiones: ${JSON.stringify(c.all)}; errores: ${JSON.stringify(c.errors)}; consola: ${JSON.stringify(c.consoleLog)}`);
     }
     await c.page.locator('#raw-input').fill('Verifica tu cuenta urgentemente: http://203.0.113.9/login');
     await c.page.locator('#analyze-btn').click();

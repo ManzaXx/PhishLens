@@ -31,8 +31,14 @@ mismo nombre por segunda vez, al no haber `'allow-duplicates'`) lanza.
 ## Decisión
 
 El botón «Analizar» analiza en un module worker creado desde `blob:` con `import()` del motor
-(`src/ui/analysis-worker.js`). La CSP de `index.html` pasa de `worker-src 'none'` a `worker-src blob:` y de
-`trusted-types 'none'` a `trusted-types phishlens-worker`; todo lo demás sigue igual. Mientras el worker trabaja la
+(`src/ui/analysis-worker.js`). La CSP de `index.html` pasa de `worker-src 'none'` a `worker-src blob: 'self'` y de
+`trusted-types 'none'` a `trusted-types phishlens-worker`; todo lo demás sigue igual.
+
+`'self'` está en `worker-src` solo por Firefox: comprueba contra `worker-src` (y no contra `script-src`, como
+Chromium) los módulos que importa un worker, así que con `worker-src blob:` a secas bloqueaba `src/parser/eml.js` y
+el resto del motor («blocked a worker script (worker-src)») y la app caía al hilo principal. `'self'` no permite
+crear un worker desde una URL en la práctica: con Trusted Types `new Worker` exige la política, y la política solo
+acepta `blob:`. Mientras el worker trabaja la
 página muestra «Analizando…» con un botón **Cancelar** que termina el worker (`terminate()`), la única forma de parar
 un análisis a medias.
 
@@ -47,8 +53,8 @@ propias (misma entrada, ya analizada una vez), y los lotes, que ya ceden el hilo
 
 - **El worker no tiene red.** Hereda `connect-src 'none'` y `script-src 'self'`; lo prueban los e2e en tres motores.
   Un fallo del parser que llegara a ejecutar código dentro del worker choca con la misma CSP que en la página.
-- **`worker-src blob:` no deja cargar workers remotos**, y el único `blob:` que admite Trusted Types es el que crea la
-  política privada del módulo. Un script inyectado (que ya tendría que haber burlado `script-src 'self'`) no puede
+- **`worker-src blob: 'self'` no deja cargar workers remotos**, y el único script que admite Trusted Types para
+  `new Worker` es el `blob:` que crea la política privada del módulo (una URL del propio origen tampoco pasa). Un script inyectado (que ya tendría que haber burlado `script-src 'self'`) no puede
   crear otra política ni usar esta con una URL remota.
 - **Lo que viaja al worker es el texto del correo y las reglas propias (JSON); lo que vuelve es el informe.** Los dos
   se copian con el algoritmo de clonado estructurado: ni funciones ni prototipos.
@@ -60,5 +66,5 @@ propias (misma entrada, ya analizada una vez), y los lotes, que ya ceden el hilo
 - Dos copias del texto en memoria durante el análisis (la de la página y la del worker). Con 25 MB es asumible.
 - Si algún motor no aplicara la CSP heredada, el job `worker-csp` lo diría; la vuelta atrás es apagar
   `createAnalyzer` (el hilo principal sigue siendo el camino de respaldo).
-- `tests/unit/security.test.js` exige `worker-src blob:` sin ninguna URL ni `'self'`, y `trusted-types` sin
-  `'allow-duplicates'`.
+- `tests/unit/security.test.js` exige `worker-src blob: 'self'` sin ninguna URL remota ni `data:`, y `trusted-types`
+  sin `'allow-duplicates'`.

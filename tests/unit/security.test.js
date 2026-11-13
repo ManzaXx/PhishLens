@@ -106,10 +106,13 @@ test('la CSP de index.html prohíbe toda conexión y la precarga de DNS está ap
   assert.match(html, /<meta http-equiv="x-dns-prefetch-control" content="off">/);
   // Desde la 3.2 (ADR 0007) el análisis va en un worker blob:, que hereda esta misma CSP (tests/e2e/worker.e2e.js);
   // la única política de Trusted Types permitida es la que crea ese worker, y solo acepta blob: del propio origen.
-  for (const d of ['worker-src blob:', "script-src 'self'", "require-trusted-types-for 'script'", 'trusted-types phishlens-worker', "object-src 'none'", "base-uri 'none'", "form-action 'none'"]) {
+  // 'self' en worker-src está solo porque Firefox comprueba contra worker-src los módulos que importa el worker
+  // (el motor, del mismo origen); new Worker con una URL sigue sin ser posible: Trusted Types exige la política,
+  // y la política solo acepta blob:.
+  for (const d of ["worker-src blob: 'self'", "script-src 'self'", "require-trusted-types-for 'script'", 'trusted-types phishlens-worker', "object-src 'none'", "base-uri 'none'", "form-action 'none'"]) {
     assert.ok(csp.split(';').map((x) => x.trim()).includes(d), `falta ${d}`);
   }
-  assert.doesNotMatch(csp, /worker-src[^;]*(https?:|'self'|\*)/, 'el worker solo puede nacer de un blob: propio, nunca de una URL');
+  assert.doesNotMatch(csp, /worker-src[^;]*(https?:|data:|\*|'unsafe)/, 'el worker nunca puede nacer de una URL remota ni de data:');
   assert.doesNotMatch(csp, /trusted-types[^;]*'allow-duplicates'/, 'una segunda política con el mismo nombre debe fallar');
   assert.doesNotMatch(csp, /unsafe-(inline|eval)/);
 });

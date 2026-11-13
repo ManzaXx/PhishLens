@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <!-- La misma CSP que index.html (tests/e2e/worker.e2e.js comprueba que coinciden). -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; manifest-src 'self'; frame-src 'none'; worker-src blob:; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests; require-trusted-types-for 'script'; trusted-types phishlens-worker">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; manifest-src 'self'; frame-src 'none'; worker-src blob: 'self'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests; require-trusted-types-for 'script'; trusted-types phishlens-worker">
   <title>Prueba: el analizador real en un worker</title>
 </head>
 <body>
