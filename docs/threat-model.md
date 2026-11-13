@@ -57,7 +57,7 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 | Fuga por `fetch`, píxel o CSS | `default-src 'none'`, `connect-src 'none'`, `img-src 'self' data:`, `no-referrer`; las muestras van dentro de `samples/data.js` | `tests/e2e/privacy.e2e.js` en Chromium real, con control negativo que sí filtra |
 | Precarga DNS (`<link rel=dns-prefetch>`, dominios de `<img>`) | El HTML del correo nunca llega al DOM: el render solo crea nodos de texto, así que no hay elemento que dispare la consulta. `x-dns-prefetch-control: off` como segunda barrera | `tests/unit/security.test.js` (sin `innerHTML` y el meta presente). El e2e no ve consultas DNS: Playwright solo intercepta peticiones HTTP |
 | Un fallo futuro que inserte HTML | Trusted Types (`require-trusted-types-for 'script'; trusted-types 'none'`) | `tests/unit/security.test.js` |
-| Worker sin CSP | `worker-src 'none'`, ver [ADR 0003](adr/0003-sin-web-worker.md) | `tests/unit/security.test.js` |
+| Worker sin CSP (red libre dentro del worker) | El worker nace de `blob:` y hereda la CSP del documento (`connect-src 'none'`, `script-src 'self'`); `worker-src blob:` sin URLs y Trusted Types con una sola política privada que solo acepta `blob:` propio, ver [ADR 0007](adr/0007-worker-con-csp-heredada.md) | `tests/e2e/worker.e2e.js` (Chromium, Firefox y WebKit en CI: fetch, XHR, WebSocket, import remoto, eval e importScripts bloqueados desde dentro del worker), `tests/unit/security.test.js`, `tests/unit/analysis-worker.test.js` |
 
 ### Historial (`src/storage/`)
 
@@ -112,5 +112,6 @@ PhishLens analiza correos escritos por un atacante dentro del navegador de la v�
 ## Riesgos aceptados
 
 - La CSP va en un `<meta>`: no hay `frame-ancestors` ni cabeceras de respuesta (GitHub Pages no lo permite).
-- El análisis corre en el hilo principal: con 25 MB la pestaña puede quedarse quieta unas décimas de segundo.
-- El test de privacidad solo usa Chromium. Firefox y Safari aplican la misma CSP, pero no se prueban en CI.
+- Si el navegador no puede crear el worker, el análisis vuelve al hilo principal: con 25 MB la pestaña puede quedarse quieta unas décimas de segundo.
+- Durante un análisis el texto del correo está dos veces en memoria (página y worker).
+- El test de privacidad solo usa Chromium. La herencia de la CSP en el worker se prueba también en Firefox y WebKit; el resto de los e2e, no.

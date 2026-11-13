@@ -21,7 +21,7 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 
 | Punto | Estado | Prueba |
 | --- | --- | --- |
-| `connect-src 'none'`, `worker-src 'none'` y `x-dns-prefetch-control: off` | ✅ | `tests/unit/security.test.js` |
+| `connect-src 'none'`, `worker-src` cerrado (`'none'` hasta la 3.1; `blob:` desde el ADR 0007) y `x-dns-prefetch-control: off` | ✅ | `tests/unit/security.test.js` |
 | Ninguna petición fuera del origen al analizar las 10 muestras y un correo lleno de contenido remoto, en claro y oscuro, por todas las pestañas | ✅ | `tests/e2e/privacy.e2e.js` (Chromium) |
 | El detector de fugas funciona (control negativo) | ✅ | `tests/e2e/privacy.e2e.js` con `tests/fixtures/privacy/leaky.html` |
 | Ni un `fetch` al propio origen conecta | ✅ | `tests/e2e/privacy.e2e.js` |
@@ -34,7 +34,7 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 | `npm audit --audit-level=high` y Dependabot (npm y Actions) | ✅ | Job `e2e` de CI, `.github/dependabot.yml` |
 | `npm ci --ignore-scripts`: ningún script de instalación de terceros | 👁️ | `.github/workflows/phishlens-tests.yml` |
 | Accesibilidad: axe sin problemas serios ni críticos, uso completo con teclado | ✅ | `tests/e2e/a11y.e2e.js` |
-| Sin Web Worker sin CSP | ✅ | [ADR 0003](adr/0003-sin-web-worker.md), `tests/unit/security.test.js` |
+| Sin Web Worker sin CSP (hasta la 3.1) | ✅ | [ADR 0003](adr/0003-sin-web-worker.md), sustituido por el ADR 0007 (abajo) |
 | Cada regla con al menos un test o una muestra | ✅ | `tests/unit/coverage-matrix.test.js`, [matriz](coverage-matrix.md) |
 
 ## 2.3
@@ -84,10 +84,22 @@ Estado de cada punto de seguridad de PhishLens y la prueba que lo sostiene. ✅ 
 
 | Reglas propias: sin `RegExp` en `src/rules/`, campos y operadores en listas cerradas, claves peligrosas rechazadas | ✅ | `tests/unit/rules-validate.test.js` |
 | Reglas propias: el validador nunca lanza ni pasa de 50 ms con 2.000 ficheros mutados | ✅ | `tests/fuzz/rules.test.js` |
-| Reglas propias: nunca bajan la nota; 100 × 20 condiciones sobre 1 MB en menos de 300 ms | ✅ | `tests/unit/rules-evaluate.test.js` |
+| Reglas propias: nunca bajan la nota; 100 × 20 condiciones sobre 1 MB en menos de 1,2 s y lineal con el cuerpo | ✅ | `tests/unit/rules-evaluate.test.js` |
 | Reglas propias: con el historial apagado no se crea la base; se van con «Borrar todo»; migración v1 → v2; privacidad y axe en claro y oscuro | ✅ | `tests/e2e/rules.e2e.js` |
 | Revisión de seguridad del PR13 | 👁️ | revisión del diff |
 
+## Auditoría 3.1 (fase 3)
+
+| Punto | Estado | Prueba |
+| --- | --- | --- |
+| El worker de análisis hereda la CSP del documento: fetch (propio y ajeno), XHR, WebSocket, import remoto, eval e importScripts bloqueados desde dentro, y ninguna petición sale del navegador | ✅ | `tests/e2e/worker.e2e.js` en Chromium (job `e2e`), Firefox y WebKit (job `worker-csp`) |
+| Trusted Types en el worker: `new Worker(cadena)` lanza; solo la política `phishlens-worker`, una vez, y solo con `blob:` del propio origen | ✅ | `tests/e2e/worker.e2e.js`, `tests/unit/analysis-worker.test.js` |
+| Las páginas de prueba del worker llevan exactamente la CSP de `index.html` | ✅ | `tests/e2e/worker.e2e.js` |
+| `worker-src blob:` sin URLs ni `'self'`; `trusted-types` sin `'allow-duplicates'` | ✅ | `tests/unit/security.test.js` |
+| La fuente del worker no tiene eval, fetch, XHR, WebSocket ni importScripts; solo `import()` del motor | ✅ | `tests/unit/analysis-worker.test.js` |
+| El informe del worker es idéntico al del hilo principal; cancelar termina el worker y no deja la página a medias | ✅ | `tests/e2e/worker.e2e.js` |
+| Vuelta al hilo principal si no hay Worker, falla la política o el worker no carga el motor; un error del motor no se confunde con un fallo del worker | ✅ | `tests/unit/analysis-worker.test.js` |
+
 ## Pendiente
 
-- Probar la privacidad también en Firefox y WebKit.
+- Probar la privacidad completa (todas las vistas) también en Firefox y WebKit; de momento solo la herencia de la CSP en el worker.

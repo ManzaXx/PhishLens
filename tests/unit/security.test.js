@@ -104,9 +104,13 @@ test('la CSP de index.html prohíbe toda conexión y la precarga de DNS está ap
   assert.match(csp, /(^|;)\s*connect-src 'none'\s*(;|$)/);
   assert.match(csp, /(^|;)\s*default-src 'none'\s*(;|$)/);
   assert.match(html, /<meta http-equiv="x-dns-prefetch-control" content="off">/);
-  for (const d of ["worker-src 'none'", "script-src 'self'", "require-trusted-types-for 'script'", "trusted-types 'none'", "object-src 'none'", "base-uri 'none'", "form-action 'none'"]) {
+  // Desde la 3.2 (ADR 0007) el análisis va en un worker blob:, que hereda esta misma CSP (tests/e2e/worker.e2e.js);
+  // la única política de Trusted Types permitida es la que crea ese worker, y solo acepta blob: del propio origen.
+  for (const d of ['worker-src blob:', "script-src 'self'", "require-trusted-types-for 'script'", 'trusted-types phishlens-worker', "object-src 'none'", "base-uri 'none'", "form-action 'none'"]) {
     assert.ok(csp.split(';').map((x) => x.trim()).includes(d), `falta ${d}`);
   }
+  assert.doesNotMatch(csp, /worker-src[^;]*(https?:|'self'|\*)/, 'el worker solo puede nacer de un blob: propio, nunca de una URL');
+  assert.doesNotMatch(csp, /trusted-types[^;]*'allow-duplicates'/, 'una segunda política con el mismo nombre debe fallar');
   assert.doesNotMatch(csp, /unsafe-(inline|eval)/);
 });
 

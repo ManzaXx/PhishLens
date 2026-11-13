@@ -1,6 +1,7 @@
 // Controlador de la página: entradas, ejemplos, tema y acciones del informe.
 import { analyzeInput, verifyDkimForInput } from '../core/engine.js';
 import { analyzeBatch } from '../core/batch.js';
+import { createAnalyzer } from './analysis-worker.js';
 import { buildGraph } from '../intel/graph.js';
 import { findCampaigns } from '../intel/campaigns.js';
 import { SAMPLES, BATCHES } from '../../samples/index.js';
@@ -92,6 +93,19 @@ function storage(fn) {
 
 /** El motor con las reglas propias activas (spec 3.0, §5.2). */
 const analyzeWith = (input) => analyzeInput({ ...input, rules: state.rules?.rules ?? [] });
+
+// El análisis de «Analizar» va en un worker (ADR 0007) para que la página siga respondiendo con un correo grande;
+// re-análisis y lotes siguen en el hilo principal (son síncronos y cortos, o ya ceden el hilo entre correos).
+const analyzer = createAnalyzer();
+const analyzeBtn = $('#analyze-btn');
+const analyzeStatus = $('#analyze-status');
+function setAnalyzing(on) {
+  analyzeBtn.disabled = on;
+  analyzeStatus.hidden = !on;
+}
+$('#analyze-cancel').addEventListener('click', () => {
+  if (analyzer.cancel()) announce(t('app.analysis.cancelled'));
+});
 
 // ---------- Historial (apagado por defecto; nada de esto puede romper un análisis) ----------
 const historyToggle = $('#history-toggle');
@@ -703,7 +717,7 @@ function currentInput() {
   return urlInput.value.trim() ? { kind: 'url', value: urlInput.value.trim() } : null;
 }
 
-function run() {
+async function run() {
   const input = currentInput();
   // Con un lote a la vista y sin fichero nuevo, «Analizar» no tiene nada que rehacer: se vuelve al informe.
   if (!input && state.tab === 'eml' && state.batch) {
@@ -722,13 +736,27 @@ function run() {
   showError('');
   cancelBatch();
   state.analyst = {};
+  let report;
+  setAnalyzing(true);
+  try {
+    report = await analyzer.run({ ...input, rules: state.rules?.rules ?? [] });
+  } catch (e) {
+    setAnalyzing(false);
+    // Cancelado por el usuario (o pisado por otro «Analizar»): no es un error.
+    if (e?.name === 'AbortError') return;
+    reportBox.hidden = true;
+    showError('app.error.analyze');
+    return;
+  }
+  setAnalyzing(false);
   try {
     state.lastInput = input;
     state.savedNote = '';
     state.saved = null;
     state.notes = '';
     state.analyzedAt = new Date();
-    state.lastReport = analyzeWith(input);
+    state.lastReport = report;
+    reportBox.dataset.analyzedBy = analyzer.mode;
     paint();
     announce(t('app.result', { headline: localizeReport(state.lastReport).verdict.headline, score: state.lastReport.score }));
     historyControl.record(input, state.lastReport, input.kind === 'eml' ? state.fileName ?? null : null);

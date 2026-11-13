@@ -218,7 +218,7 @@ test('Review Focus 4: una regla propia nunca baja la nota (17 muestras × 200 re
   assert.ok(fired > 0);
 });
 
-test('rendimiento: 100 reglas × 20 contains sobre un cuerpo de 1 MB en menos de 300 ms', () => {
+test('rendimiento: 100 reglas × 20 contains sobre un cuerpo de 1 MB en menos de 1,2 s y lineal', () => {
   const body = 'lorem ipsum dolor sit amet '.repeat(40000);
   const e = parseEml(`Subject: x\r\nFrom: a@b.es\r\n\r\n${body}`);
   const rules = validateRules(JSON.stringify({ phishlens: 'rules/1', rules: Array.from({ length: 100 }, (_, i) => ({
@@ -229,8 +229,11 @@ test('rendimiento: 100 reglas × 20 contains sobre un cuerpo de 1 MB en menos de
   const any = rules.map((x) => ({ ...x, when: { any: x.when.all } }));
   // El presupuesto mide el algoritmo, no al runner: una vuelta de calentamiento (JIT) y hasta tres intentos,
   // porque node --test ejecuta los ficheros en paralelo y un runner compartido puede ir lento en una vuelta.
+  // 2.000 `contains` sobre 256 K caracteres tardan ~230 ms en un equipo normal sin carga; con 300 ms el test
+  // falló en CI (main, 2026-11-13) y en 2 de 10 vueltas locales con la suite entera en paralelo (308–574 ms).
+  // El presupuesto es ~5× lo normal; la regresión algorítmica la caza la comprobación de linealidad de abajo.
   customFindings(any, e, []);
-  assertWithinBudget(() => customFindings(any, e, []), 300, '100 reglas × 20 contains');
+  assertWithinBudget(() => customFindings(any, e, []), 1200, '100 reglas × 20 contains');
   // Y crece lineal con el cuerpo (por debajo del recorte de 256 K): un bucle cuadrático fallaría aquí en cualquier equipo.
   const bodyOf = (n) => parseEml(`Subject: x\r\nFrom: a@b.es\r\n\r\n${'lorem ipsum dolor sit amet '.repeat(n)}`);
   assertScales(bodyOf, (mail) => customFindings(any.slice(0, 10), mail, []), { n: 1200, label: 'customFindings' });

@@ -32,6 +32,8 @@ Nada fuera de `src/ui/` usa `document` ni `window`, así que todo el motor se pr
 3. El informe reúne hallazgos, técnicas ATT&CK e IOCs.
 4. `renderReport()` lo pinta sin interpretar nunca el HTML del correo.
 
+Desde «Analizar», los pasos 1–3 corren en un Web Worker (`src/ui/analysis-worker.js`, [ADR 0007](adr/0007-worker-con-csp-heredada.md)): un module worker creado desde `blob:` que importa `engine.js` y hereda la CSP de la página, con «Analizando…» y un botón para cancelar. Si el navegador no puede crearlo, el análisis vuelve al hilo principal.
+
 Con varios correos, `analyzeBatch()` (`src/core/batch.js`) repite los pasos 1–3 con cada uno, cediendo el hilo entre correos; luego `buildGraph()` y `findCampaigns()` trabajan sobre los informes y `renderReport()` recibe el lote como contexto (`options.batch`).
 
 ## Objeto email
