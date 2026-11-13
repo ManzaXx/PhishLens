@@ -5,6 +5,7 @@
 import { createAnalyzer, workerSource, POLICY_NAME } from '../../../src/ui/analysis-worker.js';
 
 const out = { steps: [] };
+window.__probePartial = out; // lo que haya hasta el momento, por si algo se cuelga
 const log = (k, v) => { out[k] = v; out.steps.push(`${k}: ${JSON.stringify(v)}`); document.getElementById('out').textContent = out.steps.join('\n'); };
 
 const engineUrl = new URL('../../../src/core/engine.js', import.meta.url).href;

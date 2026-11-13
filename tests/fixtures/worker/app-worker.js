@@ -4,12 +4,16 @@ import { createAnalyzer } from '../../../src/ui/analysis-worker.js';
 import { analyzeInput } from '../../../src/core/engine.js';
 
 const input = { kind: 'text', value: 'Verifica tu cuenta urgentemente: http://203.0.113.9/login', rules: [] };
-const out = {};
+const out = { step: 'inicio' };
+window.__appPartial = out;
 try {
   const a = createAnalyzer();
   out.available = a.available;
+  out.step = 'run';
   const report = await a.run(input);
   out.mode = a.mode;
+  out.lastError = a.lastError;
+  out.step = 'cancel';
   out.score = report.score;
   out.sameAsMain = JSON.stringify(report) === JSON.stringify(analyzeInput(input));
   // Cancelar un análisis en curso y volver a analizar después.
@@ -18,6 +22,7 @@ try {
   out.cancelError = await p.then(() => 'resuelto', (e) => e.name);
   out.afterCancel = (await a.run(input)).score;
   out.modeAfterCancel = a.mode;
+  out.step = 'fin';
 } catch (e) {
   out.error = String(e?.message ?? e);
 }

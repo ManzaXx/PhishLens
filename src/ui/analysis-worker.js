@@ -31,8 +31,11 @@ export function workerSource(engineUrl = ENGINE_URL) {
     '  const { id, input } = e.data;',
     `  try { engine ??= await import(${JSON.stringify(engineUrl)}); }`,
     "  catch (err) { postMessage({ id, ok: false, stage: 'load', message: String(err?.message ?? err) }); return; }",
-    '  try { postMessage({ id, ok: true, report: engine.analyzeInput(input) }); }',
-    "  catch (err) { postMessage({ id, ok: false, stage: 'analyze', message: String(err?.message ?? err) }); }",
+    '  let report;',
+    '  try { report = engine.analyzeInput(input); }',
+    "  catch (err) { postMessage({ id, ok: false, stage: 'analyze', message: String(err?.message ?? err) }); return; }",
+    '  try { postMessage({ id, ok: true, report }); }',
+    "  catch (err) { postMessage({ id, ok: false, stage: 'clone', message: String(err?.message ?? err) }); }",
     '};',
     '',
   ].join('\n');
@@ -49,7 +52,8 @@ const abortError = () => {
  * `scope` existe para los tests: en la web es `globalThis` (Worker, Blob, URL, trustedTypes, location).
  *
  * run(input) → Promise<report>. Un run() nuevo cancela el anterior; cancel() termina el worker y rechaza la promesa
- * pendiente con un error de nombre AbortError. `mode` dice cómo se hizo el último análisis: 'worker' o 'main'.
+ * pendiente con un error de nombre AbortError. `mode` dice cómo se hizo el último análisis: 'worker' o 'main';
+ * `lastError`, por qué se abandonó el worker (solo para diagnóstico: nunca llega a la interfaz).
  */
 export function createAnalyzer({ analyze = analyzeInput, scope = globalThis, engineUrl = ENGINE_URL } = {}) {
   let worker = null;
@@ -58,7 +62,7 @@ export function createAnalyzer({ analyze = analyzeInput, scope = globalThis, eng
   let broken = !scope.Worker || !scope.Blob || !scope.URL?.createObjectURL;
   let seq = 0;
   let pending = null;
-  const api = { mode: null, run, cancel, get available() { return !broken; } };
+  const api = { mode: null, lastError: broken ? 'sin Worker, Blob o URL.createObjectURL' : null, run, cancel, get available() { return !broken; } };
 
   function scriptUrl(url) {
     const tt = scope.trustedTypes;
@@ -90,24 +94,28 @@ export function createAnalyzer({ analyze = analyzeInput, scope = globalThis, eng
       pending = null;
       if (msg.ok) return p.resolve(msg.report);
       if (msg.stage === 'analyze') return p.reject(new Error(msg.message));
-      // El worker no pudo cargar el motor: se da por roto y se termina en el hilo principal.
-      giveUp(p);
+      // El worker no pudo cargar el motor (o devolver el informe): se da por roto y se termina en el hilo principal.
+      giveUp(p, `${msg.stage}: ${msg.message}`);
     };
-    worker.onerror = (e) => {
-      e?.preventDefault?.();
+    const fail = (why) => {
       const p = pending;
       pending = null;
       // Con o sin análisis en curso, un worker que da error no se vuelve a usar.
-      if (p) giveUp(p);
-      else { broken = true; dispose(); }
+      if (p) giveUp(p, why);
+      else { broken = true; api.lastError = why; dispose(); }
     };
-    worker.onmessageerror = worker.onerror;
+    worker.onerror = (e) => {
+      e?.preventDefault?.();
+      fail(`error: ${e?.message ?? '?'} @${e?.filename ?? '?'}:${e?.lineno ?? '?'}`);
+    };
+    worker.onmessageerror = () => fail('messageerror: el informe no se pudo deserializar');
     return worker;
   }
 
   /** El worker ha fallado: de aquí en adelante todo va por el hilo principal. */
-  function giveUp(p) {
+  function giveUp(p, why) {
     broken = true;
+    api.lastError = why;
     dispose();
     try {
       api.mode = 'main';
@@ -129,10 +137,10 @@ export function createAnalyzer({ analyze = analyzeInput, scope = globalThis, eng
       try {
         (worker ?? spawn()).postMessage({ id, input });
         api.mode = 'worker';
-      } catch {
+      } catch (err) {
         // Sin política de Trusted Types posible, o postMessage no pudo clonar la entrada.
         pending = null;
-        giveUp({ input, resolve, reject });
+        giveUp({ input, resolve, reject }, `arranque: ${err?.message ?? err}`);
       }
     });
   }

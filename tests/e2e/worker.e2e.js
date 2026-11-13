@@ -65,8 +65,24 @@ async function probeContext(browser, origin) {
   const page = await context.newPage();
   page.setDefaultTimeout(20000);
   const errors = [];
+  const consoleLog = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  return { context, page, routed, requested, finished, errors };
+  page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') consoleLog.push(`${m.type()}: ${m.text()}`); });
+  return { context, page, routed, requested, finished, errors, consoleLog };
+}
+
+/**
+ * Espera a que la página deje `window[key]`. Si no llega, el fallo cuenta lo que sí había (`window[partialKey]`),
+ * los errores y la consola: en un motor que no se puede abrir en local es la única pista.
+ */
+async function awaitResult(c, key, partialKey) {
+  try {
+    await c.page.waitForFunction((k) => window[k], key, { timeout: 30000 });
+  } catch (e) {
+    const partial = await c.page.evaluate((k) => window[k] ?? null, partialKey).catch(() => 'sin acceso');
+    assert.fail(`${e.message.split('\n')[0]}\n  parcial: ${JSON.stringify(partial)}\n  errores: ${JSON.stringify(c.errors)}\n  consola: ${JSON.stringify(c.consoleLog)}`);
+  }
+  return c.page.evaluate((k) => window[k], key);
 }
 
 for (const [engine, { browser, skip }] of LAUNCHED) {
@@ -75,8 +91,7 @@ for (const [engine, { browser, skip }] of LAUNCHED) {
   test(`[${engine}] el worker hereda la CSP: nada sale del origen desde dentro del worker`, { skip }, async () => {
     const c = await probeContext(browser, server.url);
     await c.page.goto(`${server.url}/tests/fixtures/worker/csp-probe.html`);
-    await c.page.waitForFunction(() => window.__probe?.done, null, { timeout: 30000 });
-    const probe = await c.page.evaluate(() => window.__probe);
+    const probe = await awaitResult(c, '__probe', '__probePartial');
     const w = probe.worker;
     assert.equal(typeof w, 'object', `el worker no contestó: ${JSON.stringify(probe)}`);
     assert.equal(w.engineLoaded, true, 'el motor (mismo origen) sí se importa dentro del worker');
@@ -99,8 +114,7 @@ for (const [engine, { browser, skip }] of LAUNCHED) {
   test(`[${engine}] Trusted Types: solo la política de la app, y solo blob: propio`, { skip }, async () => {
     const c = await probeContext(browser, server.url);
     await c.page.goto(`${server.url}/tests/fixtures/worker/csp-probe.html`);
-    await c.page.waitForFunction(() => window.__probe?.done, null, { timeout: 30000 });
-    const probe = await c.page.evaluate(() => window.__probe);
+    const probe = await awaitResult(c, '__probe', '__probePartial');
     if (probe.trustedTypes) {
       assert.match(String(probe.workerWithoutPolicy), /^rechazado: TypeError/, 'new Worker con una cadena debe fallar');
       assert.equal(probe.policyCreated, true);
@@ -119,11 +133,10 @@ for (const [engine, { browser, skip }] of LAUNCHED) {
   test(`[${engine}] el analizador real: mismo informe en el worker que en el hilo principal, y cancelar funciona`, { skip }, async () => {
     const c = await probeContext(browser, server.url);
     await c.page.goto(`${server.url}/tests/fixtures/worker/app-worker.html`);
-    await c.page.waitForFunction(() => window.__app, null, { timeout: 30000 });
-    const app = await c.page.evaluate(() => window.__app);
+    const app = await awaitResult(c, '__app', '__appPartial');
     assert.equal(app.error, undefined, app.error);
     assert.equal(app.available, true);
-    assert.equal(app.mode, 'worker', 'el análisis debe hacerse en el worker, no caer al hilo principal');
+    assert.equal(app.mode, 'worker', `el análisis debe hacerse en el worker, no caer al hilo principal (motivo: ${app.lastError}; errores: ${JSON.stringify(c.errors)}; consola: ${JSON.stringify(c.consoleLog)})`);
     assert.equal(app.sameAsMain, true);
     assert.equal(app.cancelled, true);
     assert.equal(app.cancelError, 'AbortError');
@@ -140,10 +153,15 @@ for (const [engine, { browser, skip }] of LAUNCHED) {
     await c.page.goto(`${server.url}/index.html`);
     // Un análisis normal: termina, y el informe dice que lo hizo el worker.
     await c.page.locator('#tab-text').click();
+    try {
+      await c.page.locator('#raw-input').waitFor({ state: 'visible', timeout: 5000 });
+    } catch {
+      assert.fail(`la pestaña Texto no se abre; errores: ${JSON.stringify(c.errors)}; consola: ${JSON.stringify(c.consoleLog)}`);
+    }
     await c.page.locator('#raw-input').fill('Verifica tu cuenta urgentemente: http://203.0.113.9/login');
     await c.page.locator('#analyze-btn').click();
     await c.page.locator('#report .verdict-card').waitFor();
-    assert.equal(await c.page.getAttribute('#report', 'data-analyzed-by'), 'worker');
+    assert.equal(await c.page.getAttribute('#report', 'data-analyzed-by'), 'worker', `errores: ${JSON.stringify(c.errors)}; consola: ${JSON.stringify(c.consoleLog)}`);
     assert.equal(await c.page.locator('#analyze-status').isHidden(), true);
     assert.equal(await c.page.locator('#analyze-btn').isDisabled(), false);
     const first = await c.page.locator('#report .verdict-card').textContent();

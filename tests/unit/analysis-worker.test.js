@@ -117,6 +117,18 @@ test('si el worker no puede cargar el motor, se da por roto y el análisis sigue
   assert.equal(log.filter((l) => l[0] === 'new').length, 1);
 });
 
+test('si el informe no se puede clonar (etapa clone) o no se puede deserializar (messageerror), se vuelve al hilo principal con el motivo', async () => {
+  const Worker = fakeWorkerClass((msg) => ({ id: msg.id, ok: false, stage: 'clone', message: 'DataCloneError' }));
+  const a = createAnalyzer({ scope: scopeWith(Worker), analyze: () => ({ score: 4 }) });
+  assert.deepEqual(await a.run({ kind: 'text', value: 'a' }), { score: 4 });
+  assert.equal(a.lastError, 'clone: DataCloneError');
+  const Worker2 = fakeWorkerClass((msg, w) => { w.onmessageerror?.({}); });
+  const b = createAnalyzer({ scope: scopeWith(Worker2), analyze: () => ({ score: 5 }) });
+  assert.deepEqual(await b.run({ kind: 'text', value: 'a' }), { score: 5 });
+  assert.match(b.lastError, /^messageerror/);
+  assert.equal(b.available, false);
+});
+
 test('un error del motor con un correo concreto no es un fallo del worker: se devuelve y el worker sigue vivo', async () => {
   const log = [];
   const Worker = fakeWorkerClass((msg) => (msg.input.value === 'mal'
@@ -131,11 +143,12 @@ test('un error del motor con un correo concreto no es un fallo del worker: se de
 
 test('un evento error del worker durante el análisis vuelve al hilo principal una vez y no vuelve a usar el worker', async () => {
   const log = [];
-  const Worker = fakeWorkerClass((msg, w) => { w.onerror?.({ preventDefault() {} }); }, log);
+  const Worker = fakeWorkerClass((msg, w) => { w.onerror?.({ preventDefault() {}, message: 'boom', filename: 'blob:x', lineno: 3 }); }, log);
   const a = createAnalyzer({ scope: scopeWith(Worker), analyze: (input) => ({ score: 9, v: input.value }) });
   assert.deepEqual(await a.run({ kind: 'text', value: 'a' }), { score: 9, v: 'a' });
   assert.equal(a.mode, 'main');
   assert.equal(a.available, false);
+  assert.equal(a.lastError, 'error: boom @blob:x:3');
 });
 
 test('cancel(): termina el worker, rechaza con AbortError y el siguiente run() crea otro worker', async () => {
@@ -188,6 +201,7 @@ test('si la política de Trusted Types no se puede crear (nombre no permitido), 
   const a = createAnalyzer({ scope: scopeWith(Worker, { trustedTypes: tt }), analyze: () => ({ score: 2 }) });
   assert.deepEqual(await a.run({ kind: 'text', value: 'x' }), { score: 2 });
   assert.equal(a.mode, 'main');
+  assert.match(a.lastError, /^arranque: política phishlens-worker no permitida/);
 });
 
 test('la política rechaza cualquier URL que no sea blob: de este origen', () => {
