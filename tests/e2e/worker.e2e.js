@@ -7,6 +7,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { serve } from './server.js';
+import { selfSignedCert } from './tls.js';
 import { loadPlaywright, warnSkipped, withSpanishLocale } from './browser.js';
 
 const ENGINES = (process.env.E2E_BROWSERS ?? 'chromium').split(',').map((s) => s.trim()).filter(Boolean);
@@ -32,7 +33,12 @@ const LAUNCHED = new Map();
 for (const engine of ENGINES) LAUNCHED.set(engine, await launch(engine));
 let server;
 
-before(async () => { server = await serve(); });
+// Por HTTPS, como en producción (GitHub Pages): WebKit aplica `upgrade-insecure-requests` también a 127.0.0.1 y por
+// HTTP no cargaría ni un script. El certificado es autofirmado y efímero; los contextos lo aceptan (ignoreHTTPSErrors).
+const TLS = selfSignedCert();
+if (!TLS) process.stderr.write('\n(ℹ︎ sin openssl: los tests del worker se sirven por HTTP; en WebKit fallarían)\n');
+
+before(async () => { server = await serve(undefined, { tls: TLS }); });
 after(async () => { await server?.close(); });
 
 /** Las páginas de prueba deben llevar exactamente la CSP de index.html: si no, no prueban nada. */
@@ -49,7 +55,7 @@ for (const fixture of ['csp-probe.html', 'app-worker.html']) {
  * desde el documento como desde el worker: es cómo Playwright enseña una petición cortada, no una fuga.
  */
 async function probeContext(browser, origin) {
-  const context = await browser.newContext();
+  const context = await browser.newContext({ ignoreHTTPSErrors: true });
   const routed = [];
   const requested = [];
   const finished = [];
