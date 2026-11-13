@@ -44,7 +44,7 @@ La interfaz está en español e inglés: sigue el idioma del navegador y el bot�
 - **Panel SOC** sobre el historial: cifras clave, niveles en el tiempo, técnicas ATT&CK más vistas, IOCs que se repiten (un clic los busca), remitentes y dominios más frecuentes y campañas recientes. Gráficas SVG propias, con su tabla de datos y colores comprobados para daltonismo.
 - **Informe forense** en PDF (desde el diálogo de impresión) y en JSON: identificación con SHA-256, SHA-1 y MD5, veredicto, hallazgos por gravedad, autenticación, cronología, IOCs, adjuntos, URLs y las notas del analista. El JSON lleva `reportSha256` para comprobar que nadie lo ha tocado ([docs/forensic.md](docs/forensic.md)).
 - **Reglas propias en JSON**: añade tus señales (dominios de tu empresa, adjuntos que nunca recibes, combinaciones con las reglas de PhishLens) con un formato cerrado sin expresiones regulares. Se validan enteras, se prueban contra el historial antes de activarlas y nunca bajan la nota ([docs/rules.md](docs/rules.md)).
-- **13 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
+- **17 emails de ejemplo y un lote de campaña** de 4 correos que se cargan con un clic.
 
 | Modo sencillo (oscuro) | Móvil | Email legítimo |
 |---|---|---|
@@ -154,7 +154,7 @@ PhishLens/
 │   └── ui/                  # Render del informe, resaltado y controlador de la página
 ├── docs/                    # Arquitectura, ADRs, especificaciones y planes
 ├── SECURITY.md              # Modelo de amenazas y mitigaciones
-├── samples/                 # 13 emails .eml de ejemplo, un lote de campaña y reglas de ejemplo
+├── samples/                 # 17 emails .eml de ejemplo, un lote de campaña y reglas de ejemplo
 ├── tools/                   # Muestras, capturas, matriz de cobertura y validador STIX
 └── tests/                   # unit/, e2e/, fuzz/ y perf/ con node:test
 ```
@@ -178,7 +178,7 @@ npm run bench               # reescribe docs/benchmark.md
 npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
 ```
 
-GitHub Actions ejecuta todo en cada push (`.github/workflows/tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 13 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
+GitHub Actions ejecuta todo en cada push (`.github/workflows/tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 17 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.
 
 ## 🌐 Publicar la demo
 

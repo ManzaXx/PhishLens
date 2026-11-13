@@ -31,7 +31,7 @@ test('ids de los observables iguales a los de la librería oficial stix2', () =>
     'email-message--b0e2c2ea-4644-5ae5-9dc5-d82ff7db50c8');
 });
 
-test('las 13 muestras y el lote dan bundles válidos', () => {
+test('todas las muestras y el lote dan bundles válidos', () => {
   for (const s of SAMPLES) assert.deepEqual(validateBundle(toStixBundle(one(s.id), { now })), [], s.id);
   assert.deepEqual(validateBundle(toStixBundle(lot, { campaigns: findCampaigns(lot), now })), []);
 });

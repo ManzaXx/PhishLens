@@ -1,0 +1,44 @@
+Authentication-Results: mx.example.com;
+ spf=pass smtp.mailfrom=listas.asociacion-ciclista.example;
+ dkim=pass header.d=listas.asociacion-ciclista.example;
+ dmarc=pass header.from=listas.asociacion-ciclista.example
+Received: from listas.asociacion-ciclista.example (listas.asociacion-ciclista.example [198.51.100.23]) by mx.example.com; Fri, 06 Nov 2026 21:40:19 +0100
+Received: from mail-wr1-f52.correo-personal.example (mail-wr1-f52.correo-personal.example [203.0.113.52]) by listas.asociacion-ciclista.example (Postfix) with ESMTPS id 4F2Kx9; Fri, 06 Nov 2026 21:40:17 +0100
+Return-Path: <socios-bounces@listas.asociacion-ciclista.example>
+From: "Marta Ruiz via Socios" <socios@listas.asociacion-ciclista.example>
+Reply-To: socios@listas.asociacion-ciclista.example
+Sender: socios-bounces@listas.asociacion-ciclista.example
+X-Original-From: Marta Ruiz <marta.ruiz@correo-personal.example>
+To: socios@listas.asociacion-ciclista.example
+Subject: =?UTF-8?Q?[Socios]_Ruta_del_s=C3=A1bado:_cambio_de_hora?=
+Date: Fri, 06 Nov 2026 21:40:12 +0100
+Message-ID: <CAF2x9K+hQ7mN3v@mail.correo-personal.example>
+List-Id: Socios de la asociacion <socios.listas.asociacion-ciclista.example>
+List-Post: <mailto:socios@listas.asociacion-ciclista.example>
+List-Unsubscribe: <https://listas.asociacion-ciclista.example/mailman/options/socios>, <mailto:socios-request@listas.asociacion-ciclista.example?subject=unsubscribe>
+List-Archive: <https://listas.asociacion-ciclista.example/pipermail/socios/>
+Precedence: list
+X-Mailman-Version: 2.1.39
+X-BeenThere: socios@listas.asociacion-ciclista.example
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hola a todos:
+
+La ruta del s=C3=A1bado sale a las 8:30 en vez de a las 9:00, que a mediod=
+=C3=ADa dan lluvia. Quedamos en el sitio de siempre, en la puerta del
+polideportivo.
+
+El recorrido est=C3=A1 en https://www.asociacion-ciclista.example/rutas/2026=
+-11-07 (72 km, 900 m de desnivel). Quien quiera algo m=C3=A1s corto, en el =
+km 40 hay un desv=C3=ADo de vuelta.
+
+Confirmad por aqu=C3=AD o en el grupo, para saber cu=C3=A1ntos somos.
+
+Un saludo,
+Marta
+
+_______________________________________________
+Lista Socios -- socios@listas.asociacion-ciclista.example
+Para darte de baja: https://listas.asociacion-ciclista.example/mailman/options/socios

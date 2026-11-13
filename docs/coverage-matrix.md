@@ -30,13 +30,13 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `auth.dmarc-unaligned` | T1684.002 | 04 | `unit/auth-evaluate.test.js`, `unit/scoring.test.js` | ✅ |
 | `auth.forged-results` | T1684.002 | — | `unit/auth-evaluate.test.js`, `unit/mitre.test.js`, `unit/trust-layouts.test.js` | ✅ |
 | `auth.missing` | — | 06, 08, 09, 10 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
-| `auth.spf` | T1684.002 | 03, 04, 11, 12, 13 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/finding.test.js`, `unit/plain.test.js` | ✅ |
+| `auth.spf` | T1684.002 | 03, 04, 11, 12, 13 | `unit/auth-evaluate.test.js`, `unit/auth.test.js`, `unit/coverage-matrix.test.js`, `unit/eval.test.js`, `unit/finding.test.js`, `unit/plain.test.js` | ✅ |
 | `auth.spf-offline` | T1684.002 | — | `unit/auth-evaluate.test.js` | ✅ |
 | `headers.duplicate` | — | 09 | `unit/headers.test.js`, `unit/samples.test.js` | ✅ |
 | `headers.duplicate-from` | T1684.002 | 09 | `unit/headers.test.js`, `unit/mitre.test.js`, `unit/samples.test.js` | ✅ |
 | `headers.future-date` | — | — | `unit/headers.test.js` | ✅ |
 | `headers.mailer` | — | 03 | `unit/headers.test.js`, `unit/mitre.test.js`, `unit/scoring.test.js` | ✅ |
-| `headers.messageid-domain` | — | 03 | `unit/headers.test.js` | ✅ |
+| `headers.messageid-domain` | — | 03, 14, 16 | `unit/headers.test.js` | ✅ |
 | `headers.missing-date` | — | — | `unit/headers.test.js` | ✅ |
 | `headers.missing-messageid` | — | 04, 05, 06, 11, 12, 13 | `unit/headers.test.js` | ✅ |
 | `html.data-uri` | T1598 | — | `unit/html.test.js`, `unit/security.test.js` | ✅ |
@@ -49,14 +49,14 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `language.credentials` | T1598 | 03, 05, 07, 10, 12 | `unit/advice.test.js`, `unit/engine.test.js`, `unit/language.test.js`, `unit/scoring.test.js` | ✅ |
 | `language.prize` | T1204 | — | `unit/language.test.js` | ✅ |
 | `language.threat` | T1204 | 03, 04, 05, 06, 08, 11 | `unit/language.test.js`, `unit/scoring.test.js` | ✅ |
-| `language.urgency` | T1204 | 03, 04, 05, 06, 11, 12, 13 | `unit/coverage-matrix.test.js`, `unit/language.test.js`, `unit/scoring.test.js` | ✅ |
+| `language.urgency` | T1204 | 03, 04, 05, 06, 11, 12, 13, 15 | `unit/coverage-matrix.test.js`, `unit/eval.test.js`, `unit/language.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.at-sign` | T1566.002, T1204.001 | — | `unit/links.test.js` | ✅ |
 | `links.brand-in-path` | T1566.002, T1204.001 | 04, 07 | `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.credentials-in-url` | T1566.002, T1204.001 | — | `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.download` | T1566.002, T1204.001 | — | `unit/links.test.js` | ✅ |
 | `links.high-entropy` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.insecure-login` | T1566.002, T1204.001 | 03, 07 | `unit/coverage-matrix.test.js`, `unit/links.test.js`, `unit/scoring.test.js` | ✅ |
-| `links.ip` | T1566.002, T1204.001 | 07 | `unit/coverage-matrix.test.js`, `unit/engine.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js` | ✅ |
+| `links.ip` | T1566.002, T1204.001 | 07 | `unit/coverage-matrix.test.js`, `unit/engine.test.js`, `unit/eval.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/plain.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.mismatch` | T1566.002, T1204.001 | 03, 07 | `unit/advice.test.js`, `unit/finding.test.js`, `unit/links.test.js`, `unit/mitre.test.js`, `unit/rules-en.test.js`, `unit/scoring.test.js` | ✅ |
 | `links.nested-redirect` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
 | `links.non-standard-port` | T1566.002, T1204.001 | 13 | `unit/golden.test.js`, `unit/links.test.js`, `unit/plain.test.js` | ✅ |
@@ -91,5 +91,5 @@ Una regla cuenta como probada si su id aparece en algún test o si alguna muestr
 | `sender.invisible-chars` | T1027 | 07 | `unit/sender.test.js` | ✅ |
 | `sender.mixed-script` | T1684.001 | 07 | `unit/sender.test.js` | ✅ |
 | `sender.replyto-mismatch` | T1566 | 03, 06, 12 | `unit/sender.test.js` | ✅ |
-| `sender.returnpath-mismatch` | T1566 | 03, 12 | `unit/sender.test.js` | ✅ |
+| `sender.returnpath-mismatch` | T1566 | 03, 12, 14 | `unit/sender.test.js` | ✅ |
 | `sender.sender-mismatch` | T1566 | 09 | `unit/samples.test.js`, `unit/sender.test.js` | ✅ |

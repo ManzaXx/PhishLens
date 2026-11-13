@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget, assertScales } from '../helpers/timing.js';
 import { parseUrl, extractUrls, registrableDomain } from '../../src/parser/url.js';
 
 test('parseUrl obtiene el dominio registrable', () => {
@@ -46,9 +47,16 @@ test('extractUrls encuentra URLs y limpia la puntuación final', () => {
 });
 
 test('extractUrls no se bloquea con miles de paréntesis', () => {
-  const t = performance.now();
-  assert.deepEqual(extractUrls(`http://a.b${')'.repeat(100000)}`), ['http://a.b']);
-  assert.ok(performance.now() - t < 500);
+  assert.deepEqual(assertWithinBudget(() => extractUrls(`http://a.b${')'.repeat(100000)}`), 500, 'paréntesis'), ['http://a.b']);
+  assertScales((n) => `http://a.b${')'.repeat(n)}`, extractUrls, { n: 100_000, label: 'extractUrls con paréntesis' });
+});
+
+test('un host de megabytes no se parsea (no resuelve en ningún sitio) y una query larga sí', () => {
+  const huge = `https://${'a'.repeat(1024 * 1024)}.test/login`;
+  assert.equal(assertWithinBudget(() => parseUrl(huge), 20, 'host de 1 MB'), null);
+  assert.equal(parseUrl(`https://${'a'.repeat(1000)}.test/`).hostname.length, 1005, 'hasta 1.024 caracteres de autoridad se acepta');
+  assert.equal(parseUrl(`https://a.test/?q=${'x'.repeat(1024 * 1024)}`).hostname, 'a.test');
+  assert.equal(parseUrl('https://user:pass@a.test/').hasAt, true);
 });
 
 test('extractUrls conserva paréntesis equilibrados', () => {
@@ -56,9 +64,8 @@ test('extractUrls conserva paréntesis equilibrados', () => {
 });
 
 test('extractUrls no se bloquea con miles de puntos', () => {
-  const t = performance.now();
-  assert.equal(extractUrls(`http://a${'.'.repeat(200000)}x`).length, 1);
-  assert.ok(performance.now() - t < 500);
+  assert.equal(assertWithinBudget(() => extractUrls(`http://a${'.'.repeat(200000)}x`), 500, 'puntos').length, 1);
+  assertScales((n) => `http://a${'.'.repeat(n)}x`, extractUrls, { n: 200_000, label: 'extractUrls con puntos' });
 });
 
 test('unwrapUrl desenvuelve Safe Links y redirecciones de Google', async () => {

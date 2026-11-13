@@ -2,8 +2,8 @@
 
 PhishLens da dos números distintos:
 
-- **Riesgo (0–100):** cuánta evidencia de phishing hay.
-- **Confianza del análisis (alta, media o baja):** cuánto nos podemos fiar del informe, según lo que se pudo comprobar.
+- **Riesgo (0–100):** cuánta evidencia de phishing hay. Es un **indicador heurístico, no una probabilidad**: 60 no significa «un 60 % de probabilidades de phishing», sino que se han acumulado varias señales medias o alguna grave. Por eso el veredicto va por tramos (§6) y la evaluación se hace sobre los tramos, no sobre el número ([docs/evaluation.md](evaluation.md)).
+- **Confianza del análisis (alta, media o baja):** cuánto del correo se pudo comprobar. Mide carencias de la entrada, nunca el riesgo.
 
 Un texto pegado sin cabeceras puede tener riesgo 0 y confianza baja: no hay señales, pero tampoco había mucho que mirar.
 
@@ -43,6 +43,10 @@ nota_c = máximo_c × (1 − Π(1 − pesoᵢ))
 ```
 
 Diez enlaces sospechosos se acercan a 20 pero nunca lo superan.
+
+**Un hecho, una señal.** «El `From` dice ser la marca X y su dominio no es de X» lo ven a la vez `sender.brand-impersonation` y el detector de dominios parecidos (`lookalike.*` sobre el `From`). Dentro de Remitente, las señales de suplantación de **la misma marca** se funden en una y cuenta la de más peso; las dos siguen en el informe y en las combinaciones (§4). Dos marcas distintas son dos hechos, y un dominio parecido en un enlace es otro hecho (categoría Enlaces).
+
+Los avisos informativos no suman. Desde la auditoría 3.1 lo son también **no tener `Authentication-Results`** (`auth.missing`: un `.eml` exportado de «Enviados» o reenviado como adjunto no lo trae) y **no tener `Message-ID`** (`headers.missing-messageid`: muchos clientes lo quitan al exportar). La falta de autenticación sigue bajando la confianza (§8).
 
 ## 3. Nota total
 
@@ -100,16 +104,16 @@ Nunca se rebajan Remitente, Enlaces ni Adjuntos: un atacante puede firmar sus pr
 | Categoría | Nota |
 | --- | --- |
 | Autenticación | 22,9 / 25 |
-| Remitente | 19,9 / 20 |
+| Remitente | 19,3 / 20 |
 | Enlaces | 19,6 / 20 |
 | Adjuntos | 0 / 15 |
 | Lenguaje | 6,9 / 10 |
 | Infraestructura | 3,4 / 10 |
 
-1. La base es 91,7.
+1. La base es 91,4 (Remitente da 19,3 y no 19,9 porque la suplantación de Santander la ven dos detectores y cuenta una vez).
 2. Se cumplen cuatro combinaciones y cuentan las dos primeras: suplantación con autenticación fallida, y suplantación que pide credenciales.
-   - 91,7 + 8,3 × 0,25 = 93,8.
-   - 93,8 + 6,2 × 0,25 = 95,3, que redondea a **95**, «Phishing casi seguro».
+   - 91,4 + 8,6 × 0,25 = 93,6.
+   - 93,6 + 6,4 × 0,25 = 95,2, que redondea a **95**, «Phishing casi seguro».
 3. Motivo principal: «Suplantación de marca con autenticación fallida».
 
 ## 8. Confianza del análisis

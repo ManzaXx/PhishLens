@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget } from '../helpers/timing.js';
 import { skeleton, sameShape, scriptsOf } from '../../src/parser/skeleton.js';
 
 test('skeleton lleva letras de otros alfabetos a su forma ASCII', () => {
@@ -23,7 +24,5 @@ test('scriptsOf distingue alfabetos e ignora cifras y guiones', () => {
 });
 
 test('skeleton es lineal con entradas enormes', () => {
-  const t = performance.now();
-  skeleton('а'.repeat(1 << 20));
-  assert.ok(performance.now() - t < 500);
+  assertWithinBudget(() => skeleton('а'.repeat(1 << 20)), 500, 'skeleton de 1 MB');
 });

@@ -1,6 +1,7 @@
 // Utilidades para descomponer URLs sin hacer ninguna petición de red.
 
 import { PSL_ICANN, PSL_PRIVATE } from '../data/psl.js';
+import { LIMITS } from '../lib/limits.js';
 
 const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;
 
@@ -79,6 +80,10 @@ export function parseUrl(raw) {
   if (!value) return null;
   if (/^www\./i.test(value)) value = `http://${value}`;
   if (!/^https?:\/\//i.test(value)) return null;
+  // La autoridad (usuario@host:puerto) va hasta el primer / ? o #. Si es absurda, no se parsea: new URL sobre
+  // un host de megabytes tarda cientos de milisegundos y se llama desde varios detectores.
+  const authority = value.slice(value.indexOf('//') + 2).split(/[/?#]/, 1)[0];
+  if (authority.length > LIMITS.urlAuthorityChars) return null;
 
   let url;
   try {

@@ -1,6 +1,7 @@
 // Pruebas de seguridad: entradas hostiles que intentan romper, bloquear o engañar a PhishLens.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget } from '../helpers/timing.js';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,12 +11,8 @@ import { analyzeInput } from '../../src/core/engine.js';
 import { reveal } from '../../src/lib/text.js';
 import { detect as detectHtml } from '../../src/detectors/html.js';
 
-const fast = (fn, ms = 1000) => {
-  const t = performance.now();
-  fn();
-  const elapsed = performance.now() - t;
-  assert.ok(elapsed < ms, `tardó ${Math.round(elapsed)} ms`);
-};
+// Presupuesto con reintento (tests/helpers/timing.js): una entrada hostil lenta lo es en todos los intentos.
+const fast = (fn, ms = 1000) => assertWithinBudget(fn, ms, 'entrada hostil');
 
 // ---------- Prototype pollution y claves heredadas ----------
 

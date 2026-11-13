@@ -12,7 +12,17 @@
 ### Añadido
 - `src/data/psl.js` (Public Suffix List del 2026-11-11, 6.951 reglas ICANN y 3.468 privadas, bajo MPL 2.0), generado con `tools/gen-psl.mjs` desde una copia local; la web no descarga nada. `tests/unit/psl.test.js` pasa la batería oficial `test_psl.txt`.
 - Se lee `ARC-Authentication-Results` del receptor cuando está por encima de su entrada (Gmail, Microsoft 365): es la fuente de confianza cuando la otra cabecera quedó en la zona ambigua.
+- `tests/helpers/timing.js`: los tests de tiempo ya no dependen de una sola medida. Un presupuesto se repite hasta tres veces con la misma entrada (lo lento de verdad lo es siempre; un GC o un runner cargado no) y `assertScales` compara n con 8·n, de modo que un bucle cuadrático falla aunque el equipo sea rápido. Probado metiendo a propósito un `join` cuadrático en `htmlToText`: el presupuesto absoluto de 1,5 s no lo vio y la proporción sí (×94,6 frente a un límite de ×24). El fuzzing informa p50/p99/máximo.
+- Si los e2e se saltan fuera de CI (sin Chromium o sin axe-core), se avisa en stderr con «E2E NO EJECUTADOS» en vez de quedar como un «skipped» que se pasa por alto.
 - `tests/fixtures/auth/` con disposiciones reales de cabeceras (Gmail completo y recortado, Postfix + OpenDKIM, Microsoft 365) y `tests/unit/trust-layouts.test.js`, con los ataques que deben seguir cazándose.
+
+### Cambiado
+- La demo de GitHub Pages solo se publica si pasan los unitarios **y** los e2e (antes solo los unitarios), y los permisos de escritura en Pages quedan solo en el job que publica.
+- **Puntuación más honesta (auditoría 3.1, P6/P7/P8).** `auth.missing` (sin `Authentication-Results`) y `headers.missing-messageid` pasan a informativos: no suman puntos, porque un `.eml` exportado o reenviado los pierde y no distinguen un phishing de un correo normal; la falta de autenticación sigue bajando la confianza. Dentro de Remitente, la suplantación de **la misma marca** vista por dos detectores (`sender.brand-impersonation` y el `lookalike.*` del `From`) cuenta una sola vez, la de más peso. Efecto en las muestras: 08 pasa de 81 a 78 (sigue «Probable phishing») y 09 de 60 a 55 («Sospechoso»); el resto no cambia de tramo. Detalle en [docs/scoring.md](docs/scoring.md).
+- Los textos de la web dicen que la nota es **un indicador, no una probabilidad** y que la confianza mide cuánto del correo se pudo comprobar, no cuánto riesgo hay (nuevo párrafo en «Cómo funciona»).
+- Cuatro muestras legítimas «difíciles» (14 marketing con plataforma de envío, 15 reseteo de contraseña, 16 lista de correo, 17 reenvío): las cuatro salen «Probablemente legítimo». Ya son 17 muestras.
+- Una URL cuya parte de usuario, host y puerto pasa de 1.024 caracteres ya no se parsea (`LIMITS.urlAuthorityChars`): el fuzzing encontró que un «host» de 2 MB costaba casi 2 s entre los detectores de enlaces y de dominios parecidos.
+- `npm run eval` ([tools/eval.mjs](tools/eval.mjs)): matriz de confusión a ≥ 25 y ≥ 60, distribución de notas, legítimos marcados y reglas por clase, sobre las muestras o sobre un corpus propio con `manifest.csv` en `corpus/` (en `.gitignore`; nunca imprime el contenido de un correo). Metodología y resultados en [docs/evaluation.md](docs/evaluation.md).
 
 ## 3.1.0 · 2026-11-11 · Español e inglés
 

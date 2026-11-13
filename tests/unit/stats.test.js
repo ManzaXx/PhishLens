@@ -20,11 +20,11 @@ const BAD = new Set(['phishing', 'critical']);
 
 test('cifras: análisis, probable phishing o peor y porcentaje con adjunto peligroso', () => {
   const s = historyStats(entries, { now: NOW });
-  assert.equal(s.totals.analyses, 13);
+  assert.equal(s.totals.analyses, entries.length);
   assert.equal(s.totals.phishingOrWorse, entries.filter((e) => BAD.has(e.report.level)).length);
   const dangerous = entries.filter((e) => e.report.findings.some((f) => f.detector === 'attachments' && f.severity === 'high')).length;
   assert.ok(dangerous > 0, 'alguna muestra tiene un adjunto peligroso');
-  assert.equal(s.totals.dangerousPct, Math.round((100 * dangerous) / 13));
+  assert.equal(s.totals.dangerousPct, Math.round((100 * dangerous) / entries.length));
   assert.ok(s.totals.distinctIocs > 0);
 });
 
@@ -35,7 +35,7 @@ test('línea de tiempo por días: 30 cubos consecutivos que acaban hoy y suman t
   assert.equal(timeline.buckets.at(-1).start, '2026-11-10');
   assert.equal(timeline.buckets[0].start, '2026-10-12');
   const sum = timeline.buckets.reduce((n, b) => n + Object.values(b.counts).reduce((a, c) => a + c, 0), 0);
-  assert.equal(sum, 13);
+  assert.equal(sum, entries.length);
   assert.deepEqual(Object.keys(timeline.buckets[0].counts), ['safe', 'suspicious', 'phishing', 'critical']);
 });
 

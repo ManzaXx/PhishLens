@@ -15,6 +15,11 @@ export const SAMPLES = [
   { id: '11-adjunto-tipo-falso', title: 'Adjunto con tipo falso', titleEn: 'Attachment with a fake type', file: '11-adjunto-tipo-falso.eml' },
   { id: '12-pdf-activo-zip', title: 'PDF activo y ZIP cifrado', titleEn: 'Active PDF and encrypted ZIP', file: '12-pdf-activo-zip.eml' },
   { id: '13-redireccion-anidada', title: 'Redirección anidada', titleEn: 'Nested redirect', file: '13-redireccion-anidada.eml' },
+  // Legítimos difíciles (auditoría 3.1, P8): se parecen al phishing en algo y no deben acabar como tal.
+  { id: '14-legitimo-marketing', title: 'Marketing legítimo (plataforma de envío)', titleEn: 'Legitimate marketing (sending platform)', file: '14-legitimo-marketing.eml' },
+  { id: '15-legitimo-reseteo', title: 'Reseteo de contraseña legítimo', titleEn: 'Legitimate password reset', file: '15-legitimo-reseteo.eml' },
+  { id: '16-legitimo-lista', title: 'Lista de correo legítima', titleEn: 'Legitimate mailing list', file: '16-legitimo-lista.eml' },
+  { id: '17-legitimo-reenvio', title: 'Reenvío legítimo', titleEn: 'Legitimate forward', file: '17-legitimo-reenvio.eml' },
 ];
 
 // Lotes de ejemplo: varios correos que se analizan juntos (grafo y campañas).

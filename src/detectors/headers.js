@@ -48,8 +48,10 @@ export function detect(email, { now = Date.now() } = {}) {
 
   const messageId = email.headers.get('message-id')?.[0];
   if (!messageId) {
+    // Informativo (auditoría 3.1, P7): muchos clientes y pasarelas quitan el Message-ID al exportar o reenviar;
+    // por sí solo no distingue un phishing de un correo normal.
     out.push(finding({
-      id: 'headers.missing-messageid', detector: name, severity: 'low',
+      id: 'headers.missing-messageid', detector: name, severity: 'info',
       title: 'Sin Message-ID',
       params: {},
       detail: 'Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.',

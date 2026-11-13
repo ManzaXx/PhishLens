@@ -10,6 +10,7 @@ import { findCampaigns } from '../../src/intel/campaigns.js';
 import { SAMPLE_TEXTS } from '../../samples/data.js';
 import { mutate } from './mutate.js';
 import { rng, pick } from '../helpers/rng.js';
+import { withinBudget } from '../helpers/timing.js';
 import { shuffle } from '../helpers/batch.js';
 import { toStixBundle } from '../../src/intel/stix.js';
 import { validateBundle } from '../../tools/stix-validate.mjs';
@@ -38,19 +39,20 @@ test(`fuzz del lote: ${ITER} lotes de 2 a 20 correos mutados`, () => {
       lot.set(e.key, e);
     }
     const entries = [...lot.values()];
-    const start = performance.now();
     let graph;
     let layout;
     let campaigns;
+    let timing;
     try {
-      graph = buildGraph(entries);
-      layout = layoutGraph(graph);
-      campaigns = findCampaigns(entries);
+      timing = withinBudget(() => {
+        graph = buildGraph(entries);
+        layout = layoutGraph(graph);
+        campaigns = findCampaigns(entries);
+      }, MAX_MS);
     } catch (err) {
       assert.fail(`lote ${i} (semilla ${SEED}) lanzó: ${err.stack}`);
     }
-    const ms = performance.now() - start;
-    assert.ok(ms < MAX_MS, `lote ${i}: ${Math.round(ms)} ms`);
+    assert.ok(timing.ok, `lote ${i}: más de ${MAX_MS} ms en todos los intentos (${timing.runs.map((ms) => Math.round(ms)).join(', ')} ms)`);
     const again = shuffle(entries, i + 1);
     assert.deepEqual(buildGraph(again), graph, `lote ${i}: el grafo depende del orden`);
     assert.deepEqual(layoutGraph(buildGraph(again)), layout, `lote ${i}: la disposición depende del orden`);

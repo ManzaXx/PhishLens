@@ -44,7 +44,7 @@ The interface comes in English and Spanish: it follows your browser's language, 
 - **SOC dashboard** on top of the history: key figures, levels over time, most seen ATT&CK techniques, recurring IOCs (one click searches them), top senders and domains, and recent campaigns. Hand-made SVG charts, each with its data table and colour-blind-safe colours.
 - **Forensic report** as PDF (through the print dialog) and JSON: identification with SHA-256, SHA-1 and MD5, verdict, findings by severity, authentication, timeline, IOCs, attachments, URLs and the analyst's notes. The JSON carries `reportSha256` so you can check nobody touched it ([docs/forensic.md](docs/forensic.md)).
 - **Custom rules in JSON**: add your own signals (your company's domains, attachments you never receive, combinations with PhishLens rules) in a closed format with no regular expressions. Files are validated as a whole, previewed against the history before you turn them on, and can never lower the score ([docs/rules.md](docs/rules.md)).
-- **13 sample emails and a 4-email campaign batch** that load with one click.
+- **17 sample emails and a 4-email campaign batch** that load with one click.
 
 | Simple mode (dark) | Mobile | Legitimate email |
 |---|---|---|
@@ -154,7 +154,7 @@ PhishLens/
 │   └── ui/                  # Report rendering, highlighting and page controller
 ├── docs/                    # Architecture, ADRs, specs and plans
 ├── SECURITY.md              # Threat model and mitigations
-├── samples/                 # 13 sample .eml emails, a campaign batch and sample rules
+├── samples/                 # 17 sample .eml emails, a campaign batch and sample rules
 ├── tools/                   # Samples, screenshots, coverage matrix and STIX validator
 └── tests/                   # unit/, e2e/, fuzz/ and perf/ with node:test
 ```
@@ -178,7 +178,7 @@ npm run bench               # rewrites docs/benchmark.md
 npm ci && npx playwright install chromium && npm run test:e2e   # privacy and accessibility in Chromium
 ```
 
-GitHub Actions runs everything on every push (`.github/workflows/tests.yml`), plus `npm audit`, and Dependabot watches the test dependencies and the Actions. The tests cover the parser, every detector with positive and negative cases, the engine, the IOCs, the ATT&CK map, the 13 samples and the campaign batch end to end, the graph and the campaigns (also with the batch shuffled) and resistance to malicious input. The [coverage matrix](docs/coverage-matrix.md) says where each rule is tested; the [threat model](docs/threat-model.md) and the [audit](docs/security-audit.md), what each test protects.
+GitHub Actions runs everything on every push (`.github/workflows/tests.yml`), plus `npm audit`, and Dependabot watches the test dependencies and the Actions. The tests cover the parser, every detector with positive and negative cases, the engine, the IOCs, the ATT&CK map, the 17 samples and the campaign batch end to end, the graph and the campaigns (also with the batch shuffled) and resistance to malicious input. The [coverage matrix](docs/coverage-matrix.md) says where each rule is tested; the [threat model](docs/threat-model.md) and the [audit](docs/security-audit.md), what each test protects.
 
 ## 🌐 Demo
 

@@ -1,0 +1,53 @@
+Authentication-Results: mx.example.com;
+ spf=pass smtp.mailfrom=bounce.mailerpro.example;
+ dkim=pass header.d=tiendaverde.example;
+ dkim=pass header.d=mailerpro.example;
+ dmarc=pass header.from=tiendaverde.example
+Received: from o1.ptr4421.mailerpro.example (o1.ptr4421.mailerpro.example [192.0.2.80]) by mx.example.com; Thu, 05 Nov 2026 10:15:02 +0100
+Received: by filter0042.mailerpro.example with SMTP id 7f3a9c; Thu, 05 Nov 2026 09:15:01 +0000
+Return-Path: <bounces+884412-9f2c-pablo=example.com@bounce.mailerpro.example>
+From: "Tienda Verde" <hola@tiendaverde.example>
+Reply-To: "Atención al cliente" <atencion@tiendaverde.example>
+To: pablo@example.com
+Subject: =?UTF-8?Q?Tus_puntos_caducan_el_domingo:_=C3=BAltimos_d=C3=ADas_de_rebajas?=
+Date: Thu, 05 Nov 2026 10:15:00 +0100
+Message-ID: <0107018f3a2c.884412.9f2c@ismtpd0042p1mad1.mailerpro.example>
+List-Unsubscribe: <https://click.mailerpro.example/u/884412/9f2c>, <mailto:unsubscribe@bounce.mailerpro.example?subject=884412>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+Precedence: bulk
+X-Mailer: MailerPro Campaigns 4.2
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="mk-boundary"
+
+--mk-boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hola Pablo:
+
+Te quedan 340 puntos que caducan el domingo 8 de noviembre. =C3=9Asalos en la=
+s rebajas de oto=C3=B1o antes de que se pierdan.
+
+Ver las rebajas: https://click.mailerpro.example/ls/click?upn=3DaHR0cHM6Ly93d=
+3cudGllbmRhdmVyZGUuZXhhbXBsZS9yZWJhamFz&id=3D884412
+
+Mis puntos: https://click.mailerpro.example/ls/click?upn=3DaHR0cHM6Ly93d3cudG=
+llbmRhdmVyZGUuZXhhbXBsZS9taS1jdWVudGEvcHVudG9z&id=3D884412
+
+Recibes este correo porque te suscribiste en tiendaverde.example.
+Darme de baja: https://click.mailerpro.example/u/884412/9f2c
+Tienda Verde S.L. =C2=B7 Calle Mayor 12, 28013 Madrid
+
+--mk-boundary
+Content-Type: text/html; charset=utf-8
+
+<html><body style="font-family:Arial,sans-serif">
+<img src="https://click.mailerpro.example/o/884412/9f2c.gif" width="1" height="1" alt="">
+<h1 style="color:#2a7a3b">Tus puntos caducan el domingo</h1>
+<p>Hola Pablo: te quedan <strong>340 puntos</strong> que caducan el domingo 8 de noviembre. Úsalos en las rebajas de otoño antes de que se pierdan.</p>
+<p><a href="https://click.mailerpro.example/ls/click?upn=aHR0cHM6Ly93d3cudGllbmRhdmVyZGUuZXhhbXBsZS9yZWJhamFz&amp;id=884412" style="background:#2a7a3b;color:#fff;padding:10px 18px;border-radius:6px">Ver las rebajas</a></p>
+<p><a href="https://click.mailerpro.example/ls/click?upn=aHR0cHM6Ly93d3cudGllbmRhdmVyZGUuZXhhbXBsZS9taS1jdWVudGEvcHVudG9z&amp;id=884412">Mis puntos</a></p>
+<p style="font-size:12px;color:#666">Recibes este correo porque te suscribiste en tiendaverde.example.<br>
+<a href="https://click.mailerpro.example/u/884412/9f2c">Darme de baja</a> · Tienda Verde S.L. · Calle Mayor 12, 28013 Madrid</p>
+</body></html>
+--mk-boundary--

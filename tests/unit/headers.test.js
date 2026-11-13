@@ -16,7 +16,8 @@ test('Message-ID de otro dominio es leve', () => {
 });
 
 test('faltan Date y Message-ID', () => {
-  assert.deepEqual(ids('From: a@tienda.test\nSubject: x\n\nhola'), ['headers.missing-date:low', 'headers.missing-messageid:low']);
+  // Sin Message-ID es informativo desde la auditoría 3.1 (P7): los reenvíos y exportaciones lo pierden.
+  assert.deepEqual(ids('From: a@tienda.test\nSubject: x\n\nhola'), ['headers.missing-date:low', 'headers.missing-messageid:info']);
 });
 
 test('X-Mailer típico de kits de phishing', () => {

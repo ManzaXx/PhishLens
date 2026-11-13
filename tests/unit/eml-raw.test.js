@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { assertWithinBudget } from '../helpers/timing.js';
 import { parseEml, emailFromUrl } from '../../src/parser/eml.js';
 import { LIMITS } from '../../src/lib/limits.js';
 
@@ -72,9 +73,7 @@ test('adjunto 8bit con caracteres no Latin-1 no da un hash falso', () => {
 
 test('un adjunto quoted-printable de 5 MB se decodifica en menos de 1 s', () => {
   const body = 'a'.repeat(75).concat('=\r\n').repeat(Math.ceil((5 * 1024 * 1024) / 78));
-  const start = performance.now();
-  const [a] = parseEml(withAttachment('quoted-printable', body)).attachments;
-  assert.ok(performance.now() - start < 1000, `${Math.round(performance.now() - start)} ms`);
+  const [a] = assertWithinBudget(() => parseEml(withAttachment('quoted-printable', body)).attachments, 1000, 'QP de 5 MB');
   assert.equal(a.size, 75 * Math.ceil((5 * 1024 * 1024) / 78));
 });
 

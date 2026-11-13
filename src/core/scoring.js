@@ -59,6 +59,20 @@ function brandSignals(risk) {
   const odd = risk.some((f) => f.id === 'links.ip' || f.id === 'links.insecure-login');
   return risk.filter((f) => isImpersonation(f) || lookalikeLink(f) || (odd && f.id === 'links.brand-in-path'));
 }
+// Un hecho, una señal (auditoría 3.1, P6): «el From dice ser la marca X y su dominio no es de X» lo cuentan a la vez
+// sender.brand-impersonation y el lookalike del From. Dentro de la categoría Remitente, las señales de suplantación
+// de la misma marca se funden en una y cuenta la de más peso. Las de distinta marca, o en Enlaces, siguen aparte.
+const sameFactKey = (f) => (f.category === 'sender' && isImpersonation(f) && f.brand ? `brand:${f.brand}` : null);
+function categoryWeights(list) {
+  const merged = new Map();
+  const out = [];
+  for (const f of list) {
+    const key = sameFactKey(f);
+    if (!key) { out.push(weight(f)); continue; }
+    merged.set(key, Math.max(merged.get(key) ?? 0, weight(f)));
+  }
+  return [...out, ...merged.values()];
+}
 // Fallos reales de autenticación: no tener cabecera o una firma débil no es «fallida».
 const authFailure = (f) => f.id.startsWith('auth.') && (f.severity === 'medium' || f.severity === 'high') && f.id !== 'auth.dkim-weak';
 const CREDENTIALS = ['html.form', 'language.credentials', 'links.insecure-login'];
@@ -131,7 +145,7 @@ export function scoreFindings(findings) {
 
   const exact = {};
   for (const [id, max] of Object.entries(CATEGORY_MAX)) {
-    let value = max * noisyOr(risk.filter((f) => f.category === id).map(weight));
+    let value = max * noisyOr(categoryWeights(risk.filter((f) => f.category === id)));
     if (verifiedTrust && SOFTENED.has(id)) value *= 0.5;
     exact[id] = Math.min(max, value);
   }

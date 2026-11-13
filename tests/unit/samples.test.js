@@ -12,15 +12,24 @@ const expected = {
   '05-phishing-microsoft365': 'critical',
   '06-phishing-factura-adjunto': 'phishing',
   '07-phishing-avanzado': 'critical',
-  '08-ruta-falsificada': 'critical',
-  '09-cabeceras-trampa': 'phishing',
+  // Auditoría 3.1 (P6/P7): auth.missing ya no suma y la marca suplantada en el From cuenta una vez.
+  // 08 baja de 81 a 78 (sigue siendo phishing) y 09 de 60 a 55: sus señales están casi todas en Remitente,
+  // y una sola categoría llena es «sospechoso» por diseño (docs/scoring.md, §3). Los 60 anteriores los daba
+  // la falta de Authentication-Results, que no es una señal de phishing.
+  '08-ruta-falsificada': 'phishing',
+  '09-cabeceras-trampa': 'suspicious',
   '10-dominio-unicode': 'phishing',
   '11-adjunto-tipo-falso': 'critical',
   '12-pdf-activo-zip': 'critical',
   '13-redireccion-anidada': 'phishing',
+  // Legítimos difíciles (P8): plataforma de envío, reseteo con prisa, lista con From reescrito y reenvío.
+  '14-legitimo-marketing': 'safe',
+  '15-legitimo-reseteo': 'safe',
+  '16-legitimo-lista': 'safe',
+  '17-legitimo-reenvio': 'safe',
 };
 
-test('hay 13 ejemplos', () => assert.equal(SAMPLES.length, 13));
+test('hay 17 ejemplos', () => assert.equal(SAMPLES.length, 17));
 
 for (const sample of SAMPLES) {
   test(`${sample.id} → ${expected[sample.id]}`, () => {

@@ -166,3 +166,23 @@ test('pide credenciales y da un enlace sospechoso para ello', () => {
   assert.ok(result.correlations.some((c) => c.id === 'credentials-link'));
   assert.ok(result.level !== 'safe');
 });
+
+// Auditoría 3.1, P6: un hecho, una señal.
+test('suplantar una marca en el From cuenta una vez aunque la vean dos detectores', () => {
+  const one = scoreFindings([make('sender.brand-impersonation', 'high', { brand: 'Santander' })]);
+  const twice = scoreFindings([
+    make('sender.brand-impersonation', 'high', { brand: 'Santander' }),
+    make('lookalike.brand-in-domain', 'high', { brand: 'Santander' }),
+  ]);
+  const sender = (r) => r.categories.find((c) => c.id === 'sender').score;
+  assert.equal(sender(twice), sender(one));
+  // La más pesada manda: un typosquat grave sobre una suplantación media no se queda en la media.
+  const strong = scoreFindings([make('sender.brand-impersonation', 'medium', { brand: 'Correos' }), make('lookalike.typosquat', 'high', { brand: 'Correos' })]);
+  assert.equal(sender(strong), sender(scoreFindings([make('lookalike.typosquat', 'high', { brand: 'Correos' })])));
+  // Dos marcas distintas sí son dos hechos, y un lookalike en un enlace es otro hecho (otra categoría).
+  assert.ok(sender(scoreFindings([make('sender.brand-impersonation', 'high', { brand: 'A' }), make('lookalike.typosquat', 'high', { brand: 'B' })])) > sender(one));
+  const link = scoreFindings([make('sender.brand-impersonation', 'high', { brand: 'Santander' }), make('lookalike.brand-in-domain', 'high', { brand: 'Santander', category: 'links' })]);
+  assert.ok(link.categories.find((c) => c.id === 'links').score > 0);
+  // Las correlaciones siguen viendo las dos señales.
+  assert.ok(link.correlations.some((c) => c.id === 'lookalike-same-brand'));
+});

@@ -8,6 +8,7 @@ import { readOle } from '../../src/parser/files/ole.js';
 import { scanPdf } from '../../src/parser/files/pdf.js';
 import { makeZip, makeOle } from '../helpers/files.js';
 import { rng, pick } from '../helpers/rng.js';
+import { withinBudget, percentiles } from '../helpers/timing.js';
 
 const ITER = Number(process.env.FUZZ_ITER ?? 2000);
 const SEED = Number(process.env.FUZZ_SEED ?? 20261106);
@@ -56,22 +57,25 @@ const MUTATIONS = {
 };
 const NAMES = Object.keys(MUTATIONS);
 
-function check(where, filename, bytes) {
-  const start = performance.now();
-  let out;
+const slowMessage = (where, runs) => `${where}: más de ${MAX_MS} ms en todos los intentos (${runs.map((ms) => Math.round(ms)).join(', ')} ms)`;
+
+function check(where, filename, bytes, times) {
+  let timing;
   try {
-    out = inspect({ filename, contentType: 'application/octet-stream', bytes, truncated: false, lossy: false });
+    timing = withinBudget(() => inspect({ filename, contentType: 'application/octet-stream', bytes, truncated: false, lossy: false }), MAX_MS);
   } catch (err) {
     assert.fail(`${where}: lanzó ${err?.stack ?? err}`);
   }
-  const ms = performance.now() - start;
-  assert.ok(ms < MAX_MS, `${where}: tardó ${Math.round(ms)} ms`);
+  const out = timing.value;
+  times?.push(timing.runs[0]);
+  assert.ok(timing.ok, slowMessage(where, timing.runs));
   assert.equal(typeof out.realType, 'string', where);
   if (out.zip) assert.ok(out.zip.entries.length <= 1000, where);
 }
 
-test(`fuzzing: ${ITER} adjuntos mutados no rompen inspect()`, () => {
+test(`fuzzing: ${ITER} adjuntos mutados no rompen inspect()`, (t) => {
   const r = rng(SEED);
+  const times = [];
   for (let i = 0; i < ITER; i++) {
     const [kind, filename, base] = BASES[pick(r, BASES.length)];
     let bytes = base;
@@ -81,15 +85,16 @@ test(`fuzzing: ${ITER} adjuntos mutados no rompen inspect()`, () => {
       bytes = MUTATIONS[name](bytes, r);
       applied.push(name);
     }
-    check(`caso ${i} (semilla ${SEED}, ${kind}, ${applied.join('+')})`, filename, bytes);
+    check(`caso ${i} (semilla ${SEED}, ${kind}, ${applied.join('+')})`, filename, bytes, times);
   }
+  const p = percentiles(times);
+  t.diagnostic(`inspect: p50 ${p.p50.toFixed(2)} ms · p99 ${p.p99.toFixed(2)} ms · máx ${p.max.toFixed(2)} ms (primer intento)`);
 });
 
 const timed = (label, fn) => {
-  const start = performance.now();
-  const out = fn();
-  assert.ok(performance.now() - start < MAX_MS, `${label}: ${Math.round(performance.now() - start)} ms`);
-  return out;
+  const r = withinBudget(fn, MAX_MS);
+  assert.ok(r.ok, slowMessage(label, r.runs));
+  return r.value;
 };
 
 test('casos fijos adversarios terminan rápido y sin lanzar', () => {
