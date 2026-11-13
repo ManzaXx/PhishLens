@@ -239,6 +239,11 @@
 .chip--batch { border-style: dashed; }
 @media print { .batch-bar, .batch-status { display: none !important; } }
 
+/* ---------- Análisis en curso (worker, ADR 0007) ---------- */
+.analyze-status { margin: var(--space-3) 0 0; display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); color: var(--muted); }
+.analyze-status[hidden] { display: none; }
+@media print { .analyze-status { display: none !important; } }
+
 /* ---------- Grafo de IOCs (PR8) ---------- */
 .graph { margin: 0; display: grid; gap: var(--space-3); }
 .graph__canvas { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2); }
