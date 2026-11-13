@@ -51,6 +51,14 @@ test('extractUrls no se bloquea con miles de paréntesis', () => {
   assertScales((n) => `http://a.b${')'.repeat(n)}`, extractUrls, { n: 100_000, label: 'extractUrls con paréntesis' });
 });
 
+test('un host de megabytes no se parsea (no resuelve en ningún sitio) y una query larga sí', () => {
+  const huge = `https://${'a'.repeat(1024 * 1024)}.test/login`;
+  assert.equal(assertWithinBudget(() => parseUrl(huge), 20, 'host de 1 MB'), null);
+  assert.equal(parseUrl(`https://${'a'.repeat(1000)}.test/`).hostname.length, 1005, 'hasta 1.024 caracteres de autoridad se acepta');
+  assert.equal(parseUrl(`https://a.test/?q=${'x'.repeat(1024 * 1024)}`).hostname, 'a.test');
+  assert.equal(parseUrl('https://user:pass@a.test/').hasAt, true);
+});
+
 test('extractUrls conserva paréntesis equilibrados', () => {
   assert.deepEqual(extractUrls('(ver https://es.wikipedia.org/wiki/Phishing_(fraude))'), ['https://es.wikipedia.org/wiki/Phishing_(fraude)']);
 });

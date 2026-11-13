@@ -185,10 +185,12 @@ export function detect(email) {
   const { header, classified, bodies, spfOffline } = auth.internal;
   const out = [...forgedFindings(classified.headers)];
   if (classified.headers.length === 0) {
+    // Informativo (auditoría 3.1, P7): un .eml exportado de «Enviados» o reenviado como adjunto no trae esta
+    // cabecera y es legítimo. No suma; sí baja la confianza del análisis (confidence.js, autenticación ausente).
     out.push(finding({
       id: 'auth.missing',
       detector: name,
-      severity: 'low',
+      severity: 'info',
       title: 'Sin resultados de autenticación',
       params: {},
       detail: 'El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.',

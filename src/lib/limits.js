@@ -14,4 +14,7 @@ export const LIMITS = {
   batchBytes: 100 * 1024 * 1024,
   // Texto del cuerpo que miran las reglas propias (body.text): 2.000 condiciones sobre 25 MB bloquearían la pestaña.
   ruleBodyChars: 256 * 1024,
+  // Usuario, host y puerto de una URL. Un nombre DNS no pasa de 253 caracteres: un «host» de 2 MB no resuelve en
+  // ningún sitio y parsearlo con new URL cuesta cientos de milisegundos en cada detector.
+  urlAuthorityChars: 1024,
 };

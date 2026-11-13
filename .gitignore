@@ -3,3 +3,6 @@ test-results/
 playwright-report/
 .superpowers/
 .DS_Store
+
+# Corpus propio de correos para npm run eval (privado, nunca se sube)
+corpus/

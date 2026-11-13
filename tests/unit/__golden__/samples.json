@@ -43,6 +43,10 @@
         "max": 10
       }
     ],
+    "correlations": [],
+    "trust": [],
+    "errors": [],
+    "techniques": [],
     "confidence": {
       "level": "high",
       "value": 0.9,
@@ -50,10 +54,6 @@
         "PhishLens no ha verificado nada por sí mismo."
       ]
     },
-    "correlations": [],
-    "trust": [],
-    "errors": [],
-    "techniques": [],
     "verdict": {
       "tone": "safe",
       "headline": "Parece legítimo"
@@ -158,6 +158,10 @@
         "max": 10
       }
     ],
+    "correlations": [],
+    "trust": [],
+    "errors": [],
+    "techniques": [],
     "confidence": {
       "level": "high",
       "value": 0.9,
@@ -165,10 +169,6 @@
         "PhishLens no ha verificado nada por sí mismo."
       ]
     },
-    "correlations": [],
-    "trust": [],
-    "errors": [],
-    "techniques": [],
     "verdict": {
       "tone": "safe",
       "headline": "Parece legítimo"
@@ -239,7 +239,7 @@
       {
         "id": "sender",
         "label": "Remitente y suplantación",
-        "score": 19.9,
+        "score": 19.3,
         "max": 20
       },
       {
@@ -267,13 +267,6 @@
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "high",
-      "value": 0.9,
-      "reasons": [
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "brand-auth",
@@ -372,6 +365,13 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -880,7 +880,7 @@
     }
   },
   "04-phishing-correos": {
-    "score": 86,
+    "score": 85,
     "level": "critical",
     "label": "Phishing casi seguro",
     "summary": "Combina varias señales graves, entre ellas «Se hace pasar por Correos» y «Dominio que imita a Correos». No pulses enlaces ni abras adjuntos y bórralo.",
@@ -895,7 +895,7 @@
       {
         "id": "sender",
         "label": "Remitente y suplantación",
-        "score": 19.8,
+        "score": 18,
         "max": 20
       },
       {
@@ -919,18 +919,10 @@
       {
         "id": "infrastructure",
         "label": "Infraestructura",
-        "score": 1.3,
+        "score": 0,
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "medium",
-      "value": 0.7,
-      "reasons": [
-        "La autenticación no se puede confirmar: no hay resultados de confianza.",
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "brand-auth",
@@ -989,6 +981,14 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "confidence": {
+      "level": "medium",
+      "value": 0.7,
+      "reasons": [
+        "La autenticación no se puede confirmar: no hay resultados de confianza.",
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -1311,8 +1311,8 @@
       {
         "id": "headers.missing-messageid",
         "detector": "headers",
-        "severity": "low",
-        "points": 5,
+        "severity": "info",
+        "points": 0,
         "title": "Sin Message-ID",
         "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
         "evidence": "",
@@ -1362,7 +1362,7 @@
     }
   },
   "05-phishing-microsoft365": {
-    "score": 91,
+    "score": 90,
     "level": "critical",
     "label": "Phishing casi seguro",
     "summary": "Combina varias señales graves, entre ellas «Se hace pasar por Microsoft» y «Dominio que imita a Microsoft». No pulses enlaces ni abras adjuntos y bórralo.",
@@ -1377,7 +1377,7 @@
       {
         "id": "sender",
         "label": "Remitente y suplantación",
-        "score": 19.8,
+        "score": 18,
         "max": 20
       },
       {
@@ -1401,18 +1401,10 @@
       {
         "id": "infrastructure",
         "label": "Infraestructura",
-        "score": 1.3,
+        "score": 0,
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "medium",
-      "value": 0.7,
-      "reasons": [
-        "La autenticación no se puede confirmar: no hay resultados de confianza.",
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "brand-auth",
@@ -1480,6 +1472,14 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "confidence": {
+      "level": "medium",
+      "value": 0.7,
+      "reasons": [
+        "La autenticación no se puede confirmar: no hay resultados de confianza.",
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -1698,8 +1698,8 @@
       {
         "id": "headers.missing-messageid",
         "detector": "headers",
-        "severity": "low",
-        "points": 5,
+        "severity": "info",
+        "points": 0,
         "title": "Sin Message-ID",
         "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
         "evidence": "",
@@ -1748,7 +1748,7 @@
     }
   },
   "06-phishing-factura-adjunto": {
-    "score": 72,
+    "score": 67,
     "level": "phishing",
     "label": "Probable phishing",
     "summary": "4 señales graves o medias, entre ellas «Adjunto con doble extensión» y «Las respuestas van a otro dominio». No pulses enlaces ni abras adjuntos.",
@@ -1757,7 +1757,7 @@
       {
         "id": "authentication",
         "label": "Autenticación",
-        "score": 4.7,
+        "score": 0,
         "max": 25
       },
       {
@@ -1787,18 +1787,10 @@
       {
         "id": "infrastructure",
         "label": "Infraestructura",
-        "score": 1.3,
+        "score": 0,
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "medium",
-      "value": 0.7,
-      "reasons": [
-        "La autenticación no se puede confirmar: no hay resultados de confianza.",
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "attachment-pressure",
@@ -1842,6 +1834,14 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "confidence": {
+      "level": "medium",
+      "value": 0.7,
+      "reasons": [
+        "La autenticación no se puede confirmar: no hay resultados de confianza.",
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -1977,8 +1977,8 @@
       {
         "id": "auth.missing",
         "detector": "auth",
-        "severity": "low",
-        "points": 5,
+        "severity": "info",
+        "points": 0,
         "title": "Sin resultados de autenticación",
         "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
         "evidence": "Falta la cabecera Authentication-Results",
@@ -1993,8 +1993,8 @@
       {
         "id": "headers.missing-messageid",
         "detector": "headers",
-        "severity": "low",
-        "points": 5,
+        "severity": "info",
+        "points": 0,
         "title": "Sin Message-ID",
         "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
         "evidence": "",
@@ -2091,13 +2091,6 @@
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "high",
-      "value": 0.9,
-      "reasons": [
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "brand-credentials",
@@ -2176,6 +2169,13 @@
         "url": "https://attack.mitre.org/techniques/T1684/002/"
       }
     ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -2588,22 +2588,22 @@
     }
   },
   "08-ruta-falsificada": {
-    "score": 81,
-    "level": "critical",
-    "label": "Phishing casi seguro",
-    "summary": "Combina varias señales graves, entre ellas «Se hace pasar por PayPal» y «El servidor de origen dice ser de PayPal y no lo es». No pulses enlaces ni abras adjuntos y bórralo.",
+    "score": 78,
+    "level": "phishing",
+    "label": "Probable phishing",
+    "summary": "7 señales graves o medias, entre ellas «Se hace pasar por PayPal» y «El servidor de origen dice ser de PayPal y no lo es». No pulses enlaces ni abras adjuntos.",
     "mainReason": "Motivo principal: Enlace que imita a la misma marca que el remitente.",
     "categories": [
       {
         "id": "authentication",
         "label": "Autenticación",
-        "score": 4.7,
+        "score": 0,
         "max": 25
       },
       {
         "id": "sender",
         "label": "Remitente y suplantación",
-        "score": 19,
+        "score": 18,
         "max": 20
       },
       {
@@ -2631,14 +2631,6 @@
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "medium",
-      "value": 0.7,
-      "reasons": [
-        "La autenticación no se puede confirmar: no hay resultados de confianza.",
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "lookalike-same-brand",
@@ -2681,6 +2673,14 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "confidence": {
+      "level": "medium",
+      "value": 0.7,
+      "reasons": [
+        "La autenticación no se puede confirmar: no hay resultados de confianza.",
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -2897,22 +2897,6 @@
         ]
       },
       {
-        "id": "auth.missing",
-        "detector": "auth",
-        "severity": "low",
-        "points": 5,
-        "title": "Sin resultados de autenticación",
-        "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
-        "evidence": "Falta la cabecera Authentication-Results",
-        "mitre": null,
-        "category": "authentication",
-        "reliability": "medium",
-        "provenance": "declared",
-        "polarity": "risk",
-        "brand": null,
-        "techniques": []
-      },
-      {
         "id": "route.slow-delivery",
         "detector": "route",
         "severity": "low",
@@ -2924,6 +2908,22 @@
         "category": "infrastructure",
         "reliability": "medium",
         "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
+      },
+      {
+        "id": "auth.missing",
+        "detector": "auth",
+        "severity": "info",
+        "points": 0,
+        "title": "Sin resultados de autenticación",
+        "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
+        "evidence": "Falta la cabecera Authentication-Results",
+        "mitre": null,
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
         "polarity": "risk",
         "brand": null,
         "techniques": []
@@ -2995,16 +2995,16 @@
     }
   },
   "09-cabeceras-trampa": {
-    "score": 60,
-    "level": "phishing",
-    "label": "Probable phishing",
-    "summary": "4 señales graves o medias, entre ellas «El nombre visible muestra otra dirección» y «Se hace pasar por DocuSign». No pulses enlaces ni abras adjuntos.",
-    "mainReason": "Pesa sobre todo: Remitente y suplantación y Autenticación.",
+    "score": 55,
+    "level": "suspicious",
+    "label": "Sospechoso",
+    "summary": "4 señales sospechosas: «El nombre visible muestra otra dirección» y «Se hace pasar por DocuSign». Compruébalo por otra vía antes de actuar.",
+    "mainReason": "Pesa sobre todo: Remitente y suplantación y Infraestructura.",
     "categories": [
       {
         "id": "authentication",
         "label": "Autenticación",
-        "score": 4.7,
+        "score": 0,
         "max": 25
       },
       {
@@ -3038,14 +3038,6 @@
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "medium",
-      "value": 0.7,
-      "reasons": [
-        "La autenticación no se puede confirmar: no hay resultados de confianza.",
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [],
     "trust": [],
     "errors": [],
@@ -3072,9 +3064,17 @@
         "url": "https://attack.mitre.org/techniques/T1566/"
       }
     ],
+    "confidence": {
+      "level": "medium",
+      "value": 0.7,
+      "reasons": [
+        "La autenticación no se puede confirmar: no hay resultados de confianza.",
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
-      "tone": "phishing",
-      "headline": "No te fíes: es phishing"
+      "tone": "suspicious",
+      "headline": "Ten cuidado"
     },
     "findings": [
       {
@@ -3184,22 +3184,6 @@
         "techniques": []
       },
       {
-        "id": "auth.missing",
-        "detector": "auth",
-        "severity": "low",
-        "points": 5,
-        "title": "Sin resultados de autenticación",
-        "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
-        "evidence": "Falta la cabecera Authentication-Results",
-        "mitre": null,
-        "category": "authentication",
-        "reliability": "medium",
-        "provenance": "declared",
-        "polarity": "risk",
-        "brand": null,
-        "techniques": []
-      },
-      {
         "id": "sender.sender-mismatch",
         "detector": "sender",
         "severity": "low",
@@ -3228,6 +3212,22 @@
             "url": "https://attack.mitre.org/techniques/T1566/"
           }
         ]
+      },
+      {
+        "id": "auth.missing",
+        "detector": "auth",
+        "severity": "info",
+        "points": 0,
+        "title": "Sin resultados de autenticación",
+        "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
+        "evidence": "Falta la cabecera Authentication-Results",
+        "mitre": null,
+        "category": "authentication",
+        "reliability": "medium",
+        "provenance": "declared",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
       }
     ],
     "email": {
@@ -3265,7 +3265,7 @@
     }
   },
   "10-dominio-unicode": {
-    "score": 78,
+    "score": 75,
     "level": "phishing",
     "label": "Probable phishing",
     "summary": "6 señales graves o medias, entre ellas «Dominio con caracteres internacionales (punycode) (2 enlaces)» y «Dominio con letras de varios alfabetos». No pulses enlaces ni abras adjuntos.",
@@ -3274,7 +3274,7 @@
       {
         "id": "authentication",
         "label": "Autenticación",
-        "score": 4.7,
+        "score": 0,
         "max": 25
       },
       {
@@ -3308,14 +3308,6 @@
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "medium",
-      "value": 0.7,
-      "reasons": [
-        "La autenticación no se puede confirmar: no hay resultados de confianza.",
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "brand-credentials",
@@ -3369,6 +3361,14 @@
         "url": "https://attack.mitre.org/techniques/T1598/"
       }
     ],
+    "confidence": {
+      "level": "medium",
+      "value": 0.7,
+      "reasons": [
+        "La autenticación no se puede confirmar: no hay resultados de confianza.",
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -3564,8 +3564,8 @@
       {
         "id": "auth.missing",
         "detector": "auth",
-        "severity": "low",
-        "points": 5,
+        "severity": "info",
+        "points": 0,
         "title": "Sin resultados de autenticación",
         "detail": "El email no incluye la cabecera Authentication-Results, así que no se puede verificar SPF, DKIM ni DMARC.",
         "evidence": "Falta la cabecera Authentication-Results",
@@ -3632,7 +3632,7 @@
     }
   },
   "11-adjunto-tipo-falso": {
-    "score": 82,
+    "score": 81,
     "level": "critical",
     "label": "Phishing casi seguro",
     "summary": "Combina varias señales graves, entre ellas «El adjunto no es lo que dice ser» y «SPF: fail». No pulses enlaces ni abras adjuntos y bórralo.",
@@ -3671,17 +3671,10 @@
       {
         "id": "infrastructure",
         "label": "Infraestructura",
-        "score": 1.3,
+        "score": 0,
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "high",
-      "value": 0.9,
-      "reasons": [
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "attachment-pressure",
@@ -3725,6 +3718,13 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -3920,8 +3920,8 @@
       {
         "id": "headers.missing-messageid",
         "detector": "headers",
-        "severity": "low",
-        "points": 5,
+        "severity": "info",
+        "points": 0,
         "title": "Sin Message-ID",
         "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
         "evidence": "",
@@ -4022,17 +4022,10 @@
       {
         "id": "infrastructure",
         "label": "Infraestructura",
-        "score": 1.3,
+        "score": 0,
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "high",
-      "value": 0.9,
-      "reasons": [
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [
       {
         "id": "brand-auth",
@@ -4129,6 +4122,13 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -4486,22 +4486,6 @@
         ]
       },
       {
-        "id": "headers.missing-messageid",
-        "detector": "headers",
-        "severity": "low",
-        "points": 5,
-        "title": "Sin Message-ID",
-        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
-        "evidence": "",
-        "mitre": null,
-        "category": "infrastructure",
-        "reliability": "low",
-        "provenance": "inferred",
-        "polarity": "risk",
-        "brand": null,
-        "techniques": []
-      },
-      {
         "id": "attachments.archive",
         "detector": "attachments",
         "severity": "low",
@@ -4537,6 +4521,22 @@
             "url": "https://attack.mitre.org/techniques/T1204/002/"
           }
         ]
+      },
+      {
+        "id": "headers.missing-messageid",
+        "detector": "headers",
+        "severity": "info",
+        "points": 0,
+        "title": "Sin Message-ID",
+        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
+        "evidence": "",
+        "mitre": null,
+        "category": "infrastructure",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
       }
     ],
     "email": {
@@ -4600,7 +4600,7 @@
     }
   },
   "13-redireccion-anidada": {
-    "score": 75,
+    "score": 74,
     "level": "phishing",
     "label": "Probable phishing",
     "summary": "6 señales graves o medias, entre ellas «DMARC: fail» y «Dominio .top». No pulses enlaces ni abras adjuntos.",
@@ -4639,17 +4639,10 @@
       {
         "id": "infrastructure",
         "label": "Infraestructura",
-        "score": 1.3,
+        "score": 0,
         "max": 10
       }
     ],
-    "confidence": {
-      "level": "high",
-      "value": 0.9,
-      "reasons": [
-        "PhishLens no ha verificado nada por sí mismo."
-      ]
-    },
     "correlations": [],
     "trust": [],
     "errors": [],
@@ -4683,6 +4676,13 @@
         "url": "https://attack.mitre.org/techniques/T1204/"
       }
     ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
     "verdict": {
       "tone": "phishing",
       "headline": "No te fíes: es phishing"
@@ -4920,22 +4920,6 @@
         ]
       },
       {
-        "id": "headers.missing-messageid",
-        "detector": "headers",
-        "severity": "low",
-        "points": 5,
-        "title": "Sin Message-ID",
-        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
-        "evidence": "",
-        "mitre": null,
-        "category": "infrastructure",
-        "reliability": "low",
-        "provenance": "inferred",
-        "polarity": "risk",
-        "brand": null,
-        "techniques": []
-      },
-      {
         "id": "links.high-entropy",
         "detector": "links",
         "severity": "low",
@@ -5008,6 +4992,22 @@
             "url": "https://attack.mitre.org/techniques/T1204/001/"
           }
         ]
+      },
+      {
+        "id": "headers.missing-messageid",
+        "detector": "headers",
+        "severity": "info",
+        "points": 0,
+        "title": "Sin Message-ID",
+        "detail": "Todo servidor de correo serio añade un identificador único. Su ausencia sugiere un envío hecho a mano o con un script.",
+        "evidence": "",
+        "mitre": null,
+        "category": "infrastructure",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
       }
     ],
     "email": {
@@ -5055,6 +5055,615 @@
       "emails": [
         "avisos@avisos-entregas.test",
         "rebotes@avisos-entregas.test"
+      ],
+      "attachments": []
+    }
+  },
+  "14-legitimo-marketing": {
+    "score": 15,
+    "level": "safe",
+    "label": "Probablemente legítimo",
+    "summary": "No hay señales fuertes de phishing, aunque conviene revisar los avisos de abajo.",
+    "mainReason": "Pesa sobre todo: Remitente y suplantación y Infraestructura.",
+    "categories": [
+      {
+        "id": "authentication",
+        "label": "Autenticación",
+        "score": 0,
+        "max": 25
+      },
+      {
+        "id": "sender",
+        "label": "Remitente y suplantación",
+        "score": 5,
+        "max": 20
+      },
+      {
+        "id": "links",
+        "label": "Enlaces y contenido",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "attachments",
+        "label": "Adjuntos",
+        "score": 0,
+        "max": 15
+      },
+      {
+        "id": "language",
+        "label": "Lenguaje",
+        "score": 0,
+        "max": 10
+      },
+      {
+        "id": "infrastructure",
+        "label": "Infraestructura",
+        "score": 1.3,
+        "max": 10
+      }
+    ],
+    "correlations": [],
+    "trust": [],
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1566",
+        "name": "Phishing",
+        "tactic": "Initial Access",
+        "why": "El correo es el vector de entrada del ataque.",
+        "url": "https://attack.mitre.org/techniques/T1566/"
+      }
+    ],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
+    "verdict": {
+      "tone": "safe",
+      "headline": "Parece legítimo"
+    },
+    "findings": [
+      {
+        "id": "sender.returnpath-mismatch",
+        "detector": "sender",
+        "severity": "low",
+        "points": 5,
+        "title": "Return-Path de otro dominio",
+        "detail": "La dirección técnica de rebote no coincide con el remitente. Es habitual en newsletters, pero también en suplantaciones.",
+        "evidence": "From: hola@tiendaverde.example · Return-Path: bounces+884412-9f2c-pablo=example.com@bounce.mailerpro.example",
+        "mitre": {
+          "id": "T1566",
+          "name": "Phishing",
+          "tactic": "Initial Access",
+          "why": "El correo es el vector de entrada del ataque.",
+          "url": "https://attack.mitre.org/techniques/T1566/"
+        },
+        "category": "sender",
+        "reliability": "high",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1566",
+            "name": "Phishing",
+            "tactic": "Initial Access",
+            "why": "El correo es el vector de entrada del ataque.",
+            "url": "https://attack.mitre.org/techniques/T1566/"
+          }
+        ]
+      },
+      {
+        "id": "headers.messageid-domain",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Message-ID de otro dominio",
+        "detail": "El identificador lo generó ismtpd0042p1mad1.mailerpro.example, no tiendaverde.example. Es normal si se usa un proveedor de envío, pero también delata servidores ajenos.",
+        "evidence": "Message-ID: <0107018f3a2c.884412.9f2c@ismtpd0042p1mad1.mailerpro.example>",
+        "mitre": null,
+        "category": "infrastructure",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Tienda Verde",
+        "address": "hola@tiendaverde.example",
+        "domain": "tiendaverde.example"
+      },
+      "replyTo": {
+        "name": "Atención al cliente",
+        "address": "atencion@tiendaverde.example",
+        "domain": "tiendaverde.example"
+      },
+      "returnPath": "bounces+884412-9f2c-pablo=example.com@bounce.mailerpro.example",
+      "subject": "Tus puntos caducan el domingo: últimos días de rebajas",
+      "links": [
+        {
+          "text": "Ver las rebajas",
+          "href": "https://click.mailerpro.example/ls/click?upn=aHR0cHM6Ly93d3cudGllbmRhdmVyZGUuZXhhbXBsZS9yZWJhamFz&id=884412"
+        },
+        {
+          "text": "Mis puntos",
+          "href": "https://click.mailerpro.example/ls/click?upn=aHR0cHM6Ly93d3cudGllbmRhdmVyZGUuZXhhbXBsZS9taS1jdWVudGEvcHVudG9z&id=884412"
+        },
+        {
+          "text": "Darme de baja",
+          "href": "https://click.mailerpro.example/u/884412/9f2c"
+        }
+      ],
+      "authResults": "mx.example.com; spf=pass smtp.mailfrom=bounce.mailerpro.example; dkim=pass header.d=tiendaverde.example; dkim=pass header.d=mailerpro.example; dmarc=pass header.from=tiendaverde.example",
+      "date": "Thu, 05 Nov 2026 10:15:00 +0100",
+      "route": [
+        {
+          "from": "",
+          "helo": "",
+          "by": "filter0042.mailerpro.example",
+          "rdns": "",
+          "ip": "",
+          "date": "Thu, 05 Nov 2026 09:15:01 +0000",
+          "time": 1793870101000
+        },
+        {
+          "from": "o1.ptr4421.mailerpro.example",
+          "helo": "o1.ptr4421.mailerpro.example",
+          "by": "mx.example.com",
+          "rdns": "o1.ptr4421.mailerpro.example",
+          "ip": "192.0.2.80",
+          "date": "Thu, 05 Nov 2026 10:15:02 +0100",
+          "time": 1793870102000,
+          "entry": true
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://click.mailerpro.example/ls/click?upn=aHR0cHM6Ly93d3cudGllbmRhdmVyZGUuZXhhbXBsZS9yZWJhamFz&id=884412",
+        "https://click.mailerpro.example/ls/click?upn=aHR0cHM6Ly93d3cudGllbmRhdmVyZGUuZXhhbXBsZS9taS1jdWVudGEvcHVudG9z&id=884412",
+        "https://click.mailerpro.example/u/884412/9f2c"
+      ],
+      "domains": [
+        "tiendaverde.example",
+        "bounce.mailerpro.example",
+        "click.mailerpro.example"
+      ],
+      "ips": [
+        "192.0.2.80"
+      ],
+      "emails": [
+        "hola@tiendaverde.example",
+        "atencion@tiendaverde.example",
+        "bounces+884412-9f2c-pablo=example.com@bounce.mailerpro.example"
+      ],
+      "attachments": []
+    }
+  },
+  "15-legitimo-reseteo": {
+    "score": 6,
+    "level": "safe",
+    "label": "Probablemente legítimo",
+    "summary": "No hay señales fuertes de phishing, aunque conviene revisar los avisos de abajo.",
+    "mainReason": "Pesa sobre todo: Lenguaje.",
+    "categories": [
+      {
+        "id": "authentication",
+        "label": "Autenticación",
+        "score": 0,
+        "max": 25
+      },
+      {
+        "id": "sender",
+        "label": "Remitente y suplantación",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "links",
+        "label": "Enlaces y contenido",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "attachments",
+        "label": "Adjuntos",
+        "score": 0,
+        "max": 15
+      },
+      {
+        "id": "language",
+        "label": "Lenguaje",
+        "score": 2.5,
+        "max": 10
+      },
+      {
+        "id": "infrastructure",
+        "label": "Infraestructura",
+        "score": 0,
+        "max": 10
+      }
+    ],
+    "correlations": [],
+    "trust": [],
+    "errors": [],
+    "techniques": [
+      {
+        "id": "T1204",
+        "name": "User Execution",
+        "tactic": "Execution",
+        "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+        "url": "https://attack.mitre.org/techniques/T1204/"
+      }
+    ],
+    "confidence": {
+      "level": "high",
+      "value": 0.8,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo.",
+        "Solo una categoría aporta riesgo."
+      ]
+    },
+    "verdict": {
+      "tone": "safe",
+      "headline": "Parece legítimo"
+    },
+    "findings": [
+      {
+        "id": "language.urgency",
+        "detector": "language",
+        "severity": "medium",
+        "points": 15,
+        "title": "Mete prisa",
+        "detail": "Los plazos muy cortos buscan que no te pares a comprobar si el mensaje es real.",
+        "evidence": "…dad: 482913 El código caduca en 30 minutos. Si no has sido tú, ignora es…",
+        "mitre": {
+          "id": "T1204",
+          "name": "User Execution",
+          "tactic": "Execution",
+          "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+          "url": "https://attack.mitre.org/techniques/T1204/"
+        },
+        "category": "language",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": [
+          {
+            "id": "T1204",
+            "name": "User Execution",
+            "tactic": "Execution",
+            "why": "El mensaje presiona a la víctima para que actúe sin pensar.",
+            "url": "https://attack.mitre.org/techniques/T1204/"
+          }
+        ]
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Equipo de cuentas de Microsoft",
+        "address": "account-security-noreply@accountprotection.microsoft.com",
+        "domain": "accountprotection.microsoft.com"
+      },
+      "replyTo": null,
+      "returnPath": "account-security-noreply@accountprotection.microsoft.com",
+      "subject": "Código para restablecer tu contraseña",
+      "links": [
+        {
+          "text": "account.microsoft.com/security",
+          "href": "https://account.microsoft.com/security"
+        }
+      ],
+      "authResults": "mx.example.com; spf=pass smtp.mailfrom=accountprotection.microsoft.com; dkim=pass header.d=accountprotection.microsoft.com; dmarc=pass header.from=accountprotection.microsoft.com",
+      "date": "Thu, 05 Nov 2026 18:02:08 +0100",
+      "route": [
+        {
+          "from": "BN8NAM11FT033.eop-nam11.prod.protection.outlook.com",
+          "helo": "BN8NAM11FT033.eop-nam11.prod.protection.outlook.com",
+          "by": "BN8NAM11HT042.eop-nam11.prod.protection.outlook.com",
+          "rdns": "",
+          "ip": "2603:10b6:408:aa::15",
+          "date": "Thu, 05 Nov 2026 17:02:10 +0000",
+          "time": 1793898130000
+        },
+        {
+          "from": "mail-eopbgr130040.outbound.protection.outlook.com",
+          "helo": "mail-eopbgr130040.outbound.protection.outlook.com",
+          "by": "mx.example.com",
+          "rdns": "mail-eopbgr130040.outbound.protection.outlook.com",
+          "ip": "40.107.13.40",
+          "date": "Thu, 05 Nov 2026 18:02:11 +0100",
+          "time": 1793898131000,
+          "entry": true
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://account.microsoft.com/security"
+      ],
+      "domains": [
+        "accountprotection.microsoft.com",
+        "account.microsoft.com"
+      ],
+      "ips": [
+        "40.107.13.40"
+      ],
+      "emails": [
+        "account-security-noreply@accountprotection.microsoft.com"
+      ],
+      "attachments": []
+    }
+  },
+  "16-legitimo-lista": {
+    "score": 3,
+    "level": "safe",
+    "label": "Probablemente legítimo",
+    "summary": "No hay señales fuertes de phishing, aunque conviene revisar los avisos de abajo.",
+    "mainReason": "Pesa sobre todo: Infraestructura.",
+    "categories": [
+      {
+        "id": "authentication",
+        "label": "Autenticación",
+        "score": 0,
+        "max": 25
+      },
+      {
+        "id": "sender",
+        "label": "Remitente y suplantación",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "links",
+        "label": "Enlaces y contenido",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "attachments",
+        "label": "Adjuntos",
+        "score": 0,
+        "max": 15
+      },
+      {
+        "id": "language",
+        "label": "Lenguaje",
+        "score": 0,
+        "max": 10
+      },
+      {
+        "id": "infrastructure",
+        "label": "Infraestructura",
+        "score": 1.3,
+        "max": 10
+      }
+    ],
+    "correlations": [],
+    "trust": [],
+    "errors": [],
+    "techniques": [],
+    "confidence": {
+      "level": "high",
+      "value": 0.8,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo.",
+        "Solo una categoría aporta riesgo."
+      ]
+    },
+    "verdict": {
+      "tone": "safe",
+      "headline": "Parece legítimo"
+    },
+    "findings": [
+      {
+        "id": "headers.messageid-domain",
+        "detector": "headers",
+        "severity": "low",
+        "points": 5,
+        "title": "Message-ID de otro dominio",
+        "detail": "El identificador lo generó mail.correo-personal.example, no listas.asociacion-ciclista.example. Es normal si se usa un proveedor de envío, pero también delata servidores ajenos.",
+        "evidence": "Message-ID: <CAF2x9K+hQ7mN3v@mail.correo-personal.example>",
+        "mitre": null,
+        "category": "infrastructure",
+        "reliability": "low",
+        "provenance": "inferred",
+        "polarity": "risk",
+        "brand": null,
+        "techniques": []
+      }
+    ],
+    "email": {
+      "from": {
+        "name": "Marta Ruiz via Socios",
+        "address": "socios@listas.asociacion-ciclista.example",
+        "domain": "listas.asociacion-ciclista.example"
+      },
+      "replyTo": {
+        "name": "",
+        "address": "socios@listas.asociacion-ciclista.example",
+        "domain": "listas.asociacion-ciclista.example"
+      },
+      "returnPath": "socios-bounces@listas.asociacion-ciclista.example",
+      "subject": "[Socios] Ruta del sábado: cambio de hora",
+      "links": [
+        {
+          "text": "https://www.asociacion-ciclista.example/rutas/2026-11-07",
+          "href": "https://www.asociacion-ciclista.example/rutas/2026-11-07"
+        },
+        {
+          "text": "https://listas.asociacion-ciclista.example/mailman/options/socios",
+          "href": "https://listas.asociacion-ciclista.example/mailman/options/socios"
+        }
+      ],
+      "authResults": "mx.example.com; spf=pass smtp.mailfrom=listas.asociacion-ciclista.example; dkim=pass header.d=listas.asociacion-ciclista.example; dmarc=pass header.from=listas.asociacion-ciclista.example",
+      "date": "Fri, 06 Nov 2026 21:40:12 +0100",
+      "route": [
+        {
+          "from": "mail-wr1-f52.correo-personal.example",
+          "helo": "mail-wr1-f52.correo-personal.example",
+          "by": "listas.asociacion-ciclista.example",
+          "rdns": "mail-wr1-f52.correo-personal.example",
+          "ip": "203.0.113.52",
+          "date": "Fri, 06 Nov 2026 21:40:17 +0100",
+          "time": 1793997617000
+        },
+        {
+          "from": "listas.asociacion-ciclista.example",
+          "helo": "listas.asociacion-ciclista.example",
+          "by": "mx.example.com",
+          "rdns": "listas.asociacion-ciclista.example",
+          "ip": "198.51.100.23",
+          "date": "Fri, 06 Nov 2026 21:40:19 +0100",
+          "time": 1793997619000,
+          "entry": true
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://www.asociacion-ciclista.example/rutas/2026-11-07",
+        "https://listas.asociacion-ciclista.example/mailman/options/socios"
+      ],
+      "domains": [
+        "listas.asociacion-ciclista.example",
+        "www.asociacion-ciclista.example"
+      ],
+      "ips": [
+        "203.0.113.52",
+        "198.51.100.23"
+      ],
+      "emails": [
+        "socios@listas.asociacion-ciclista.example",
+        "socios-bounces@listas.asociacion-ciclista.example"
+      ],
+      "attachments": []
+    }
+  },
+  "17-legitimo-reenvio": {
+    "score": 0,
+    "level": "safe",
+    "label": "Probablemente legítimo",
+    "summary": "No se han encontrado señales de phishing.",
+    "mainReason": "No se han encontrado señales de riesgo.",
+    "categories": [
+      {
+        "id": "authentication",
+        "label": "Autenticación",
+        "score": 0,
+        "max": 25
+      },
+      {
+        "id": "sender",
+        "label": "Remitente y suplantación",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "links",
+        "label": "Enlaces y contenido",
+        "score": 0,
+        "max": 20
+      },
+      {
+        "id": "attachments",
+        "label": "Adjuntos",
+        "score": 0,
+        "max": 15
+      },
+      {
+        "id": "language",
+        "label": "Lenguaje",
+        "score": 0,
+        "max": 10
+      },
+      {
+        "id": "infrastructure",
+        "label": "Infraestructura",
+        "score": 0,
+        "max": 10
+      }
+    ],
+    "correlations": [],
+    "trust": [],
+    "errors": [],
+    "techniques": [],
+    "confidence": {
+      "level": "high",
+      "value": 0.9,
+      "reasons": [
+        "PhishLens no ha verificado nada por sí mismo."
+      ]
+    },
+    "verdict": {
+      "tone": "safe",
+      "headline": "Parece legítimo"
+    },
+    "findings": [],
+    "email": {
+      "from": {
+        "name": "Lucía Gómez",
+        "address": "lucia.gomez.viajes@gmail.com",
+        "domain": "gmail.com"
+      },
+      "replyTo": null,
+      "returnPath": "lucia.gomez.viajes@gmail.com",
+      "subject": "Fwd: Tu reserva en Hotel Mar está confirmada",
+      "links": [
+        {
+          "text": "tu reserva",
+          "href": "https://www.hotelmar.example/reserva/8841"
+        }
+      ],
+      "authResults": "mx.example.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass header.d=gmail.com; dmarc=pass header.from=gmail.com",
+      "date": "Sat, 07 Nov 2026 12:31:30 +0100",
+      "route": [
+        {
+          "from": "",
+          "helo": "",
+          "by": "mail-lj1-f170.google.com",
+          "rdns": "",
+          "ip": "",
+          "date": "Sat, 07 Nov 2026 03:31:43 -0800 (PST)",
+          "time": 1794051103000
+        },
+        {
+          "from": "mail-lj1-f170.google.com",
+          "helo": "mail-lj1-f170.google.com",
+          "by": "mx.example.com",
+          "rdns": "mail-lj1-f170.google.com",
+          "ip": "209.85.208.170",
+          "date": "Sat, 07 Nov 2026 12:31:44 +0100",
+          "time": 1794051104000,
+          "entry": true
+        }
+      ],
+      "attachments": []
+    },
+    "iocs": {
+      "urls": [
+        "https://www.hotelmar.example/reserva/8841"
+      ],
+      "domains": [
+        "gmail.com",
+        "www.hotelmar.example"
+      ],
+      "ips": [
+        "209.85.208.170"
+      ],
+      "emails": [
+        "lucia.gomez.viajes@gmail.com"
       ],
       "attachments": []
     }

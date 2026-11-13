@@ -41,7 +41,8 @@ test('cinco fichas con su número y su rótulo', () => {
   const tiles = findAll(panel, (n) => attr(n, 'class') === 'stat-tile');
   assert.deepEqual(tiles.map((t) => text(find(t, (n) => attr(n, 'class') === 'stat-tile__label'))),
     ['Análisis guardados', 'Probable phishing o peor', 'Campañas', 'IOCs distintos', 'Con adjunto peligroso']);
-  assert.equal(text(find(tiles[0], (n) => attr(n, 'class') === 'stat-tile__value')), '14');
+  // Todas las muestras más una repetida (twice).
+  assert.equal(text(find(tiles[0], (n) => attr(n, 'class') === 'stat-tile__value')), String(SAMPLES.length + 1));
   assert.match(text(find(tiles[4], (n) => attr(n, 'class') === 'stat-tile__value')), /^\d+ %$/);
 });
 

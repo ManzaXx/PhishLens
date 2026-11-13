@@ -39,6 +39,7 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 
 ## Tamaño y rendimiento
 
+- **URL con usuario, host y puerto de más de 1.024 caracteres** se ignoran como enlace: un nombre DNS no pasa de 253 caracteres y parsear un «host» de megabytes bloqueaba los detectores. La query y la ruta pueden ser tan largas como quieran (se analizan las redirecciones anidadas).
 - **Los límites cuentan caracteres, no bytes.** El navegador entrega el archivo como texto, así que los 25 MB son 25 millones de unidades UTF-16: un `.eml` con mucho texto no ASCII puede ocupar en disco hasta el doble.
 - **Sin Web Worker.** El análisis corre en el hilo principal ([ADR 0003](adr/0003-sin-web-worker.md)): con un correo enorme la página puede quedarse quieta unas décimas de segundo.
 - **Adjuntos de más de 10 MB.** No se decodifican enteros: su tamaño sale de la longitud del base64, no se calculan sus hashes y no se mira dentro.
@@ -47,7 +48,9 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 ## General
 
 - Son heurísticas: una nota baja no garantiza que un correo sea seguro.
-- **Pesos a mano.** Los pesos, las combinaciones y la escala de la nota están calibrados con las muestras y los ejemplos de la especificación, no entrenados con datos reales.
+- **La nota no es una probabilidad.** 60 no significa «60 % de probabilidades de phishing», sino que se han acumulado varias señales medias o alguna grave. Lo que se evalúa son los tramos del veredicto, no el número ([docs/evaluation.md](evaluation.md)).
+- **Pesos a mano.** Los pesos, las combinaciones y la escala de la nota están calibrados con las muestras y los ejemplos de la especificación, no entrenados con datos reales. Las muestras empaquetadas (17) no dan estadística: para medir tasas de acierto hace falta un corpus propio en `corpus/`, fuera de git.
+- **Una sola categoría llena es «Sospechoso».** Por diseño (escala 40), un correo cuyas señales caen todas en una categoría se queda en 50–55 aunque sean graves: la muestra 09 (dos `From`, nombre con dirección falsa) está en 55 desde la auditoría 3.1, porque antes llegaba a 60 gracias a la falta de `Authentication-Results`, que no es una señal de phishing.
 - **La confianza mide carencias, no aciertos.** Una confianza alta dice que se pudo revisar casi todo, no que el veredicto sea correcto.
 - No se consultan listas negras, WHOIS ni servicios de reputación.
 - No se analiza el formato `.msg` de Outlook.

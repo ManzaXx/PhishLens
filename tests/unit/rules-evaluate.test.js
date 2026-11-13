@@ -171,7 +171,7 @@ test('analyzeInput con rules: los hallazgos custom entran en la nota; sin reglas
 test('golden: con las 3 reglas de ejemplo cambian solo las muestras que se esperan', () => {
   const { rules } = validateRules(EXAMPLE);
   const ids = Object.keys(SAMPLE_TEXTS).filter((k) => !k.includes('/'));
-  assert.equal(ids.length, 13);
+  assert.equal(ids.length, 17);
   const hit = {};
   for (const id of ids) {
     const r = analyzeInput({ kind: 'eml', value: SAMPLE_TEXTS[id], rules });
@@ -187,7 +187,7 @@ test('golden: con las 3 reglas de ejemplo cambian solo las muestras que se esper
   });
 });
 
-test('Review Focus 4: una regla propia nunca baja la nota (13 muestras × 200 reglas aleatorias)', () => {
+test('Review Focus 4: una regla propia nunca baja la nota (17 muestras × 200 reglas aleatorias)', () => {
   const r = rng(20261110);
   const values = ['factura', 'cuenta', '.test', 'pdf', 'zip', 'exe', 'lookalike.', 'links.', 'santander', 'a', 'http', 'application/pdf', 'x'];
   const ids = Object.keys(SAMPLE_TEXTS).filter((k) => !k.includes('/'));

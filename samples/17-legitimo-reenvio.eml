@@ -1,0 +1,65 @@
+Authentication-Results: mx.example.com;
+ spf=pass smtp.mailfrom=gmail.com;
+ dkim=pass header.d=gmail.com;
+ dmarc=pass header.from=gmail.com
+Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170]) by mx.example.com; Sat, 07 Nov 2026 12:31:44 +0100
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-2f3a1b7c7d9so1221111fa.3 for <pablo@example.com>; Sat, 07 Nov 2026 03:31:43 -0800 (PST)
+Return-Path: <lucia.gomez.viajes@gmail.com>
+From: =?UTF-8?Q?Luc=C3=ADa_G=C3=B3mez?= <lucia.gomez.viajes@gmail.com>
+To: pablo@example.com
+Subject: =?UTF-8?Q?Fwd:_Tu_reserva_en_Hotel_Mar_est=C3=A1_confirmada?=
+Date: Sat, 07 Nov 2026 12:31:30 +0100
+Message-ID: <CAHk7=n9Qx2Lz8mT4vW1pA5bR3cD6eF@mail.gmail.com>
+References: <reserva-8841@hotelmar.example>
+In-Reply-To: <reserva-8841@hotelmar.example>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="fw-boundary"
+
+--fw-boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Pablo, te paso la confirmaci=C3=B3n del hotel para que tengas el n=C3=BAmer=
+o de reserva. Llegamos el viernes a las 16:00.
+
+Luc=C3=ADa
+
+---------- Forwarded message ---------
+De: Reservas Hotel Mar <reservas@hotelmar.example>
+Date: jue, 5 nov 2026 a las 19:12
+Subject: Tu reserva en Hotel Mar est=C3=A1 confirmada
+To: <lucia.gomez.viajes@gmail.com>
+
+Hola Luc=C3=ADa:
+
+Tu reserva 8841 para 2 personas del 13 al 15 de noviembre est=C3=A1 confir=
+mada. Habitaci=C3=B3n doble con vistas, desayuno incluido.
+
+Importante: la tarjeta se cargar=C3=A1 48 horas antes de la llegada. Puedes
+cancelar sin coste hasta el 10 de noviembre desde
+https://www.hotelmar.example/reserva/8841
+
+Hasta pronto,
+Reservas Hotel Mar =C2=B7 Paseo Mar=C3=ADtimo 4, Tarragona =C2=B7 +34 977 00=
+0 000
+
+--fw-boundary
+Content-Type: text/html; charset=utf-8
+
+<html><body style="font-family:Arial,sans-serif">
+<p>Pablo, te paso la confirmación del hotel para que tengas el número de reserva. Llegamos el viernes a las 16:00.</p>
+<p>Lucía</p>
+<div class="gmail_quote">
+<div>---------- Forwarded message ---------<br>
+De: <strong>Reservas Hotel Mar</strong> <span>&lt;reservas@hotelmar.example&gt;</span><br>
+Date: jue, 5 nov 2026 a las 19:12<br>
+Subject: Tu reserva en Hotel Mar está confirmada<br>
+To: &lt;lucia.gomez.viajes@gmail.com&gt;</div><br>
+<blockquote style="border-left:1px solid #ccc;padding-left:1ex">
+<p>Hola Lucía:</p>
+<p>Tu reserva <strong>8841</strong> para 2 personas del 13 al 15 de noviembre está confirmada. Habitación doble con vistas, desayuno incluido.</p>
+<p>Importante: la tarjeta se cargará 48 horas antes de la llegada. Puedes cancelar sin coste hasta el 10 de noviembre desde <a href="https://www.hotelmar.example/reserva/8841">tu reserva</a>.</p>
+<p>Hasta pronto,<br>Reservas Hotel Mar · Paseo Marítimo 4, Tarragona · +34 977 000 000</p>
+</blockquote></div>
+</body></html>
+--fw-boundary--

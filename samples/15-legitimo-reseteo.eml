@@ -1,0 +1,54 @@
+Authentication-Results: mx.example.com;
+ spf=pass smtp.mailfrom=accountprotection.microsoft.com;
+ dkim=pass header.d=accountprotection.microsoft.com;
+ dmarc=pass header.from=accountprotection.microsoft.com
+Received: from mail-eopbgr130040.outbound.protection.outlook.com (mail-eopbgr130040.outbound.protection.outlook.com [40.107.13.40]) by mx.example.com; Thu, 05 Nov 2026 18:02:11 +0100
+Received: from BN8NAM11FT033.eop-nam11.prod.protection.outlook.com (2603:10b6:408:aa::15) by BN8NAM11HT042.eop-nam11.prod.protection.outlook.com (2603:10b6:408:aa::30); Thu, 05 Nov 2026 17:02:10 +0000
+Return-Path: <account-security-noreply@accountprotection.microsoft.com>
+From: "Equipo de cuentas de Microsoft" <account-security-noreply@accountprotection.microsoft.com>
+To: pablo@example.com
+Subject: =?UTF-8?Q?C=C3=B3digo_para_restablecer_tu_contrase=C3=B1a?=
+Date: Thu, 05 Nov 2026 18:02:08 +0100
+Message-ID: <7c1e5b7a-4d2e-4b1c-9a1f-2f0c8e6d1a33@accountprotection.microsoft.com>
+X-MS-Exchange-Organization-AuthAs: Internal
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="rs-boundary"
+
+--rs-boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Cuenta de Microsoft
+
+C=C3=B3digo de seguridad
+
+Hemos recibido una solicitud para restablecer la contrase=C3=B1a de tu cue=
+nta de Microsoft pa***@example.com.
+
+Usa este c=C3=B3digo de seguridad: 482913
+
+El c=C3=B3digo caduca en 30 minutos. Si no has sido t=C3=BA, ignora este c=
+orreo: nadie puede entrar en tu cuenta solo con =C3=A9l.
+
+Para revisar la actividad reciente, entra en https://account.microsoft.com=
+/security
+
+Gracias,
+El equipo de cuentas de Microsoft
+
+Microsoft Corporation, One Microsoft Way, Redmond, WA 98052
+
+--rs-boundary
+Content-Type: text/html; charset=utf-8
+
+<html><body style="font-family:Segoe UI,Arial,sans-serif">
+<p style="color:#0067b8;font-size:20px">Cuenta de Microsoft</p>
+<h2>Código de seguridad</h2>
+<p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta de Microsoft <strong>pa***@example.com</strong>.</p>
+<p>Usa este código de seguridad: <strong style="font-size:22px">482913</strong></p>
+<p>El código caduca en 30 minutos. Si no has sido tú, ignora este correo: nadie puede entrar en tu cuenta solo con él.</p>
+<p>Para revisar la actividad reciente, entra en <a href="https://account.microsoft.com/security">account.microsoft.com/security</a>.</p>
+<p>Gracias,<br>El equipo de cuentas de Microsoft</p>
+<p style="font-size:11px;color:#666">Microsoft Corporation, One Microsoft Way, Redmond, WA 98052</p>
+</body></html>
+--rs-boundary--

@@ -15,8 +15,10 @@ test('DKIM y DMARC fail son graves', () => {
   assert.deepEqual(ids(detect(mail('spf=pass; dkim=fail; dmarc=fail header.from=paypal.com'))), ['auth.dkim:high', 'auth.dmarc:high']);
 });
 
-test('sin Authentication-Results es leve', () => {
-  assert.deepEqual(ids(detect(mail(null))), ['auth.missing:low']);
+// Desde la auditoría 3.1 (P7) es informativo: no suma puntos. La confianza del análisis sigue bajando
+// por «autenticación ausente» (tests/unit/confidence.test.js).
+test('sin Authentication-Results es informativo, no una señal de riesgo', () => {
+  assert.deepEqual(ids(detect(mail(null))), ['auth.missing:info']);
 });
 
 test('todo pass no genera hallazgos', () => {

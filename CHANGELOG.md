@@ -18,6 +18,11 @@
 
 ### Cambiado
 - La demo de GitHub Pages solo se publica si pasan los unitarios **y** los e2e (antes solo los unitarios), y los permisos de escritura en Pages quedan solo en el job que publica.
+- **Puntuación más honesta (auditoría 3.1, P6/P7/P8).** `auth.missing` (sin `Authentication-Results`) y `headers.missing-messageid` pasan a informativos: no suman puntos, porque un `.eml` exportado o reenviado los pierde y no distinguen un phishing de un correo normal; la falta de autenticación sigue bajando la confianza. Dentro de Remitente, la suplantación de **la misma marca** vista por dos detectores (`sender.brand-impersonation` y el `lookalike.*` del `From`) cuenta una sola vez, la de más peso. Efecto en las muestras: 08 pasa de 81 a 78 (sigue «Probable phishing») y 09 de 60 a 55 («Sospechoso»); el resto no cambia de tramo. Detalle en [docs/scoring.md](docs/scoring.md).
+- Los textos de la web dicen que la nota es **un indicador, no una probabilidad** y que la confianza mide cuánto del correo se pudo comprobar, no cuánto riesgo hay (nuevo párrafo en «Cómo funciona»).
+- Cuatro muestras legítimas «difíciles» (14 marketing con plataforma de envío, 15 reseteo de contraseña, 16 lista de correo, 17 reenvío): las cuatro salen «Probablemente legítimo». Ya son 17 muestras.
+- Una URL cuya parte de usuario, host y puerto pasa de 1.024 caracteres ya no se parsea (`LIMITS.urlAuthorityChars`): el fuzzing encontró que un «host» de 2 MB costaba casi 2 s entre los detectores de enlaces y de dominios parecidos.
+- `npm run eval` ([tools/eval.mjs](tools/eval.mjs)): matriz de confusión a ≥ 25 y ≥ 60, distribución de notas, legítimos marcados y reglas por clase, sobre las muestras o sobre un corpus propio con `manifest.csv` en `corpus/` (en `.gitignore`; nunca imprime el contenido de un correo). Metodología y resultados en [docs/evaluation.md](docs/evaluation.md).
 
 ## 3.1.0 · 2026-11-11 · Español e inglés
 
