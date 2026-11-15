@@ -176,6 +176,7 @@ node --test                 # unitarios, golden, fuzzing (2.000 casos), diferenc
 npm run fuzz                # 20.000 casos de fuzzing
 npm run bench               # reescribe docs/benchmark.md
 npm ci && npx playwright install chromium && npm run test:e2e   # privacidad y accesibilidad en Chromium
+E2E_BROWSERS=firefox,webkit node --test tests/e2e/worker.e2e.js  # el worker de análisis hereda la CSP (CI lo repite en Firefox y WebKit)
 ```
 
 GitHub Actions ejecuta todo en cada push (`.github/workflows/tests.yml`), más `npm audit`, y Dependabot vigila las dependencias de test y las Actions. Los tests cubren el parser, cada detector con casos positivos y negativos, el motor, los IOCs, el mapa ATT&CK, las 17 muestras y el lote de campaña de principio a fin, el grafo y las campañas (también con el lote barajado) y la resistencia a entradas maliciosas. La [matriz de cobertura](docs/coverage-matrix.md) dice dónde se prueba cada regla; el [modelo de amenazas](docs/threat-model.md) y la [auditoría](docs/security-audit.md), qué protege cada test.

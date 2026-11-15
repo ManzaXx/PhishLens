@@ -42,8 +42,24 @@ jobs:
       - run: npx --no-install playwright install chromium
       - run: npm run test:e2e
 
+  worker-csp:
+    # El worker de análisis hereda la CSP del documento (ADR 0007). Chromium ya lo prueba el job e2e; aquí se repite
+    # en Firefox y WebKit, que en local no siempre se pueden instalar. Si un motor dejara pasar algo, este job falla.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts
+      - run: npx --no-install playwright install --with-deps firefox webkit
+      - run: E2E_BROWSERS=firefox,webkit node --test tests/e2e/worker.e2e.js
+
   deploy:
-    needs: [test, e2e]
+    needs: [test, e2e, worker-csp]
     # Solo el job que publica puede escribir en Pages; los de tests se quedan con lectura.
     permissions:
       contents: read

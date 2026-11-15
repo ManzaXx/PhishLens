@@ -63,6 +63,13 @@
 .signal__dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--sev); }
 .signal__text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .signal__sev { flex: none; margin-left: auto; font-size: var(--text-sm); color: var(--muted); }
+.signal__link { flex: none; }
+@media (max-width: 480px) {
+  .signal { flex-wrap: wrap; padding-block: var(--space-2); }
+  .signal__text { flex-basis: calc(100% - var(--space-6)); }
+  .signal__sev { margin-left: calc(10px + var(--space-3)); }
+  .signal__link { margin-left: auto; }
+}
 
 /* verdictCard */
 .verdict-card { --tone: var(--suspicious); --tone-bg: var(--suspicious-soft); background: var(--tone-bg); border: 2px solid var(--tone); border-radius: var(--radius-xl); padding: var(--space-7); display: grid; gap: var(--space-3); }
@@ -239,6 +246,11 @@
 .chip--batch { border-style: dashed; }
 @media print { .batch-bar, .batch-status { display: none !important; } }
 
+/* ---------- Análisis en curso (worker, ADR 0007) ---------- */
+.analyze-status { margin: var(--space-3) 0 0; display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); color: var(--muted); }
+.analyze-status[hidden] { display: none; }
+@media print { .analyze-status { display: none !important; } }
+
 /* ---------- Grafo de IOCs (PR8) ---------- */
 .graph { margin: 0; display: grid; gap: var(--space-3); }
 .graph__canvas { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2); }
@@ -396,3 +408,33 @@
 
 /* Botón de idioma (spec 3.1): mismo objetivo de 44 px que el del tema, con las letras del idioma de destino. */
 .lang-btn { font: inherit; font-weight: 700; font-size: var(--text-sm); letter-spacing: 0.04em; }
+
+/* ---------- «Qué se ha analizado» (auditoría 3.1, P9) ---------- */
+.analyzed { margin: 0 0 var(--space-6); padding: var(--space-4) var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); min-width: 0; }
+.simple .analyzed { margin: 0; }
+.analyzed__title { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.analyzed__list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-3) var(--space-5); margin: 0; }
+.analyzed__item { min-width: 0; grid-column: span 1; }
+.analyzed__item--from, .analyzed__item--subject, .analyzed__item--url { grid-column: span 3; }
+.analyzed__item--url { grid-column: 1 / -1; }
+.analyzed__item--date, .analyzed__item--auth { grid-column: span 2; }
+.analyzed__label { font-size: var(--text-xs); font-weight: 600; color: var(--muted); margin-bottom: var(--space-1); }
+.analyzed__value { margin: 0; display: grid; gap: var(--space-1); color: var(--text); overflow-wrap: anywhere; }
+.analyzed__name { font-weight: 600; color: var(--text-strong); }
+.analyzed__address, .analyzed__url { font-family: var(--mono); font-size: var(--text-sm); }
+.analyzed__domain { color: var(--text-strong); font-weight: 700; background: var(--accent-soft); border-radius: var(--radius-sm); padding: 0 var(--space-1); }
+.analyzed__source { font-size: var(--text-sm); color: var(--muted); }
+.analyzed__note { margin: var(--space-3) 0 0; font-size: var(--text-sm); color: var(--muted); }
+.analyzed__item--subject .analyzed__value { font-weight: 600; color: var(--text-strong); }
+@media (max-width: 760px) {
+  .analyzed__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analyzed__item--from, .analyzed__item--subject, .analyzed__item--auth, .analyzed__item--url { grid-column: 1 / -1; }
+  .analyzed__item--date { grid-column: 1 / -1; }
+}
+@media (max-width: 400px) {
+  .analyzed { padding: var(--space-4); }
+}
+.simple__note, .report__note { margin: var(--space-3) 0 0; font-size: var(--text-sm); color: var(--muted); }
+.finding { scroll-margin-block: var(--space-10); }
+.finding--target { outline: 3px solid var(--accent); outline-offset: 2px; }
+.finding:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }

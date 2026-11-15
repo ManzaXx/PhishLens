@@ -41,9 +41,9 @@ Los adjuntos se miran por dentro sin abrirlos: nunca se descomprime ni se ejecut
 
 - **URL con usuario, host y puerto de más de 1.024 caracteres** se ignoran como enlace: un nombre DNS no pasa de 253 caracteres y parsear un «host» de megabytes bloqueaba los detectores. La query y la ruta pueden ser tan largas como quieran (se analizan las redirecciones anidadas).
 - **Los límites cuentan caracteres, no bytes.** El navegador entrega el archivo como texto, así que los 25 MB son 25 millones de unidades UTF-16: un `.eml` con mucho texto no ASCII puede ocupar en disco hasta el doble.
-- **Sin Web Worker.** El análisis corre en el hilo principal ([ADR 0003](adr/0003-sin-web-worker.md)): con un correo enorme la página puede quedarse quieta unas décimas de segundo.
+- **El análisis va en un Web Worker** ([ADR 0007](adr/0007-worker-con-csp-heredada.md)) que hereda la CSP de la página, con un botón para cancelar. Si el navegador no puede crearlo, se analiza en el hilo principal como antes y la página puede quedarse quieta unas décimas de segundo con un correo enorme. El re-análisis con SPF/DKIM o reglas propias y los lotes siguen en el hilo principal.
 - **Adjuntos de más de 10 MB.** No se decodifican enteros: su tamaño sale de la longitud del base64, no se calculan sus hashes y no se mira dentro.
-- **Navegadores.** La privacidad y la accesibilidad se prueban en Chromium; Firefox y Safari aplican la misma CSP, pero no se prueban en CI.
+- **Navegadores.** La privacidad y la accesibilidad se prueban en Chromium. Que el worker hereda la CSP se prueba además en Firefox y WebKit (job `worker-csp` de CI); el resto de los e2e sigue solo en Chromium.
 
 ## General
 

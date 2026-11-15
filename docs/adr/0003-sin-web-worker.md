@@ -1,7 +1,12 @@
 # ADR 0003 · Sin Web Worker
 
-- **Estado:** aceptada
+- **Estado:** sustituida por [ADR 0007](0007-worker-con-csp-heredada.md) (2026-11-13)
 - **Fecha:** 2026-11-05
+
+> **Nota (2026-11-13).** La premisa de este ADR era incompleta: un worker cargado desde una URL no hereda la CSP del
+> `<meta>`, pero uno creado desde `blob:` sí hereda la política del documento (CSP3). Se comprobó en un navegador
+> real antes de cambiar nada; el análisis va ahora en un worker `blob:` con la misma CSP. Detalle y pruebas en el
+> ADR 0007.
 
 ## Contexto
 

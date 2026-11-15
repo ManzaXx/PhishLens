@@ -59,5 +59,6 @@ export function summaryPanel(report) {
       // Con nota 0 el motivo («no hay señales») repetiría el resumen.
       report.mainReason && report.score > 0 ? el('p', { className: 'report__reason' }, el('strong', { text: report.mainReason })) : null,
       el('p', { className: 'report__summary', text: report.summary }),
+      el('p', { className: 'report__note', text: t('report.scoreNote') }),
       confidenceBadge(report.confidence)));
 }

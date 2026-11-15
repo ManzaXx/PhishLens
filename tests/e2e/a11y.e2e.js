@@ -255,3 +255,50 @@ test('vista «URLs» con teclado: se llega desde la navegación y ninguna URL es
   assert.ok(!/https?:\/\//.test(await page.locator('#report .view--urls').textContent()));
   await context.close();
 });
+
+test('«Ver la prueba»: con teclado abre Señales con el foco en esa señal, y Atrás vuelve al modo sencillo', { skip }, async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  page.setDefaultTimeout(5000);
+  await page.goto(`${server.url}/index.html`);
+  await page.getByRole('button', { name: title('03-phishing-banco'), exact: true }).click();
+  await page.locator('#report .verdict-card').waitFor();
+  const first = page.locator('#report [data-action="show-finding"]').first();
+  const index = await first.getAttribute('data-index');
+  const signal = await page.locator('#report .signal__text').first().textContent();
+  await first.focus();
+  await page.keyboard.press('Enter');
+  await page.locator('#report .view--senales').waitFor();
+  assert.equal(new URL(page.url()).hash, '#analista/senales');
+  const focused = await page.evaluate(() => ({ finding: document.activeElement?.getAttribute('data-finding'), target: document.activeElement?.classList.contains('finding--target') }));
+  assert.deepEqual(focused, { finding: index, target: true });
+  // La tarjeta enfocada es la de la señal elegida y se ve en pantalla.
+  const card = page.locator(`#report [data-finding="${index}"]`);
+  assert.ok(await card.isVisible());
+  assert.ok((await card.textContent()).length > 0 && signal.length > 0);
+  await page.goBack();
+  await page.locator('#report .verdict-card').waitFor();
+  assert.equal(new URL(page.url()).hash, '');
+  await context.close();
+});
+
+test('«Qué se ha analizado»: en los dos modos, sin desbordar a 360 px, y sin siglas en el sencillo', { skip }, async () => {
+  for (const width of [360, 1280]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 } });
+    const page = await context.newPage();
+    page.setDefaultTimeout(5000);
+    await page.goto(`${server.url}/index.html`);
+    await page.getByRole('button', { name: title('03-phishing-banco'), exact: true }).click();
+    const strip = page.locator('#report .analyzed');
+    await strip.waitFor();
+    assert.equal(await page.getByRole('heading', { name: 'Qué se ha analizado' }).count(), 1);
+    assert.equal(await strip.locator('.analyzed__domain').first().textContent(), 'santander-seguridad.test');
+    assert.doesNotMatch(await strip.textContent(), /SPF|DKIM|DMARC/);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    assert.equal(overflow, false, `desborda a ${width} px`);
+    await page.locator('#report [data-action="mode-analyst"]').first().click();
+    await page.locator('#report nav a').first().waitFor();
+    assert.match(await page.locator('#report .analyzed').textContent(), /SPF falla · DKIM sin resultado · DMARC falla/);
+    await context.close();
+  }
+});

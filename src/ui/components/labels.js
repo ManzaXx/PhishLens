@@ -13,3 +13,14 @@ export const severityLabel = (s) => t(`common.severity.${severityKey(s)}`);
 export const reliabilityLabel = (r) => (LEVELS.has(r) ? t(`common.reliability.${r}`) : null);
 /** «alta», «media» o «baja»; null si no es un nivel conocido. */
 export const confidenceLabel = (c) => (LEVELS.has(c) ? t(`common.confidence.${c}`) : null);
+
+/** Texto de la insignia: el color nunca es la única señal del estado. */
+export function authStateLabel(m) {
+  switch (m.state) {
+    case 'verified': return t('auth.state.verified');
+    case 'declared-trusted': return t('auth.state.declared', { source: m.source || t('auth.state.receiver') });
+    case 'declared-untrusted': return t('auth.state.untrusted');
+    case 'unverifiable': return t('auth.state.unverifiable');
+    default: return t('auth.state.none');
+  }
+}
