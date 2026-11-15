@@ -1,20 +1,12 @@
 // Panel «Autenticación»: SPF, DKIM y DMARC, y la comprobación en local.
 import { el } from '../dom.js';
 import { t } from '../../i18n/index.js';
+import { authStateLabel } from '../components/labels.js';
 
 
 const AUTH_ROWS = [['spf', 'SPF'], ['dkim', 'DKIM'], ['dmarc', 'DMARC']];
 
-/** Texto de la insignia: el color nunca es la única señal del estado. */
-export function authStateLabel(m) {
-  switch (m.state) {
-    case 'verified': return t('auth.state.verified');
-    case 'declared-trusted': return t('auth.state.declared', { source: m.source || t('auth.state.receiver') });
-    case 'declared-untrusted': return t('auth.state.untrusted');
-    case 'unverifiable': return t('auth.state.unverifiable');
-    default: return t('auth.state.none');
-  }
-}
+export { authStateLabel };
 
 const RESULT_TONE = { pass: 'safe', fail: 'high', softfail: 'medium', permerror: 'medium', temperror: 'low', neutral: 'low', none: 'low' };
 

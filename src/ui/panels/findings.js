@@ -15,13 +15,13 @@ export function findingsPanel(report) {
     return panel;
   }
   const groups = new Map();
-  for (const f of report.findings) {
+  report.findings.forEach((f, index) => {
     if (!groups.has(f.detector)) groups.set(f.detector, []);
-    groups.get(f.detector).push(f);
-  }
+    groups.get(f.detector).push([f, index]);
+  });
   for (const [detector, items] of groups) {
     const group = el('div', { className: 'group' }, el('h4', { className: 'group__title', text: detectorLabel(detector) }));
-    for (const f of items) group.append(findingCard(f));
+    for (const [f, index] of items) group.append(findingCard(f, { index }));
     panel.append(group);
   }
   for (const err of report.errors) {

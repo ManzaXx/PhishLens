@@ -7,6 +7,7 @@ import { toStixBundle } from '../intel/stix.js';
 import { modeSwitch } from './components/mode-switch.js';
 import { menuButton } from './components/menu-button.js';
 import { batchBar } from './components/batch-bar.js';
+import { analyzedStrip } from './components/analyzed-strip.js';
 import { renderSimple } from './views/simple.js';
 import { renderAnalyst } from './views/analyst.js';
 import { localizeReport } from './localize.js';
@@ -37,15 +38,21 @@ function lotBar(batch) {
  * options.mode: 'simple' | 'analyst'; options.view: vista del modo analista (ya resuelta);
  * options.authStatus, dkimKey y spfRecord: estado de la comprobación local de DKIM y SPF.
  * options.batch: el lote analizado (si lo hay), con su grafo y sus campañas.
+ * options.kind: cómo entró el correo ('eml', 'text' o 'url'), para la franja «Qué se ha analizado».
  */
 export function renderReport(container, original, options = {}) {
   const report = localizeReport(original);
   const mode = options.mode === 'analyst' ? 'analyst' : 'simple';
   container.replaceChildren();
   container.className = `wrap report report--${mode} level-${report.level}`;
-  const body = mode === 'analyst' ? renderAnalyst(report, options.view, options) : renderSimple(report, options);
-  const saved = options.savedNote && !(mode === 'analyst' && (options.view === 'historial' || options.view === 'panel')) ? el('p', { className: 'saved-note', text: options.savedNote }) : null;
-  container.append(...[toolbar(mode), saved, options.batch ? lotBar(options.batch) : null, body].filter(Boolean));
+  // Historial y panel no hablan de un correo: ni la nota de «guardado» ni la franja de lo analizado.
+  const aboutEmail = !(mode === 'analyst' && (options.view === 'historial' || options.view === 'panel'));
+  const saved = options.savedNote && aboutEmail ? el('p', { className: 'saved-note', text: options.savedNote }) : null;
+  const strip = aboutEmail ? analyzedStrip(report, { kind: options.kind, plain: mode === 'simple' }) : null;
+  // En el modo sencillo el veredicto va primero (en móvil la franja ocupa media pantalla) y la franja justo
+  // debajo; en el analista la franja encabeza cada vista como contexto.
+  const body = mode === 'analyst' ? renderAnalyst(report, options.view, options) : renderSimple(report, { ...options, analyzed: strip });
+  container.append(...[toolbar(mode), saved, options.batch ? lotBar(options.batch) : null, mode === 'analyst' ? strip : null, body].filter(Boolean));
   container.hidden = false;
 }
 

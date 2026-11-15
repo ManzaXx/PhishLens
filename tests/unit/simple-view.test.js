@@ -51,3 +51,40 @@ test('ningún texto visible del modo sencillo lleva jerga', () => {
     for (const word of ['SPF', 'DKIM', 'DMARC', 'T1']) assert.ok(!text.includes(word), `${s.file}: «${word}»`);
   }
 });
+
+test('cada motivo del veredicto lleva «Ver la prueba» con la posición de su hallazgo en report.findings', async () => {
+  const r = report('03');
+  const view = renderSimple(r);
+  const buttons = findAll(view, (n) => n.getAttribute?.('data-action') === 'show-finding');
+  assert.equal(buttons.length, r.verdict.top.length);
+  buttons.forEach((b, i) => {
+    assert.equal(b.localName, 'button');
+    assert.equal(b.getAttribute('type'), 'button');
+    assert.equal(b.textContent, 'Ver la prueba');
+    assert.equal(r.findings[Number(b.getAttribute('data-index'))], r.verdict.top[i]);
+    // Se describe con el texto de la señal, no con un aria-label hecho con texto del correo.
+    const described = find(view, (n) => n.getAttribute?.('id') === b.getAttribute('aria-describedby'));
+    assert.equal(described.textContent, r.verdict.top[i].plain || r.verdict.top[i].title);
+    assert.equal(b.getAttribute('aria-label'), null);
+  });
+});
+
+test('en inglés (copias traducidas) cada botón apunta al mismo hallazgo', async () => {
+  const { localizeReport } = await import('../../src/ui/localize.js');
+  const { setLang } = await import('../../src/i18n/index.js');
+  setLang('en');
+  try {
+    const r = localizeReport(report('03'));
+    const view = renderSimple(r);
+    const buttons = findAll(view, (n) => n.getAttribute?.('data-action') === 'show-finding');
+    assert.equal(buttons.length, r.verdict.top.length);
+    buttons.forEach((b, i) => assert.equal(r.findings[Number(b.getAttribute('data-index'))].id, r.verdict.top[i].id));
+    assert.equal(buttons[0].textContent, 'See the evidence');
+  } finally {
+    setLang('es');
+  }
+});
+
+test('la nota explica que la puntuación no es una probabilidad', () => {
+  assert.match(renderSimple(report('03')).textContent, /No es la probabilidad de que sea phishing/);
+});

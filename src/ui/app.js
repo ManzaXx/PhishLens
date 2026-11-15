@@ -806,7 +806,8 @@ function paint(options = {}) {
   const context = { batch: state.batch, historyEnabled: historyControl.enabled() };
   const view = resolveView(state.route.view, state.lastReport, context);
   renderReport(reportBox, state.lastReport, {
-    mode, view, ...context, campaign: state.campaign, history: state.historyData, dashboard: state.dashboard, savedNote: state.savedNote ? state.savedNote() : '', ...options,
+    mode, view, ...context, campaign: state.campaign, history: state.historyData, dashboard: state.dashboard, savedNote: state.savedNote ? state.savedNote() : '',
+    kind: state.saved?.kind ?? state.lastInput?.kind, ...options,
   });
   // En móvil la navegación es una fila con desplazamiento: la vista actual tiene que verse.
   const nav = reportBox.querySelector('.nav-rail');
@@ -815,6 +816,24 @@ function paint(options = {}) {
     const offset = current.getBoundingClientRect().left - nav.getBoundingClientRect().left;
     nav.scrollLeft += offset - (nav.clientWidth - current.offsetWidth) / 2;
   }
+}
+
+/**
+ * «Ver la prueba» del modo sencillo: abre la vista Señales del modo analista con el foco en esa señal.
+ * pushState no dispara hashchange, así que se pinta aquí; «Atrás» vuelve al modo sencillo como siempre.
+ */
+function showFinding(index) {
+  if (!/^\d+$/.test(String(index ?? ''))) return;
+  state.route = { mode: 'analyst', view: 'senales' };
+  storage((s) => s.setItem(MODE_KEY, 'analyst'));
+  history.pushState(null, '', formatRoute(state.route));
+  paint();
+  const card = reportBox.querySelector(`[data-finding="${index}"]`);
+  if (!card) return focusView();
+  card.classList.add('finding--target');
+  card.focus({ preventScroll: true });
+  card.scrollIntoView({ block: 'center' });
+  return undefined;
 }
 
 /** Lleva el foco al título de la vista nueva, para que teclado y lector de pantalla sepan dónde están. */
@@ -1106,6 +1125,7 @@ function onReportAction(e) {
     state.campaign = e.target.closest('[data-action]').dataset.id;
     location.hash = formatRoute({ mode: 'analyst', view: 'campanas' });
   }
+  if (action === 'show-finding') showFinding(e.target.closest('[data-action]').dataset.index);
   if (action === 'pick-email') {
     openBatchEmail(e.target.closest('[data-action]').dataset.key);
     state.route = { ...state.route, view: 'resumen' };
